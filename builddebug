@@ -1,0 +1,1 @@
+gcc *.c *.o -static -ggdb -m486 -O3 -ffast-math -funroll-loops -fomit-frame-pointer -fexpensive-optimizations -malign-loops=2 -malign-jumps=2 -malign-functions=2 -fPIC -shared -o gamei386.so

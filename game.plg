@@ -1,0 +1,345 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: game - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP197.tmp" with contents
+[
+/nologo /MT /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fp"c:\cds\Release/game.pch" /YX /Fo"c:\cds\Release/" /Fd"c:\cds\Release/" /FD /c 
+"E:\Source\kingpin\monkey mod 151\ai_bitch.c"
+"E:\Source\kingpin\monkey mod 151\ai_bum_sit.c"
+"E:\Source\kingpin\monkey mod 151\ai_dog.c"
+"E:\Source\kingpin\monkey mod 151\ai_punk.c"
+"E:\Source\kingpin\monkey mod 151\ai_runt.c"
+"E:\Source\kingpin\monkey mod 151\ai_shorty.c"
+"E:\Source\kingpin\monkey mod 151\ai_thug.c"
+"E:\Source\kingpin\monkey mod 151\ai_thug_sit.c"
+"E:\Source\kingpin\monkey mod 151\ai_whore.c"
+"E:\Source\kingpin\monkey mod 151\ep_all.c"
+"E:\Source\kingpin\monkey mod 151\ep_crystalpalace.c"
+"E:\Source\kingpin\monkey mod 151\ep_log.c"
+"E:\Source\kingpin\monkey mod 151\ep_posionville.c"
+"E:\Source\kingpin\monkey mod 151\ep_radiocity.c"
+"E:\Source\kingpin\monkey mod 151\ep_shipyards.c"
+"E:\Source\kingpin\monkey mod 151\ep_skidrow.c"
+"E:\Source\kingpin\monkey mod 151\ep_steeltown.c"
+"E:\Source\kingpin\monkey mod 151\ep_trainyard.c"
+"E:\Source\kingpin\monkey mod 151\file.c"
+"E:\Source\kingpin\monkey mod 151\g_ai.c"
+"E:\Source\kingpin\monkey mod 151\g_ai_ents.c"
+"E:\Source\kingpin\monkey mod 151\g_ai_fight.c"
+"E:\Source\kingpin\monkey mod 151\g_ai_memory.c"
+"E:\Source\kingpin\monkey mod 151\g_cast.c"
+"E:\Source\kingpin\monkey mod 151\G_chase.c"
+"E:\Source\kingpin\monkey mod 151\g_cmds.c"
+"E:\Source\kingpin\monkey mod 151\g_combat.c"
+"E:\Source\kingpin\monkey mod 151\g_func.c"
+"E:\Source\kingpin\monkey mod 151\g_items.c"
+"E:\Source\kingpin\monkey mod 151\g_joe_misc.c"
+"E:\Source\kingpin\monkey mod 151\g_main.c"
+"E:\Source\kingpin\monkey mod 151\g_misc.c"
+"E:\Source\kingpin\monkey mod 151\g_pawn.c"
+"E:\Source\kingpin\monkey mod 151\g_phys.c"
+"E:\Source\kingpin\monkey mod 151\g_save.c"
+"E:\Source\kingpin\monkey mod 151\g_spawn.c"
+"E:\Source\kingpin\monkey mod 151\g_svcmds.c"
+"E:\Source\kingpin\monkey mod 151\g_target.c"
+"E:\Source\kingpin\monkey mod 151\g_teamplay.c"
+"E:\Source\kingpin\monkey mod 151\g_trigger.c"
+"E:\Source\kingpin\monkey mod 151\g_utils.c"
+"E:\Source\kingpin\monkey mod 151\g_weapon.c"
+"E:\Source\kingpin\monkey mod 151\m_bbox.c"
+"E:\Source\kingpin\monkey mod 151\m_move.c"
+"E:\Source\kingpin\monkey mod 151\p_client.c"
+"E:\Source\kingpin\monkey mod 151\p_hud.c"
+"E:\Source\kingpin\monkey mod 151\p_view.c"
+"E:\Source\kingpin\monkey mod 151\p_weapon.c"
+"E:\Source\kingpin\monkey mod 151\q_shared.c"
+"E:\Source\kingpin\monkey mod 151\tourney.c"
+"E:\Source\kingpin\monkey mod 151\vehicles.c"
+"E:\Source\kingpin\monkey mod 151\voice.c"
+"E:\Source\kingpin\monkey mod 151\voice_bitch.c"
+"E:\Source\kingpin\monkey mod 151\voice_punk.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP197.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP198.tmp" with contents
+[
+navlib\navlib.lib /nologo /base:"0x20000000" /subsystem:windows /dll /incremental:no /pdb:"c:\cds\Release/gamex86.pdb" /machine:I386 /nodefaultlib:"LIBC" /def:".\game.def" /out:"c:\cds\Release\gamex86.dll" /implib:"c:\cds\Release/gamex86.lib" 
+"c:\cds\Release\ai_bitch.obj"
+"c:\cds\Release\ai_bum_sit.obj"
+"c:\cds\Release\ai_dog.obj"
+"c:\cds\Release\ai_punk.obj"
+"c:\cds\Release\ai_runt.obj"
+"c:\cds\Release\ai_shorty.obj"
+"c:\cds\Release\ai_thug.obj"
+"c:\cds\Release\ai_thug_sit.obj"
+"c:\cds\Release\ai_whore.obj"
+"c:\cds\Release\ep_all.obj"
+"c:\cds\Release\ep_crystalpalace.obj"
+"c:\cds\Release\ep_log.obj"
+"c:\cds\Release\ep_posionville.obj"
+"c:\cds\Release\ep_radiocity.obj"
+"c:\cds\Release\ep_shipyards.obj"
+"c:\cds\Release\ep_skidrow.obj"
+"c:\cds\Release\ep_steeltown.obj"
+"c:\cds\Release\ep_trainyard.obj"
+"c:\cds\Release\file.obj"
+"c:\cds\Release\g_ai.obj"
+"c:\cds\Release\g_ai_ents.obj"
+"c:\cds\Release\g_ai_fight.obj"
+"c:\cds\Release\g_ai_memory.obj"
+"c:\cds\Release\g_cast.obj"
+"c:\cds\Release\G_chase.obj"
+"c:\cds\Release\g_cmds.obj"
+"c:\cds\Release\g_combat.obj"
+"c:\cds\Release\g_func.obj"
+"c:\cds\Release\g_items.obj"
+"c:\cds\Release\g_joe_misc.obj"
+"c:\cds\Release\g_main.obj"
+"c:\cds\Release\g_misc.obj"
+"c:\cds\Release\g_pawn.obj"
+"c:\cds\Release\g_phys.obj"
+"c:\cds\Release\g_save.obj"
+"c:\cds\Release\g_spawn.obj"
+"c:\cds\Release\g_svcmds.obj"
+"c:\cds\Release\g_target.obj"
+"c:\cds\Release\g_teamplay.obj"
+"c:\cds\Release\g_trigger.obj"
+"c:\cds\Release\g_utils.obj"
+"c:\cds\Release\g_weapon.obj"
+"c:\cds\Release\m_bbox.obj"
+"c:\cds\Release\m_move.obj"
+"c:\cds\Release\p_client.obj"
+"c:\cds\Release\p_hud.obj"
+"c:\cds\Release\p_view.obj"
+"c:\cds\Release\p_weapon.obj"
+"c:\cds\Release\q_shared.obj"
+"c:\cds\Release\tourney.obj"
+"c:\cds\Release\vehicles.obj"
+"c:\cds\Release\voice.obj"
+"c:\cds\Release\voice_bitch.obj"
+"c:\cds\Release\voice_punk.obj"
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP198.tmp"
+<h3>Output Window</h3>
+Compiling...
+ai_bitch.c
+ai_bum_sit.c
+E:\Source\kingpin\monkey mod 151\ai_bitch.c(397) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ai_bitch.c(1077) : warning C4706: assignment within conditional expression
+ai_dog.c
+ai_punk.c
+E:\Source\kingpin\monkey mod 151\ai_dog.c(56) : warning C4706: assignment within conditional expression
+ai_runt.c
+E:\Source\kingpin\monkey mod 151\ai_punk.c(278) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ai_punk.c(1051) : warning C4706: assignment within conditional expression
+ai_shorty.c
+E:\Source\kingpin\monkey mod 151\ai_runt.c(443) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ai_runt.c(1185) : warning C4706: assignment within conditional expression
+ai_thug.c
+E:\Source\kingpin\monkey mod 151\ai_shorty.c(274) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ai_shorty.c(1046) : warning C4706: assignment within conditional expression
+ai_thug_sit.c
+E:\Source\kingpin\monkey mod 151\ai_thug.c(418) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ai_thug.c(1110) : warning C4706: assignment within conditional expression
+ai_whore.c
+ep_all.c
+E:\Source\kingpin\monkey mod 151\ai_whore.c(287) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ai_whore.c(1038) : warning C4706: assignment within conditional expression
+ep_crystalpalace.c
+ep_log.c
+ep_posionville.c
+ep_radiocity.c
+ep_shipyards.c
+E:\Source\kingpin\monkey mod 151\ep_radiocity.c(127) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_radiocity.c(169) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_radiocity.c(181) : warning C4706: assignment within conditional expression
+ep_skidrow.c
+ep_steeltown.c
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(234) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(391) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(457) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(470) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(797) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(841) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(855) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(1506) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(1545) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(1555) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(1608) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(1704) : warning C4701: local variable 'rval' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(2350) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\ep_skidrow.c(2377) : warning C4706: assignment within conditional expression
+ep_trainyard.c
+E:\Source\kingpin\monkey mod 151\ep_steeltown.c(456) : warning C4701: local variable 'rval' may be used without having been initialized
+file.c
+g_ai.c
+g_ai_ents.c
+E:\Source\kingpin\monkey mod 151\g_ai.c(389) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(544) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(890) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(920) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(1037) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(1051) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(1239) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(2277) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(2398) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(3052) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(3690) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(3751) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(3816) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(4621) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(4627) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(4672) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(4689) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(4714) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai.c(4720) : warning C4706: assignment within conditional expression
+g_ai_fight.c
+E:\Source\kingpin\monkey mod 151\g_ai_ents.c(99) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_ents.c(605) : warning C4706: assignment within conditional expression
+g_ai_memory.c
+E:\Source\kingpin\monkey mod 151\g_ai_fight.c(446) : warning C4706: assignment within conditional expression
+g_cast.c
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(142) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(344) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(388) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(451) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(471) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(527) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(813) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(813) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_ai_memory.c(1404) : warning C4701: local variable 'best_dist' may be used without having been initialized
+G_chase.c
+E:\Source\kingpin\monkey mod 151\g_cast.c(1142) : warning C4706: assignment within conditional expression
+g_cmds.c
+g_combat.c
+E:\Source\kingpin\monkey mod 151\g_cmds.c(1722) : warning C4701: local variable 'resp' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_cmds.c(1747) : warning C4701: local variable 'flags' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_cmds.c(1807) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(2839) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(2939) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(2963) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4017) : warning C4701: local variable 'player' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4088) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4100) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4111) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4134) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4148) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4206) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_cmds.c(4777) : warning C4701: local variable 's' may be used without having been initialized
+g_func.c
+E:\Source\kingpin\monkey mod 151\g_combat.c(635) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_combat.c(1225) : warning C4701: local variable 'model' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_combat.c(1936) : warning C4701: local variable 'takefactor' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_combat.c(2433) : warning C4701: local variable 'model' may be used without having been initialized
+g_items.c
+E:\Source\kingpin\monkey mod 151\g_func.c(73) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_func.c(521) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_func.c(1202) : warning C4706: assignment within conditional expression
+g_joe_misc.c
+g_main.c
+g_misc.c
+E:\Source\kingpin\monkey mod 151\g_main.c(379) : warning C4701: local variable 'f' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_main.c(454) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_main.c(490) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_main.c(522) : warning C4706: assignment within conditional expression
+g_pawn.c
+g_phys.c
+g_save.c
+E:\Source\kingpin\monkey mod 151\g_phys.c(545) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_phys.c(1183) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_phys.c(1235) : warning C4706: assignment within conditional expression
+g_spawn.c
+g_svcmds.c
+E:\Source\kingpin\monkey mod 151\g_spawn.c(1259) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_spawn.c(1274) : warning C4706: assignment within conditional expression
+g_target.c
+g_teamplay.c
+E:\Source\kingpin\monkey mod 151\g_target.c(1142) : warning C4701: local variable 'tr' may be used without having been initialized
+g_trigger.c
+g_utils.c
+g_weapon.c
+E:\Source\kingpin\monkey mod 151\g_utils.c(231) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_utils.c(242) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\g_utils.c(259) : warning C4706: assignment within conditional expression
+m_bbox.c
+E:\Source\kingpin\monkey mod 151\g_weapon.c(530) : warning C4701: local variable 'mdx_tr' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\g_weapon.c(2804) : warning C4701: local variable 'mdx_tr' may be used without having been initialized
+m_move.c
+p_client.c
+p_hud.c
+E:\Source\kingpin\monkey mod 151\p_client.c(458) : warning C4701: local variable 'mod' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_client.c(674) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(829) : warning C4701: local variable 'team' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_client.c(830) : warning C4701: local variable 'admin' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_client.c(831) : warning C4701: local variable 'spec' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_client.c(1128) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(1154) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(2134) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(2222) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(2182) : warning C4701: local variable 'j' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_client.c(2308) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(2383) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(2516) : warning C4701: local variable 'model_index' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_client.c(2724) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_client.c(3437) : warning C4706: assignment within conditional expression
+p_view.c
+E:\Source\kingpin\monkey mod 151\p_hud.c(386) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\p_hud.c(607) : warning C4701: local variable 'player' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_hud.c(1120) : warning C4701: local variable 'player' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\p_hud.c(1777) : warning C4706: assignment within conditional expression
+p_weapon.c
+q_shared.c
+E:\Source\kingpin\monkey mod 151\q_shared.h(151) : warning C4131: 'DotProduct' : uses old-style declarator
+E:\Source\kingpin\monkey mod 151\q_shared.c(284) : warning C4100: 'f' : unreferenced formal parameter
+E:\Source\kingpin\monkey mod 151\q_shared.c(445) : warning C4100: 'p' : unreferenced formal parameter
+E:\Source\kingpin\monkey mod 151\q_shared.c(445) : warning C4100: 'emaxs' : unreferenced formal parameter
+E:\Source\kingpin\monkey mod 151\q_shared.c(445) : warning C4100: 'emins' : unreferenced formal parameter
+E:\Source\kingpin\monkey mod 151\q_shared.c(1152) : warning C4127: conditional expression is constant
+E:\Source\kingpin\monkey mod 151\q_shared.c(1233) : warning C4127: conditional expression is constant
+E:\Source\kingpin\monkey mod 151\q_shared.c(1393) : warning C4127: conditional expression is constant
+E:\Source\kingpin\monkey mod 151\q_shared.c(1437) : warning C4127: conditional expression is constant
+E:\Source\kingpin\monkey mod 151\q_shared.c(1485) : warning C4189: 'validstr' : local variable is initialized but not referenced
+tourney.c
+E:\Source\kingpin\monkey mod 151\q_shared.c(1495) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\q_shared.c(1505) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\q_shared.h(151) : warning C4131: 'DotProduct' : uses old-style declarator
+E:\Source\kingpin\monkey mod 151\tourney.c(743) : warning C4514: 'DotProduct' : unreferenced inline function has been removed
+        E:\Source\kingpin\monkey mod 151\q_shared.h(150) : see declaration of 'DotProduct'
+vehicles.c
+E:\Source\kingpin\monkey mod 151\tourney.c(70) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(92) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(152) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(261) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(283) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(308) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(394) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(436) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(479) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(536) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(549) : warning C4706: assignment within conditional expression
+E:\Source\kingpin\monkey mod 151\tourney.c(664) : warning C4706: assignment within conditional expression
+voice.c
+E:\Source\kingpin\monkey mod 151\vehicles.c(44) : warning C4701: local variable 'vehicle' may be used without having been initialized
+E:\Source\kingpin\monkey mod 151\voice.c(356) : warning C4189: 'is_rc' : local variable is initialized but not referenced
+E:\Source\kingpin\monkey mod 151\voice.c(852) : warning C4514: 'DotProduct' : unreferenced inline function has been removed
+        E:\Source\kingpin\monkey mod 151\q_shared.h(150) : see declaration of 'DotProduct'
+voice_bitch.c
+E:\Source\kingpin\monkey mod 151\voice_bitch.c(906) : warning C4514: 'DotProduct' : unreferenced inline function has been removed
+        E:\Source\kingpin\monkey mod 151\q_shared.h(150) : see declaration of 'DotProduct'
+voice_punk.c
+E:\Source\kingpin\monkey mod 151\voice_punk.c(1815) : warning C4514: 'DotProduct' : unreferenced inline function has been removed
+        E:\Source\kingpin\monkey mod 151\q_shared.h(150) : see declaration of 'DotProduct'
+Linking...
+   Creating library c:\cds\Release/gamex86.lib and object c:\cds\Release/gamex86.exp
+
+
+
+<h3>Results</h3>
+gamex86.dll - 0 error(s), 149 warning(s)
+</pre>
+</body>
+</html>

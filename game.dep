@@ -1,0 +1,762 @@
+# Microsoft Developer Studio Generated Dependency File, included by game.mak
+
+.\ai_bitch.c : \
+	".\ai_bitch.h"\
+	".\ai_bitch_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	
+
+.\ai_bum_sit.c : \
+	".\ai_bum_sit.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_punk.h"\
+	
+
+.\ai_dog.c : \
+	".\ai_dog.h"\
+	".\ai_dog_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\ai_punk.c : \
+	".\ai_punk.h"\
+	".\ai_punk_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_punk.h"\
+	
+
+.\ai_runt.c : \
+	".\ai_runt.h"\
+	".\ai_runt_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_punk.h"\
+	
+
+.\ai_shorty.c : \
+	".\ai_shorty.h"\
+	".\ai_shorty_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_punk.h"\
+	
+
+.\ai_thug.c : \
+	".\ai_thug.h"\
+	".\ai_thug_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_punk.h"\
+	
+
+.\ai_thug_sit.c : \
+	".\ai_thug2.h"\
+	".\ai_thug2_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_punk.h"\
+	
+
+.\ai_whore.c : \
+	".\ai_whore.h"\
+	".\ai_whore_tables.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	
+
+.\ep_all.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\ep_crystalpalace.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\ep_log.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\ep_posionville.c : \
+	".\ep_all.h"\
+	".\ep_log.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\ep_radiocity.c : \
+	".\ep_all.h"\
+	".\ep_log.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\ep_shipyards.c : \
+	".\ep_all.h"\
+	".\ep_log.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\ep_skidrow.c : \
+	".\ep_all.h"\
+	".\ep_log.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\ep_steeltown.c : \
+	".\ep_all.h"\
+	".\ep_log.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\ep_trainyard.c : \
+	".\ep_all.h"\
+	".\ep_log.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\file.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_ai.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_func.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\g_ai_ents.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_func.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_ai_fight.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_ai_memory.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\g_cast.c : \
+	".\ai_thug2.h"\
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\G_chase.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_cmds.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\m_player.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\g_combat.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\g_func.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_func.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_items.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_joe_misc.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_main.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\g_misc.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_pawn.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_phys.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_save.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_spawn.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_svcmds.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_target.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_teamplay.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_trigger.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_utils.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\g_weapon.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\m_bbox.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\m_move.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\p_client.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\m_player.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\p_hud.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\p_view.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\m_player.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\p_weapon.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\m_player.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\q_shared.c : \
+	".\q_shared.h"\
+	
+
+.\tourney.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\vehicles.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\veh_defs.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\voice.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	".\voice_bitch.h"\
+	".\voice_punk.h"\
+	
+
+.\voice_bitch.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
+
+.\voice_punk.c : \
+	".\ep_all.h"\
+	".\file.h"\
+	".\g_ai.h"\
+	".\g_local.h"\
+	".\g_nav.h"\
+	".\g_teamplay.h"\
+	".\game.h"\
+	".\q_shared.h"\
+	".\vehicles.h"\
+	".\voice.h"\
+	
