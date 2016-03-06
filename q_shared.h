@@ -131,7 +131,7 @@ extern vec3_t vec3_origin;
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 
 // microsoft's fabs seems to be ungodly slow...
-//float Q_fabs (float f);
+float Q_fabs (float f);
 //#define	fabs(f) Q_fabs(f)
 #if !defined C_ONLY && !defined __linux__
 extern long Q_ftol( float f );
@@ -1467,3 +1467,4 @@ typedef struct
 	int			weapon_usage;
  	
 } player_state_t;
+

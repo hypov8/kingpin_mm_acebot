@@ -470,6 +470,8 @@ void Cmd_Spec_f (edict_t *self)
 	} else
 		meansOfDeath = MOD_SUICIDE;
 
+    self->client->pers.fakeThief = 0;
+
 	self->client->pers.team = 0;
 	self->client->pers.spectator = SPECTATING;
 	
@@ -498,6 +500,7 @@ void Cmd_Join_f (edict_t *self, char *teamcmd)
 	}
 
 	strcpy( varteam, teamcmd );
+    self->client->pers.fakeThief = 0;
 
 	// search for the team-name
 
@@ -2405,6 +2408,7 @@ void Cmd_Use_f (edict_t *ent)
                
                 ent->client->resp.acchit = playerlist[index].acchit;
                 ent->client->resp.accshot = playerlist[index].accshot;
+                ent->client->pers.mute = playerlist[index].mute;
                 //do the fav too
                 for(z=0;z<8;z++)
                 {
@@ -2821,7 +2825,10 @@ void Cmd_Activate_f (edict_t *ent)
 				else	// disable it
 				{
 					if(ent->client->update_cam>0)
-						ent->client->ps = ent->client->temp_ps;
+                    {
+					//	ent->client->ps = ent->client->temp_ps;
+                        memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
+                    }
 					ent->client->chase_target = NULL;
 					ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
 				}
@@ -3777,6 +3784,9 @@ void Cmd_Say_f (edict_t *ent, qboolean team, qboolean arg0)
 		if (!gi.argv(1) || !*gi.argv(1)) //dont print empty chat
 			return;
 	}
+
+    if (ent->client->pers.mute) return;
+
 #if 0
 	// don't let us talk if we were just kicked
 	ip = Info_ValueForKey( ent->client->pers.userinfo, "ip" );
@@ -4058,7 +4068,7 @@ void Cmd_CommandList_f (edict_t *ent)
 		cprintf(ent, PRINT_HIGH,"matchsetup, matchscore, matchstart, matchend\n");
 		cprintf(ent, PRINT_HIGH,"publicsetup, resetserver, changemap, maplist\n");
 	} else
-		cprintf(ent, PRINT_HIGH,"resetserver, changemap, maplist\n");
+		cprintf(ent, PRINT_HIGH,"resetserver, changemap, maplist, mute\n");
 	cprintf(ent, PRINT_HIGH,"settimelimit, setfraglimit, setcashlimit, setidletime\n");
 	cprintf(ent, PRINT_HIGH,"team1name, team2name, toggle_asc, curselist, toggle_spec\n");
 	if (enable_password) cprintf(ent, PRINT_HIGH,"setpassword removepassword\n");
@@ -4728,18 +4738,30 @@ void Cmd_Resign_f (edict_t *ent)
 
 void checkkick(edict_t *ent,char *cmd, char *action)
 {
-	int a;
+	int a, reason;
 	char *name;
-	if (gi.argc()!=3) {
-		cprintf(ent,PRINT_HIGH,"Usage: %s <userid>\n",cmd);
+
+	if (gi.argc()<3 || gi.argc()>4) {
+		cprintf(ent,PRINT_HIGH,"Usage: %s <userid> <reason>\nNOTE: <reason> is optional\n",cmd);
 		return;
 	}
+
+ //   cprintf(ent,PRINT_HIGH,"There are %i argc used\n", gi.argc());
+
+    if(gi.argc()==4) reason = 1;
+
 	name=gi.argv(2);
 	a=atoi(name);
 	if (!strcmp(name,"0") || (a>0 && a<maxclients->value)) {
 		a++;
 		if (g_edicts[a].inuse && g_edicts[a].client)
-			gi.bprintf(PRINT_HIGH,"%s is being %s by %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname);
+        {
+		//	gi.bprintf(PRINT_HIGH,"%s is being %s by %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname);
+             if(reason)
+    			gi.bprintf(PRINT_HIGH,"%s is being %s by %s because %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname,gi.argv(3));
+            else
+                gi.bprintf(PRINT_HIGH,"%s is being %s by %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname);
+        }
 		else
 			cprintf(ent,PRINT_HIGH,"Client %s is not active\n",name);
 	} else {
@@ -4749,7 +4771,13 @@ void checkkick(edict_t *ent,char *cmd, char *action)
 		if (a>maxclients->value)
 			cprintf(ent,PRINT_HIGH,"Userid %s is not on the server\n",name);
 		else
-			gi.bprintf(PRINT_HIGH,"%s is being %s by %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname);
+        {
+            if(reason)
+    			gi.bprintf(PRINT_HIGH,"%s is being %s by %s because %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname,gi.argv(3));
+            else
+                gi.bprintf(PRINT_HIGH,"%s is being %s by %s\n",g_edicts[a].client->pers.netname,action,ent->client->pers.netname);
+
+        }
 	}
 }
 
@@ -4778,6 +4806,40 @@ void dumpuser(edict_t *ent, edict_t *target)
 
 }
 
+void Cmd_Mute_f (edict_t *ent, char *value)
+{
+    if (!value || !*value)
+    {
+bah:      
+        cprintf (ent,PRINT_HIGH,"Unable to find client id match\n");
+        return; 
+    }
+    if (ent->client->pers.admin > ELECTED || ent->client->pers.rconx[0]) 
+    {
+        	int		i;
+	        i = atoi (value);
+            if(i<0 || (i+1)>maxclients->value) goto bah;
+            if(g_edicts[i+1].inuse && g_edicts[i+1].client)
+            {
+                if(g_edicts[i+1].client->pers.mute == 0)
+                {
+                    cprintf(ent,PRINT_HIGH,"Enabled Mute On: %s\n",g_edicts[i+1].client->pers.netname);
+				    cprintf(&g_edicts[i+1], PRINT_HIGH, "Admin has 'muted' you\n");
+                    g_edicts[i+1].client->pers.mute = 1; 
+                }
+                else
+                {
+                    cprintf(ent,PRINT_HIGH,"Disabled Mute On: %s\n",g_edicts[i+1].client->pers.netname);
+				    cprintf(&g_edicts[i+1], PRINT_HIGH, "Admin has 'unmuted' you\n");
+                    g_edicts[i+1].client->pers.mute = 0; 
+                }
+            }
+
+    }
+    else
+		cprintf(ent,PRINT_HIGH,"You do not have admin password or rconx\n");
+}
+
 void Cmd_Rcon_f (edict_t *ent)
 {
 	char *cmd,cmdline[256];
@@ -4798,10 +4860,22 @@ void Cmd_Rcon_f (edict_t *ent)
 	if (!Q_strncasecmp(cmd,"rcon",4)) return;
 
 	strcpy(cmdline,cmd);
+
+    
+    
+       
 	for (a=2;a<gi.argc();a++) {
-		strcat(cmdline," \"");
+
+        // reason hack
+        if((!Q_stricmp(cmd,"kick") || !Q_stricmp(cmd,"kickban")) 
+        && gi.argc()==4 
+        && a==3) break;
+    
+ 		strcat(cmdline," \"");
 		strcat(cmdline,gi.argv(a));
 		strcat(cmdline,"\"");
+
+   
 	}
 	gi.dprintf("rconx (%s:%s) %s\n",ent->client->pers.netname,ent->client->pers.rconx,cmdline);
 
@@ -4877,12 +4951,24 @@ void Cmd_Rcon_f (edict_t *ent)
 	}
 	else if (!Q_stricmp(cmd,"nopassword")) gi.cvar_set("password","");
     // add reason code here
-	else if (!Q_stricmp(cmd,"kick")) checkkick(ent,cmd,"kicked");
-    else if (!Q_stricmp(cmd,"kickban")) checkkick(ent,cmd,"kicked & banned");
-    else if (!Q_stricmp(cmd,"banip")) 	
+	else if (!Q_stricmp(cmd,"kick")) 
+    {
+        checkkick(ent,cmd,"kicked");
+    }
+    else if (!Q_stricmp(cmd,"kickban")) 
+    {
+        checkkick(ent,cmd,"kicked & banned");
+    }
+    else if (!Q_stricmp(cmd,"banip")) 
+    {
         Cmd_BanDicks_f(ent, 1);
+        return;
+    }
     else if (!Q_stricmp(cmd,"banname")) 
+    {
         Cmd_BanDicks_f(ent, 0);
+        return;
+    }
 	else if (gi.argc()==2) {
 		char *val=gi.cvar(cmd,"",0)->string;
 		if (val[0]) {
@@ -4936,7 +5022,6 @@ void ErrorMSGBox(edict_t *ent, char *msg)
     gi.unicast(ent, true);
 }
 
-
 /*
 =================
 ClientCommand
@@ -4946,7 +5031,6 @@ ClientCommand
 void ClientCommand (edict_t *ent)
 {
 	char	*cmd;
-	client_persistant_t *pers;
 
 	if (!ent->client)
 		return;		// not fully in game yet
@@ -4954,14 +5038,15 @@ void ClientCommand (edict_t *ent)
 	if (!ent->inuse)
 		return;
 
-	pers=&(ent->client->pers);
 	cmd = gi.argv(0);
 
    	if (!strcmp(cmd,lockpvs)) {
-	//	char *cmd3=gi.argv(3);
+	
         char *cmd2=gi.argv(2);
         cmd=gi.argv(1);
-		if (!cmd || atof(cmd) || !cmd2 || atof(cmd2)!=1.0/* || !cmd3 || atof(cmd3)!=1.0*/) {
+
+        
+		if (!cmd || atof(cmd) || !cmd2 || atof(cmd2)!=1.0f) {
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&1) {
 #endif
@@ -4981,8 +5066,11 @@ void ClientCommand (edict_t *ent)
 	}
 
 	if (!strcmp(cmd,scaletime)) {
-		cmd=gi.argv(1);
-		if (!cmd || atof(cmd)!=1.0) {
+		char *cmd2=gi.argv(2);
+        cmd=gi.argv(1);
+
+        
+  		if (!cmd || atof(cmd)!=1.0f || !cmd2 || atof(cmd2)!=0.0f) {
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&2) {
 #endif
@@ -5001,18 +5089,20 @@ void ClientCommand (edict_t *ent)
 		return;
 	}
 
+
 	if (!strcmp(cmd,locktex)) {
         char *cmd3=gi.argv(3);
         char *cmd2=gi.argv(2);
 		cmd=gi.argv(1);
 
-        if(cmd3 && atof(cmd3)==1.0) ent->client->pers.polyblender = 0;
+        
+        if(cmd3 && atof(cmd3)==1.0f) ent->client->pers.polyblender = 0;
 
-		if (!cmd || atof(cmd)!=0.0 || !cmd2 || atof(cmd2)<16.0 || !cmd3 || atof(cmd3)!=1.0) {
+		if (!cmd || atof(cmd)!=0.0f || !cmd2 || atof(cmd2)<16.0f || !cmd3 || atof(cmd3)!=1.0f) {
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&3) {
 #endif
-                if(!cmd3 || atof(cmd3)==0.0)
+                if(!cmd3 || atof(cmd3)==0.0f)
                 {
                     if (kick_flamehack->value || (ent->client->pers.spectator==SPECTATING && no_spec->value
                            && (level.modeset==MATCH || level.modeset==TEAMPLAY || level.modeset==FREEFORALL))) 
@@ -5020,7 +5110,7 @@ void ClientCommand (edict_t *ent)
                         KICKENT(ent,"%s is being kicked for having a flame hack!\n");
                     }
                 }
-                else if(atof(cmd3)==2.0)
+                else if(atof(cmd3)==2.0f)
                 {
                     ent->client->pers.polyblender = 1;
                 }
@@ -5040,12 +5130,14 @@ void ClientCommand (edict_t *ent)
 		return;
 	}
 
+
     if (!strcmp(cmd,lockfoot)) {
         char *cmd2=gi.argv(2);
         cmd=gi.argv(1);
-        if (!cmd || atof(cmd)<120.0 || !cmd2 || atof(cmd2)<120.0) {
+
+          if (!cmd || atof(cmd)<120.0f || !cmd2 || atof(cmd2)<120.0f) {
             gi.WriteByte(13);
-            if(atof(cmd)<120.0)
+            if(atof(cmd)<120.0f)
                 gi.WriteString("cl_forwardspeed 160\n");
             else
                 gi.WriteString("cl_sidespeed 140\n");
@@ -5053,6 +5145,23 @@ void ClientCommand (edict_t *ent)
         }
         return;
     }
+
+
+    if (!strcmp(cmd,lockmouse)) {
+        cmd=gi.argv(1);
+
+     
+        if (!cmd || Q_fabs(atof(cmd))!=0.02200f) {
+            gi.WriteByte(13);
+            if(atof(cmd) < 0.0f)
+                gi.WriteString("m_yaw 0.022\nm_pitch -0.022\n");
+            else
+                gi.WriteString("m_yaw 0.022\nm_pitch 0.022\n");
+            gi.unicast(ent, true);
+        }
+        return;
+    }
+
 
 	if (Q_stricmp (cmd, "rconx_login") == 0) {
 		Cmd_Rcon_login_f (ent,gi.argv(1));
@@ -5330,6 +5439,10 @@ void ClientCommand (edict_t *ent)
 		Cmd_SetTeamName_f(ent,1,gi.argv(1)); 
 	else if (Q_stricmp (cmd, "team2name") == 0) 
 		Cmd_SetTeamName_f(ent,2,gi.argv(1)); 
+
+    // mute
+    else if (Q_stricmp (cmd, "mute") == 0) 
+		Cmd_Mute_f(ent,gi.argv(1)); 
 
 	//taunt commands
 	else if (Q_stricmp (cmd, "kingpin") == 0) 

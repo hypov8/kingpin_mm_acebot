@@ -305,6 +305,7 @@ void safebag_touch( edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 			// let everyone know how much was deposited
 			amount = team_cash[self->style] - precash;
 			gi.bprintf( PRINT_MEDIUM, "%s deposited $%i\n", other->client->pers.netname, amount );
+            other->client->pers.fakeThief = 0;
 
 			last_safe_deposit[self->style] = level.time;
 		}
@@ -335,7 +336,7 @@ void safebag_touch( edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 			gi.positioned_sound(self->s.origin, self, CHAN_ITEM, gi.soundindex("misc/cashmatch_alarm.wav"), 1, 1, 0);
 
 			// let everyone know how much was stolen
-			amount = precash - team_cash[self->style];
+			other->client->pers.fakeThief = amount = precash - team_cash[self->style];
 			gi.bprintf( PRINT_MEDIUM, "%s stole $%i from %s's safe!\n", other->client->pers.netname, amount, team_names[self->style] );
 
 			last_safe_withdrawal[self->style] = level.time;

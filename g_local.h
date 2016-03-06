@@ -24,6 +24,8 @@
 // Episode specific defines
 #include "ep_all.h"
 
+#include <ctype.h>
+
 // Papa 10.6.99 
 
 #define for_each_player(JOE_BLOGGS,INDEX) for(INDEX=1;INDEX<=maxclients->value;INDEX++)if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse && JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
@@ -84,7 +86,7 @@
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Monkey Mod v1.51"
+#define	GAMEVERSION	"Monkey Mod v1.52"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -913,6 +915,7 @@ extern	gitem_t	itemlist[];
 //
 void Cmd_Help_f (edict_t *ent, int page);
 void Cmd_Score_f (edict_t *ent);
+void Cmd_BanDicks_f(edict_t *ent, int type);
 //void InitMaps (void);
 
 
@@ -1349,7 +1352,9 @@ typedef struct
 	char		ip[32];
 	char		rconx[32];
 
-    int         polyblender;
+	int         polyblender;
+    int         fakeThief;
+    int         mute;
 
 #define TEXTBUFSIZE 2048
 	char		textbuf[TEXTBUFSIZE];
@@ -1379,7 +1384,7 @@ typedef struct
 
 	int			accshot,acchit,fav[8];
 
-	int			checkdelta,checkpvs,checktime,checktex,checkfoot;
+	int			checkdelta,checkpvs,checktime,checktex,checkfoot,checkmouse;
 #ifdef DOUBLECHECK
 	int			checked;
 #endif
@@ -1994,6 +1999,7 @@ typedef struct // stores player info if they disconnect
 	char skin[64];
 	int	time;
     int	accshot,acchit,fav[8];
+    int mute;
 } player_t;
 
 extern player_t playerlist[64];
@@ -2024,7 +2030,7 @@ extern ban_t	rconx_pass[100];
 #define TIMENAME " time remaining"
 
 
-extern char lockpvs[8],scaletime[8],locktex[8],lockfoot[8];
+extern char lockpvs[8],scaletime[8],locktex[8],lockfoot[8],lockmouse[8];
 
 void cprintf(edict_t *ent, int printlevel, char *fmt, ...);
 

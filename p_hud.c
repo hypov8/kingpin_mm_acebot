@@ -3,8 +3,8 @@
 #define ENABLE_INDEX_NAMES		1
 
 #define HEADERMESSAGE\
-	"this server is running the "GAMEVERSION,\
-	"www.monkeymod.com",
+	"This server is running the "GAMEVERSION,\
+	"http://www.monkeymod.com",
 
 #define GAMEMODEMESSAGE\
 	if ((int)teamplay->value == 0) {\
@@ -24,15 +24,7 @@
 			Com_sprintf (temp, sizeof(temp), "This server is running Team Deathmatch");\
 	}
 
-/*#define SHOWCHASENAME\
-	if (ent->client->chase_target && ent->client->chase_target->client)	{\
-		ent->client->update_chase = false;\
-		Com_sprintf(entry, sizeof(entry), "xm -80 yb -68 dmstr 773 \"Chasing %s\" xm -230 yb -40 dmstr 552 \".. use [ and ] to cycle, ACTIVATE to disable ..\" ",\
-			ent->client->chase_target->client->pers.netname);\
-		j = strlen(entry);\
-		strcpy (string + stringlength, entry);\
-		stringlength += j;\
-	}*/
+
 #define SHOWCHASENAME\
 	if (ent->client->chase_target && ent->client->chase_target->client)	{\
 		ent->client->update_chase = false;\
@@ -940,7 +932,7 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 				tag = "990";
 			else if (cl_ent->client->pers.rconx[0])
 				tag = "096";
-		    else if (cl_ent->client->pers.admin>NOT_ADMIN)
+			else if (cl_ent->client->pers.admin>NOT_ADMIN)
                 tag = "900"; //red
 			else
 				tag = "999";	// fullbright
@@ -1524,7 +1516,7 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 			tag = "990";
 		else if (cl_ent->client->pers.rconx[0])
 			tag = "096";
-	    else if (cl_ent->client->pers.admin>NOT_ADMIN)
+		else if (cl_ent->client->pers.admin>NOT_ADMIN)
              tag = "900";//red
 		else
 			tag = "999";	// fullbright

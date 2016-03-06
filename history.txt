@@ -519,4 +519,69 @@ Changes from monkey cds 1.50b to monkey cds 1.50c
  * no footsteps fix
    - fixed a problem where players could misuse a command to make their footsteps silent
 
+
+Changes from monkey cds 1.50c to monkey cds 1.51
+================================================
+
+ * clan tag detection by Snap
+   - added code that will detect your clans tag and change the team name on the scoreboard
+     to that clan tag. The clan tags will also be displayed in GameSpy cvars as "team names".
+     For this feature to work the server needs to be in MatchMode and there needs to be at
+     least 2 players on each team that have at least 75% of matched tags.
+
+
+Changes from monkey cds 1.51 to monkey cds 1.51a
+================================================
+
+ * small bug fix
+   - there was a conflict with some of the code which made people use gl_polyblend hack
+     without getting kicked, now this is fixed. 
+
+ * timeouts
+   - decreased the chance of timeouts by optmizing the server side check code and also
+     by making the server check you several times (not just once) before it marks you 
+     as timed out. Also timeout time increased to 20 seconds.
+
+
+Changes from monkey cds 1.51a to monkey cds 1.52
+================================================
  
+ * func_killbox fix
+   - killbox was using TELEFRAG_MOD so when someone was killed with it no death message got 
+     printed, so this was changed to use TRIGGER_HURT_MOD
+
+ * cash thief exploit fix
+   - now if a person steals money from the other team and jump over the edge or into lava the
+     money automatically gets returned into the teams safe.
+
+ * bagman spawning fixed
+   - completelly rewriten the spawn selection code so now you will only ever spawn in your
+     teams spawn points, not in opposition or info_player_start
+
+ * mute command
+   - with it you can mute players (stop them from chatting). This will only work until map 
+     change. To unmute the client just mute them again. Note clientid can be seen by using the
+     rcon/rconx status command.
+
+     Usage: mute clientid
+
+ * kick and kickban reason
+   - rconx users can kick and kickban people now with an optional reason message, just incase
+     the people who are getting kicked or kickbanned want to know why
+     
+     Usage: rconx kick(ban) <clientid> <reason>
+
+ * banip and banname usable from rcon now
+   - using the sv command, banip and banname can be both used
+  
+     Usage example (from game): rcon password sv banip 192.168.0.1
+                                rcon password sv banname Loser
+                (from console): sv banip 192.168.0.1
+                                sv banname Loser
+ 
+ * eyecam bug fixed
+   - fixed a problem where the spectators would have the same score in game browsers like
+     GameSpy and All Seeing Eye as the people they were following. This fixes that problem.
+
+ * misc cheat fixes
+

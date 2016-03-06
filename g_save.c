@@ -293,7 +293,7 @@ field_t		castmemoryfields[] =
 };
 
 
-char lockpvs[8],scaletime[8],locktex[8],lockfoot[8];
+char lockpvs[8],scaletime[8],locktex[8],lockfoot[8],lockmouse[8];
 
 /*
 ============
@@ -434,6 +434,8 @@ void InitGame (void)
 	burn_b			= gi.cvar("burn_b", "1.0", 0);
 
 	timescale		= gi.cvar("timescale", "1.0", 0);
+
+    // speed hack fix
 	gi.cvar_set("sv_enforcetime","1");
 
 	teamplay		= gi.cvar("teamplay", "0", CVAR_LATCH|CVAR_SERVERINFO);
@@ -513,6 +515,8 @@ void InitGame (void)
 	locktex[i]=0;
     for (i=0;i<7;i++) lockfoot[i]='a'+(rand()%26);
     lockfoot[i]=0;
+    for (i=0;i<7;i++) lockmouse[i]='a'+(rand()%26);
+    lockmouse[i]=0;
 }
 
 //=========================================================
