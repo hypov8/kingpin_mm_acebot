@@ -190,11 +190,18 @@ void ACEAI_PickLongRangeGoal(edict_t *self)
 	///////////////////////////////////////////////////////
 	for(i=0;i<num_items;i++)
 	{
-		if(item_table[i].ent == NULL || item_table[i].ent->solid == SOLID_NOT) // ignore items that are not there.
+		if(item_table[i].ent == NULL) // ignore items that are not there.
 			continue;
-		
+		if (!item_table[i].ent->solid)
+			continue;
+		if (item_table[i].ent->solid == SOLID_NOT) // ignore items that are not there.
+			continue;
+
 		cost = ACEND_FindCost(current_node,item_table[i].node);
 		
+		if (node == INVALID) 
+			continue;
+
 		if(cost == INVALID || cost < 2) // ignore invalid and very short hops
 			continue;
 	
