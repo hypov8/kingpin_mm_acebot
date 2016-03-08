@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{00f4bb3a-e7e7-48fa-95a7-30b9713760d8}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{f478d6cf-fa40-43b7-9c43-b6416e16d2de}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{bbfb8b39-011c-41dd-b5f5-34a71fba058f}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Source Files\acesrc">
+      <UniqueIdentifier>{c64a922b-9bb7-4286-adb4-b799b6b8a830}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ai_bitch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_bum_sit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_dog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_punk.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_runt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_shorty.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_thug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_thug_sit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_whore.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_all.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_crystalpalace.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_posionville.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_radiocity.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_shipyards.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_skidrow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_steeltown.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_trainyard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai_ents.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai_fight.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai_memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_cast.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="G_chase.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_cmds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_combat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_func.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_items.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_joe_misc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_misc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_pawn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_phys.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_save.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_spawn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_svcmds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_target.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_teamplay.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_trigger.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_weapon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gslog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="m_bbox.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="m_move.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_client.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_hud.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_view.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="p_weapon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="q_shared.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tourney.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vehicles.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="voice.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="voice_bitch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="voice_punk.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g_antilag.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_ai.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_cmds.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_compress.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_items.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_movement.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_nodes.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="acesrc\acebot_spawn.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ctf.c">
+      <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ai_bitch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_bitch_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_bum_sit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_dog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_dog_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_punk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_punk_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_runt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_runt_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_shorty.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_shorty_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_thug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_thug2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_thug2_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_thug_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_whore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_whore_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ep_all.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ep_log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="g_ai.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="g_func.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="g_local.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="g_nav.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="g_teamplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gslog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="q_shared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdlog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="veh_defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vehicles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="voice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="voice_bitch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="voice_punk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="acesrc\acebot.h">
+      <Filter>Source Files\acesrc</Filter>
+    </ClInclude>
+    <ClInclude Include="g_ctf.h">
+      <Filter>Source Files\acesrc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="game.def">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="history.txt" />
+  </ItemGroup>
+</Project>

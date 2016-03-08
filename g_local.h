@@ -26,20 +26,24 @@
 
 #include <ctype.h>
 
+// ACEBOT_ADD
+//#include "acesrc\acebot.h"
+// ACEBOT_END
+
 // Papa 10.6.99 
 
 #define for_each_player(JOE_BLOGGS,INDEX) for(INDEX=1;INDEX<=maxclients->value;INDEX++)if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse && JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
 
 // Theses are the various mode a server can be in
 
-#define FREEFORALL			0
-#define MATCHSETUP			2
+#define FREEFORALL			0 //hypo confused??
 #define FINALCOUNT			1
-#define MATCH				3
+#define MATCHSETUP			2
+#define DEATHMATCH_RUNNING			3 //game is active and FFA
 #define MATCHEND			4
-#define STARTINGMATCH		5
-#define TEAMPLAY			6
-#define STARTINGPUB			7
+#define DEATHMATCH_SPAWNING		5 //start dm
+#define TEAMPLAY_RUNNING			6 //game is active and teams
+#define TEAMPLAY_SPAWNING		7 //pub? norma deathmatch?
 #define	ENDMATCHVOTING		8
 
 // admin types
@@ -86,7 +90,7 @@
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Monkey Mod v1.52"
+#define	GAMEVERSION	"Monkey Mod v1.52 hy1"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -507,6 +511,8 @@ typedef struct
 	int		is_spawn;  
 	int		player_num; 
 
+	qboolean bots_spawned; //hypov8 load bots once only while loading players
+
     // snap - team tags
 	int		manual_tagset;
 
@@ -576,6 +582,33 @@ typedef struct
 	void		(*endfunc)(edict_t *);
 } moveinfo_t;
 // END JOSEPH
+
+
+
+// ACEBOT_ADD
+#include "acesrc\acebot.h"
+
+#if 1
+typedef struct //bot->acebot.xxx
+{
+	int			new_target;		//if new target. dont shoot straight away
+	int			old_target;		//old player target. shoot if more than xx seconds
+	int			botNewTargetTime; //timer to allow bot to start attacking
+	int			lastTeamSpawned; // will spawn bots on opisite team to last bot(when adding null values)
+	cvar_t		*game_dir;		//add game dir to bot libary
+	//vec3_t		rocketOwner;		//origin for boot to look at for strafe/dodge
+} acebot_t;
+#endif
+// ACEBOT_END
+
+
+
+
+
+
+
+
+
 
 typedef struct
 {
@@ -798,6 +831,12 @@ extern	cvar_t	*filterban;
 
 extern	cvar_t	*sv_gravity;
 extern	cvar_t	*sv_maxvelocity;
+
+// NET_ANTILAG	//et-xreal antilag
+extern	cvar_t	*sv_antilag_noexp;
+extern	cvar_t	*sv_antilag_botdelay;
+extern	cvar_t	*sv_antilag;
+// END_LAG
 
 extern	cvar_t	*gun_x, *gun_y, *gun_z;
 extern	cvar_t	*sv_rollspeed;
@@ -1353,8 +1392,8 @@ typedef struct
 	char		rconx[32];
 
 	int         polyblender;
-    int         fakeThief;
-    int         mute;
+	int         fakeThief;
+	int         mute;
 
 #define TEXTBUFSIZE 2048
 	char		textbuf[TEXTBUFSIZE];
@@ -1384,11 +1423,30 @@ typedef struct
 
 	int			accshot,acchit,fav[8];
 
-	int			checkdelta,checkpvs,checktime,checktex,checkfoot,checkmouse;
+	int			checkdelta, checkpvs, checktime, checktex, checkfoot, checkmouse;
+
+#ifdef NOT_ZOID
+	qboolean	spectator;			// client is a spectator
+#endif
 #ifdef DOUBLECHECK
 	int			checked;
 #endif
 } client_respawn_t;
+
+// NET_ANTILAG	//et-xreal antilag
+typedef struct
+{
+	vec3_t          mins;
+	vec3_t          maxs;
+
+	vec3_t          origin;
+
+	int             time;
+} clientMarker_t;
+
+#define MAX_CLIENT_MARKERS 10 //for 250 ping and 20fps //or 500 ping & 10fps
+							//kp seems like its at 10fps???
+// END_LAG
 
 // this structure is cleared on each PutClientInServer(),
 // except for 'client->pers'
@@ -1515,7 +1573,12 @@ struct gclient_s
 	player_state_t temp_ps;
 	unsigned int update_cam;
 	int chasetype;
-
+	
+// NET_ANTILAG	//et-xreal antilag 
+	int             topMarker;							//latest in the stack of player old frame data
+	clientMarker_t  clientMarkers[MAX_CLIENT_MARKERS];	//hypov8 old frame data stored, cycles through next when full
+	clientMarker_t  backupMarker;						//hypov8 holds old frame. temp
+// END_LAG
 };
 
 
@@ -1593,7 +1656,7 @@ struct edict_s
 
 	float		timestamp;
 
-	float		angle;			// set in qe3, -1 = up, -2 = down
+	float		angle;			// set in qe4, -1 = up, -2 = down
 	char		*target;
 	char		*targetname;
 	char		*killtarget;
@@ -1692,6 +1755,33 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	cast_info_t		cast_info;
+
+	// ACEBOT_ADD
+	qboolean is_bot;
+	qboolean is_jumping;
+
+	// For movement
+	vec3_t move_vector;
+	float next_move_time;
+	float wander_timeout;
+	float suicide_timeout;
+
+	// For node code
+	int current_node; // current node
+	int goal_node; // current goal node
+	int next_node; // the node that will take us one step closer to our goal
+	int node_timeout;
+	int last_node;
+	int tries;
+
+
+
+	int state;
+
+	acebot_t acebot; //hypov8 messy. move this to a seperate group
+
+	// ACEBOT_END
+
 
 // BEGIN:	Xatrix/Ridah/Navigator/17-mar-1998
 	nav_data_t			nav_data;			// CNS-specific data, present for all entities
@@ -1867,6 +1957,11 @@ struct edict_s
 
 	float		stand_if_idle_time;		// stand if crouching and not doing much
 
+// NET_ANTILAG	//et-xreal antilag
+	int			antilagPingTimer; //hypov8 used to store delay(ping) in missiles for traces
+	qboolean	antilagToTrace;		//force temp entites to trace old players (flane chunk, grenade exp etc)
+// END_LAG
+
 //  Papa 	
 	int			vote;  // stores the players vote
 	int			switch_teams_frame;  // slow down how fast a player can switch teams
@@ -1929,6 +2024,13 @@ extern int	num_followers;
 extern	int				num_object_bounds;
 extern	object_bounds_t	*g_objbnds[MAX_OBJECT_BOUNDS];
 
+// NET_ANTILAG	//et-xreal antilag
+// g_antilag.c
+void            G_HistoricalTraceBegin(edict_t * ent, edict_t * owner);
+void            G_HistoricalTraceEnd(edict_t * ent, edict_t * owner);
+void            G_ResetMarkers(edict_t * ent);
+void            G_StoreClientPosition(edict_t * ent);
+// END_LAG
 
 // Papa 10.11.99 my globals phear them
 
@@ -1999,7 +2101,7 @@ typedef struct // stores player info if they disconnect
 	char skin[64];
 	int	time;
     int	accshot,acchit,fav[8];
-    int mute;
+	int mute;
 } player_t;
 
 extern player_t playerlist[64];
@@ -2030,7 +2132,7 @@ extern ban_t	rconx_pass[100];
 #define TIMENAME " time remaining"
 
 
-extern char lockpvs[8],scaletime[8],locktex[8],lockfoot[8],lockmouse[8];
+extern char lockpvs[8], scaletime[8], locktex[8], lockfoot[8], lockmouse[8];
 
 void cprintf(edict_t *ent, int printlevel, char *fmt, ...);
 

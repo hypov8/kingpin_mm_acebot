@@ -14,23 +14,33 @@ void UpdateChaseCam(edict_t *ent)
 	vec3_t angles;
 
 	if(ent->client->update_cam==0)
-    {
-	//	ent->client->temp_ps = ent->client->ps;
-        memcpy(&ent->client->temp_ps,&ent->client->ps,sizeof(player_state_t)); 
-    }
+	{
+		//	ent->client->temp_ps = ent->client->ps;
+		memcpy(&ent->client->temp_ps, &ent->client->ps, sizeof(player_state_t));
+	}
 
 	ent->client->update_cam++;
 
 	// is our chase target gone?
-	if (!ent->client->chase_target->inuse) {
-		if(ent->client->update_cam>0)
-        {
-		//	ent->client->ps = ent->client->temp_ps;
-            memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
+	if (!ent->client->chase_target->inuse
+		|| ent->client->chase_target->client->pers.spectator == SPECTATING)
+	{
+		if(ent->client->update_cam > 0)
+		{
+			//	ent->client->ps = ent->client->temp_ps;
+			memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
 
-        }
+		}
 		ent->client->chase_target = NULL;
 		ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+	//hypo copy from tourney
+		if (ent->client->flashlight) ent->client->flashlight = false;
+		HideWeapon(ent);
+		ent->solid = SOLID_NOT;
+		ent->svflags |= SVF_NOCLIENT;
+		ent->client->pers.spectator = SPECTATING;
+		ent->movetype = MOVETYPE_NOCLIP;
+	//end
 		return;
 	}
 	
@@ -46,10 +56,10 @@ void UpdateChaseCam(edict_t *ent)
 		ent->client->chasetype=1;
 
 		if(ent->client->update_cam>0)
-        {
-		//	ent->client->ps = ent->client->temp_ps;
-            memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
-        }
+		{
+			//	ent->client->ps = ent->client->temp_ps;
+			memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
+		}
 			
 		VectorCopy(targ->client->v_angle, angles);
 		if (angles[PITCH] > 56)
@@ -87,11 +97,11 @@ void UpdateChaseCam(edict_t *ent)
 		if(ent->client->chasetype!=2)
 		{
 			if(ent->client->update_cam>0)
-            {
-			//	ent->client->ps = ent->client->temp_ps;
-                memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
-            }
-		//	gi.cprintf(ent, PRINT_HIGH, ":)\n");
+			{
+				//	ent->client->ps = ent->client->temp_ps;
+				memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
+			}
+		//	safe_cprintf(ent, PRINT_HIGH, ":)\n");
 			ent->client->chasetype=2;
 		}
 		VectorCopy(ent->client->v_angle, angles);
@@ -120,10 +130,9 @@ void UpdateChaseCam(edict_t *ent)
 		
 		ent->client->chasetype=3;
 		//mad hack lol
-
-        memcpy(&ent->client->ps,&targ->client->ps,sizeof(player_state_t)); 
-        ent->client->ps.stats[STAT_FRAGS]=0;
-	//	ent->client->ps = targ->client->ps;
+		memcpy(&ent->client->ps, &targ->client->ps, sizeof(player_state_t));
+		ent->client->ps.stats[STAT_FRAGS] = 0;
+		//	ent->client->ps = targ->client->ps;
 		
 		VectorCopy(targ->client->v_angle, angles);
 		AngleVectors (angles, forward, right, up);
@@ -186,9 +195,9 @@ void ChaseNext(edict_t *ent)
 	{
 		if(ent->client->update_cam>0)
 		{
-		//	ent->client->ps = ent->client->temp_ps;
-		//	gi.bprintf (PRINT_HIGH, "Next: Old PS == New PS\n");
-            memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
+			//	ent->client->ps = ent->client->temp_ps;
+			//	gi.bprintf (PRINT_HIGH, "Next: Old PS == New PS\n");
+			memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
 		}
 		ent->client->chase_target = NULL;
 		ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
@@ -230,9 +239,9 @@ void ChasePrev(edict_t *ent)
 	{
 		if(ent->client->update_cam>0)
 		{
-		//	ent->client->ps = ent->client->temp_ps;
-		//	gi.bprintf (PRINT_HIGH, "Prev: Old PS == New PS\n");
-            memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
+			//	ent->client->ps = ent->client->temp_ps;
+			//	gi.bprintf (PRINT_HIGH, "Prev: Old PS == New PS\n");
+			memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
 		}
 		ent->client->chase_target = NULL;
 		ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;

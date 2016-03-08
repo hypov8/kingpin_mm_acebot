@@ -335,21 +335,21 @@ void Resp_Scalper_GotTicket ( edict_t *self, edict_t *other, response_t response
 			}
 			else
 			{
-				// gi.cprintf( self, PRINT_HIGH, "FIXME: you don't have 50 bucks.\n" );
+				// safe_cprintf( self, PRINT_HIGH, "FIXME: you don't have 50 bucks.\n" );
 				Voice_Specific( self, other, player_50bucks, 1 );
 				response = resp_no;
 			}
 		}
 		else
 		{
-			// gi.cprintf( self, PRINT_HIGH, "FIXME: you don't have 50 bucks.\n" );
+			// safe_cprintf( self, PRINT_HIGH, "FIXME: you don't have 50 bucks.\n" );
 			Voice_Specific( self, other, player_50bucks, 1 );
 			response = resp_no;
 		}
 	}
 	else if (response == resp_no)
 	{
-		// gi.cprintf( self, PRINT_HIGH, "FIXME: you don't have 50 bucks.\n" );
+		// safe_cprintf( self, PRINT_HIGH, "FIXME: you don't have 50 bucks.\n" );
 		Voice_Specific( self, other, player_50bucks, 1 );
 		Voice_Player_Specific(self, TT_NO);
 	}

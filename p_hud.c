@@ -4,7 +4,7 @@
 
 #define HEADERMESSAGE\
 	"This server is running the "GAMEVERSION,\
-	"http://www.monkeymod.com",
+	"http://kingpin.info",
 
 #define GAMEMODEMESSAGE\
 	if ((int)teamplay->value == 0) {\
@@ -139,9 +139,9 @@ void BeginIntermission (edict_t *targ, char *changenext)
 	
 	//level.changemap = targ->map;
 	strcpy (level.changemap, changenext);
-	//gi.bprintf (PRINT_HIGH, "2 %s\n", level.changemap);
+	//safe_bprintf(PRINT_HIGH, "2 %s\n", level.changemap);
 
-	//gi.bprintf (PRINT_HIGH, "Next map will be: %s,%s.\n", level.changemap, targ->map);
+	//safe_bprintf(PRINT_HIGH, "Next map will be: %s,%s.\n", level.changemap, targ->map);
 
 	if (strstr(level.changemap, "*"))
 	{
@@ -561,13 +561,13 @@ void MOTDScoreboardMessage (edict_t *ent)
 
 		if (level.modeset == FREEFORALL)
 			Com_sprintf (temp, sizeof(temp), "The Game will start soon.");
-		else if (level.modeset == MATCH)
+		else if (level.modeset == DEATHMATCH_RUNNING)
 			Com_sprintf (temp, sizeof(temp), "in Match Mode. (Please don't join)");
 		else if (level.modeset == MATCHSETUP)
 			Com_sprintf (temp, sizeof(temp), "in Match Setup Mode.");
 		else if (level.modeset == FINALCOUNT)
 			Com_sprintf (temp, sizeof(temp), "and is in the Final Countdown before a Match.");
-		else if (level.modeset == TEAMPLAY)
+		else if (level.modeset == TEAMPLAY_RUNNING)
 			Com_sprintf (temp, sizeof(temp), "in Public Mode, so please join in.");
 
 
@@ -772,6 +772,10 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 
 //			"%12s - 1 (%i players)"\n%12s - 2\n\n--------------------------------------------------------\n", team_names[1], team_names[2]
 
+// ACEBOT_ADD
+	if (ent->is_bot)
+		return;
+// ACEBOT_END
 
 	x = (-1*strlen(header) - 2) * 10;	// 10 pixels per char
 
@@ -1361,6 +1365,10 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 	char	*tag;
 	int		tmax;
 
+// ACEBOT_ADD
+	if (ent->is_bot)
+		return;
+// ACEBOT_END
 
 	SHOWCHASENAME
 
@@ -1516,7 +1524,7 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 			tag = "990";
 		else if (cl_ent->client->pers.rconx[0])
 			tag = "096";
-		else if (cl_ent->client->pers.admin>NOT_ADMIN)
+	    else if (cl_ent->client->pers.admin>NOT_ADMIN)
              tag = "900";//red
 		else
 			tag = "999";	// fullbright
@@ -2360,7 +2368,7 @@ void G_SetStats (edict_t *ent)
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
 //		else
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
-//	else if ((level.modeset == TEAMPLAY) && (timelimit->value))
+//	else if ((level.modeset == TEAMPLAY_RUNNING) && (timelimit->value))
 //		if (level.framenum > ((timelimit->value * 600) - 605))  
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
 //		else
@@ -2372,7 +2380,7 @@ void G_SetStats (edict_t *ent)
 		else if (level.modeset == ENDMATCHVOTING)
 			ent->client->ps.stats[STAT_TIMER] =	((300 - (level.framenum - level.startframe)) / 10);
 
-		else if ((level.modeset == MATCH) || (level.modeset == TEAMPLAY))
+		else if ((level.modeset == DEATHMATCH_RUNNING) || (level.modeset == TEAMPLAY_RUNNING))
 			if (level.framenum > (level.startframe + (((int)timelimit->value  * 600) - 605)))  
 				ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
 			else

@@ -273,12 +273,12 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 			break;
 		case MOD_LAVA:
 			message = "does a back flip into the lava";
-            if(self->client->pers.fakeThief>0)
-            {
-                self->client->resp.acchit-=self->client->pers.fakeThief;
-                if(self->client->pers.team==1) team_cash[2]+=self->client->pers.fakeThief;
-                else if(self->client->pers.team==2) team_cash[1]+=self->client->pers.fakeThief;
-            }
+			if (self->client->pers.fakeThief>0)
+			{
+				self->client->resp.acchit -= self->client->pers.fakeThief;
+				if (self->client->pers.team == 1) team_cash[2] += self->client->pers.fakeThief;
+				else if (self->client->pers.team == 2) team_cash[1] += self->client->pers.fakeThief;
+			}
 			break;
 		/*case MOD_EXPLOSIVE:
 		case MOD_BARREL:
@@ -296,13 +296,12 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 		case MOD_BOMB:
 		case MOD_SPLASH:
 		case MOD_TRIGGER_HURT:
-			message = "was in the wrong place";
-            if(self->client->pers.fakeThief>0)
-            {
-                self->client->resp.acchit-=self->client->pers.fakeThief;
-                if(self->client->pers.team==1) team_cash[2]+=self->client->pers.fakeThief;
-                else if(self->client->pers.team==2) team_cash[1]+=self->client->pers.fakeThief;
-            }
+			if (self->client->pers.fakeThief>0)
+			{
+				self->client->resp.acchit -= self->client->pers.fakeThief;
+				if (self->client->pers.team == 1) team_cash[2] += self->client->pers.fakeThief;
+				else if (self->client->pers.team == 2) team_cash[1] += self->client->pers.fakeThief;
+			}
 			break;
     // RAFAEL
 		case MOD_GEKK:
@@ -355,10 +354,10 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 		}
 		if (message)
 		{
-			gi.bprintf (PRINT_MEDIUM, "%s %s.\n", self->client->pers.netname, message);
+			safe_bprintf(PRINT_MEDIUM, "%s %s.\n", self->client->pers.netname, message);
 			if ((deathmatch->value) && (mod != MOD_RESTART))
 			{
-                //gi.bprintf (PRINT_MEDIUM,"Subtract 1\n");
+                //safe_bprintf(PRINT_MEDIUM,"Subtract 1\n");
 				self->client->resp.score--;
 
 				if ((int)teamplay->value == TM_GANGBANG) {
@@ -434,16 +433,16 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 			}
 			if (message)
 			{
-				gi.bprintf (PRINT_MEDIUM,"%s %s %s%s\n", self->client->pers.netname, message, attacker->client->pers.netname, message2);
+				safe_bprintf(PRINT_MEDIUM,"%s %s %s%s\n", self->client->pers.netname, message, attacker->client->pers.netname, message2);
                 if(enable_killerhealth)
                 {   
-                   gi.cprintf (self, PRINT_HIGH,"%s had %i health!\n", attacker->client->pers.netname, attacker->health);
+					safe_cprintf(self, PRINT_HIGH, "%s had %i health!\n", attacker->client->pers.netname, attacker->health);
                 }
 				if ((deathmatch->value) && (mod != MOD_RESTART) && (mod != MOD_TELEFRAG))
 				{
 					if (ff)
 					{
-                        //gi.bprintf (PRINT_MEDIUM,"Subtract 2\n");
+                        //safe_bprintf(PRINT_MEDIUM,"Subtract 2\n");
 						attacker->client->resp.score--;
 
 						if ((int)teamplay->value == TM_GANGBANG) {
@@ -466,11 +465,11 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 		}
 	}
 
-//	gi.bprintf (PRINT_MEDIUM,"%s died.\n", self->client->pers.netname);
+//	safe_bprintf(PRINT_MEDIUM,"%s died.\n", self->client->pers.netname);
 	if ((deathmatch->value) && (mod != MOD_RESTART))
 	{
 		
-        //gi.bprintf (PRINT_MEDIUM,"Subtract 3\n");
+        //safe_bprintf(PRINT_MEDIUM,"Subtract 3\n");
         self->client->resp.score--;
 
 		if ((int)teamplay->value == TM_GANGBANG) {
@@ -824,7 +823,8 @@ void InitClientPersistant (gclient_t *client)
 	char	rconx[32],ip[32];
 	char	textbuf[TEXTBUFSIZE];
 
-	// Papa store player states 
+
+// Papa store player states 
 	if (deathmatch->value)
 	{
 		team = client->pers.team;
@@ -931,7 +931,7 @@ void InitClientResp (gclient_t *client)
 	client->resp.checktime=level.framenum+11;
 	client->resp.checktex=level.framenum+30;
     client->resp.checkfoot=level.framenum+25;
-    client->resp.checkmouse=level.framenum+35;
+	client->resp.checkmouse=level.framenum+35;
 
 #ifdef DOUBLECHECK
 	client->resp.checked=0;
@@ -949,7 +949,7 @@ void InitClientRespClear (gclient_t *client)
     client->resp.checkfoot=level.framenum+25;
 	client->resp.checktime=level.framenum+11;
 	client->resp.checktex=level.framenum+30;
-    client->resp.checkmouse=level.framenum+35;
+	client->resp.checkmouse = level.framenum + 35;
 
 #ifdef DOUBLECHECK
 	client->resp.checked=0;
@@ -1170,65 +1170,64 @@ spotagain:
 
 	return spot;
 }
-
 // TiCaL - for bagman
-edict_t *SelectBagmanSpawnPoint (edict_t *ent)
+edict_t *SelectBagmanSpawnPoint(edict_t *ent)
 {
-    edict_t	*bestspot;
-    float	bestdistance=0.0;
-    float	nearestplayerdistance;
-    edict_t	*spot;
-    
-    spot = NULL;
-    bestspot = NULL;
-    bestdistance = 0.0;	
-    
-    if(ent->client->pers.team == 1)
-    {
-        while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
-        {
-            if(spot->style != 1)
-            {
-             //   spot = NULL;
-                continue;
-            }
-            nearestplayerdistance = PlayersRangeFromSpot (spot);
-            if (nearestplayerdistance > bestdistance)
-            {
-                bestspot = spot;
-                bestdistance = nearestplayerdistance;
-            }
-        }
-    }
-    else if(ent->client->pers.team == 2)
-    {
-        while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL)
-        {
-            if(spot->style != 2)
-            {
-              //  spot = NULL;
-                continue;
-            }
-            nearestplayerdistance = PlayersRangeFromSpot (spot);
-            if (nearestplayerdistance > bestdistance)
-            {
-                bestspot = spot;
-                bestdistance = nearestplayerdistance;
-            }
-        }
-    }
-    
-    return bestspot;
+	edict_t	*bestspot;
+	float	bestdistance = 0.0;
+	float	nearestplayerdistance;
+	edict_t	*spot;
+
+	spot = NULL;
+	bestspot = NULL;
+	bestdistance = 0.0;
+
+	if (ent->client->pers.team == 1)
+	{
+		while ((spot = G_Find(spot, FOFS(classname), "info_player_deathmatch")) != NULL)
+		{
+			if (spot->style != 1)
+			{
+				//   spot = NULL;
+				continue;
+			}
+			nearestplayerdistance = PlayersRangeFromSpot(spot);
+			if (nearestplayerdistance > bestdistance)
+			{
+				bestspot = spot;
+				bestdistance = nearestplayerdistance;
+			}
+		}
+	}
+	else if (ent->client->pers.team == 2)
+	{
+		while ((spot = G_Find(spot, FOFS(classname), "info_player_deathmatch")) != NULL)
+		{
+			if (spot->style != 2)
+			{
+				//  spot = NULL;
+				continue;
+			}
+			nearestplayerdistance = PlayersRangeFromSpot(spot);
+			if (nearestplayerdistance > bestdistance)
+			{
+				bestspot = spot;
+				bestdistance = nearestplayerdistance;
+			}
+		}
+	}
+
+	return bestspot;
 }
 
-edict_t *SelectDeathmatchSpawnPoint (edict_t *ent)
+edict_t *SelectDeathmatchSpawnPoint(edict_t *ent)
 {
 	// Ridah, in teamplay, spawn at base
-	if (teamplay->value == 1 && ent->client->pers.team!=0)
-	//	return SelectFarthestDeathmatchSpawnPoint (ent, (rand()%10 < 9));
-        return SelectBagmanSpawnPoint(ent);
-	else if ( (int)(dmflags->value) & DF_SPAWN_FARTHEST)
-		return SelectFarthestDeathmatchSpawnPoint (ent, false);
+	if (teamplay->value == 1 && ent->client->pers.team != 0)
+		//	return SelectFarthestDeathmatchSpawnPoint (ent, (rand()%10 < 9));
+		return SelectBagmanSpawnPoint(ent);
+	else if ((int)(dmflags->value) & DF_SPAWN_FARTHEST)
+		return SelectFarthestDeathmatchSpawnPoint(ent, false);
 	else
 		return SelectRandomDeathmatchSpawnPoint(ent);
 }
@@ -1459,6 +1458,18 @@ void respawn (edict_t *self)
 		// make sure on the last death frame
 //		self->s.frame = self->client->anim_end;
 
+// ACEBOT_ADD special respawning code
+		if (self->is_bot)
+		{
+			ACESP_Respawn(self);
+
+// NET_ANTILAG	//et-xreal antilag
+			G_ResetMarkers(self);
+// END_LAG
+			return;
+		}
+// ACEBOT_END
+
 		CopyToBodyQue (self);
 		PutClientInServer (self);
 
@@ -1470,6 +1481,10 @@ void respawn (edict_t *self)
 		self->client->ps.pmove.pm_time = 14;
 
 		self->client->respawn_time = level.time;
+
+// NET_ANTILAG	//et-xreal antilag
+		G_ResetMarkers(self);
+// END_LAG
 
 		return;
 	}
@@ -1612,6 +1627,12 @@ void PutClientInServer (edict_t *ent)
 	ent->onfiretime = 0;
 
 	ent->cast_info.aiflags |= AI_GOAL_RUN;	// make AI run towards us if in pursuit
+
+// ACEBOT_ADD
+	ent->is_bot = false;
+	ent->last_node = -1;
+	ent->is_jumping = false;
+// ACEBOT_END
 
 	VectorCopy (mins, ent->mins);
 	VectorCopy (maxs, ent->maxs);
@@ -1769,7 +1790,7 @@ ent->bikestate = 0;
 
 		s =Info_ValueForKey (client->pers.userinfo, "skin");
 
-        //gi.bprintf(PRINT_HIGH, "Working ... 1\n");
+        //safe_bprintf(PRINT_HIGH, "Working ... 1\n");
 
 //		skins = strstr( s, "/" ) + 1;
 
@@ -1832,7 +1853,7 @@ ent->bikestate = 0;
     }
 	else	// make sure we can see their weapon
 	{
-		//gi.bprintf(PRINT_HIGH, "Working ... 2\n");
+		//safe_bprintf(PRINT_HIGH, "Working ... 2\n");
         memset(&(ent->s.model_parts[0]), 0, sizeof(model_part_t) * MAX_MODEL_PARTS);
 		ent->s.model_parts[PART_GUN].modelindex = 255;
 		ent->s.num_parts = PART_GUN+1;	// make sure old clients recieve the view weapon index
@@ -1888,16 +1909,31 @@ extern void Teamplay_AutoJoinTeam( edict_t *self );
 void ClientBeginDeathmatch (edict_t *ent)
 {
 	int		save;
+// ACEBOT_ADD
+	static char current_map[55];
+// ACEBOT_END
 
 //gi.dprintf("IN: ClientBeginDeathmatch(%d)\n",((int)ent-(int)g_edicts)/sizeof(edict_t));
 
 	save = ent->client->showscores;
 	G_InitEdict (ent);
 
-	if ((level.modeset == FREEFORALL) || (level.modeset == TEAMPLAY))
+//hypo	//if ((level.modeset == FREEFORALL) || (level.modeset == TEAMPLAY_RUNNING))
+	//hypov8 could be used to rejoin and use old stats? or cleared on exit?
+	if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING)
 	{
 		InitClientResp (ent->client);
 	}
+
+// ACEBOT_ADD
+	if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING
+		|| level.modeset == DEATHMATCH_SPAWNING || level.modeset == TEAMPLAY_SPAWNING) //free???
+	{
+		if (ent->inuse && ent->client->pers.spectator != SPECTATING)
+			ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
+	}						//also called in match begin
+// ACEBOT_END
+
 	// locate ent at a spawn point
 	PutClientInServer (ent);
 
@@ -1948,7 +1984,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 			}
 		}
 	}
-	else
+	else //end team
 	{
 		if ((ent->client->pers.spectator == SPECTATING) || (ent->client->showscores == SCORE_REJOIN) || (level.modeset == ENDMATCHVOTING))
 		{
@@ -1958,9 +1994,9 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
-		else if (level.modeset != STARTINGPUB)
+		else if (level.modeset != TEAMPLAY_SPAWNING)
 		{
-			gi.bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
+			safe_bprintf(PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 //			sl_WriteStdLogPlayerEntered( &gi, level, ent );	// Standard Logging
 		}
 	}
@@ -1976,6 +2012,23 @@ void ClientBeginDeathmatch (edict_t *ent)
 	else if (ent->solid != SOLID_NOT)
 		ent->client->showscores = NO_SCOREBOARD;
 
+// ACEBOT_ADD
+//	safe_centerprintf(ent, "ACE Bot II Mod\n'sv addbot' to add a new bot.\n'sv removebot <name>' to remove bot.\n");
+
+	// If the map changes on us, init and reload the nodes
+#if 0
+	if (strcmp(level.mapname, current_map))
+	{
+
+		ACEND_InitNodes();
+		ACEND_LoadNodes();
+		//ACESP_LoadBots();
+		strcpy(current_map, level.mapname);
+	}
+#endif
+// ACEBOT_END
+
+
 	// make sure all view stuff is valid
 	ClientEndServerFrame (ent);
 
@@ -1983,7 +2036,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 	// If they're using an old version, make sure they're aware of it
 	if (ent->client->pers.version < 121)
 	{
-		gi.centerprintf( ent, "You are using an old version\nof Kingpin.\n\nGet the upgrade at:\n\nhttp://www.monkeymod.com" );
+		safe_centerprintf(ent, "You are using an old version\nof Kingpin.\n\nGet the upgrade at:\n\nhttp://www.monkeymod.com");
      /*   ErrorMSGBox(ent, "\"You are using an old version of Kingpin. Get the 1.21 upgrade at http://www.monkeymod.com\"");
         KICKENT(ent,"%s is being kicked for old version of kingpin.exe\n");*/
 	}
@@ -2026,7 +2079,7 @@ void ClientBegin (edict_t *ent)
 		ent->client->showscores = SCORE_MOTD;
 
 	ent->client->pers.fakeThief = 0;
-	
+
 	ent->client->pers.admin=NOT_ADMIN;
 	if (keep_admin_status) {
 		a=gi.cvar("modadmin","",0)->string;
@@ -2046,7 +2099,7 @@ void ClientBegin (edict_t *ent)
 					ent->client->pers.admin = atoi(gi.cvar("admintype", "", 0)->string);
                     gi.cvar_set("modadmin","");
                     gi.cvar_set("admintype","");
-                    gi.bprintf(PRINT_HIGH,"%s is now admin.\n",ent->client->pers.netname);
+					safe_bprintf(PRINT_HIGH, "%s is now admin.\n", ent->client->pers.netname);
 				}
 			}
 		}
@@ -2148,7 +2201,7 @@ void ClientBegin (edict_t *ent)
 			gi.WriteByte (MZ_LOGIN);
 			gi.multicast (ent->s.origin, MULTICAST_PVS);
 
-			gi.bprintf (PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
+			safe_bprintf(PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 		}
 	}
 
@@ -2302,11 +2355,14 @@ void ClientBegin (edict_t *ent)
 		gi.SaveCurrentGame();
 		changing_levels = false;
 	}
+// NET_ANTILAG	//et-xreal antilag
+	G_ResetMarkers(ent);
+// END_LAG
 }
 
 void maxrate_think(edict_t *self)
 {
-	gi.cprintf(self->owner, PRINT_HIGH, "Server restricting rate to %s\n",
+	safe_cprintf(self->owner, PRINT_HIGH, "Server restricting rate to %s\n",
 		Info_ValueForKey(self->owner->client->pers.userinfo,"rate"));
 	G_FreeEdict(self);
 }
@@ -2314,7 +2370,7 @@ void maxrate_think(edict_t *self)
 void nameclash_think(edict_t *self)
 {
   //  if (!(Q_stricmp (self->owner->client->pers.netname, NAME_CLASH_STR) == 0)) 
-	    gi.cprintf(self->owner, PRINT_HIGH, "Another player on the server is already using this name.\n");
+	safe_cprintf(self->owner, PRINT_HIGH, "Another player on the server is already using this name.\n");
 	G_FreeEdict(self);
 }
 
@@ -2408,7 +2464,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
     //            else
 
                 if (!(Q_stricmp (ent->client->pers.netname, NAME_CLASH_STR) == 0)) 
-                    gi.bprintf(PRINT_HIGH, "Another player is trying to use %s's name\n", s); 
+					safe_bprintf(PRINT_HIGH, "Another player is trying to use %s's name\n", s);
 
                 s = NAME_CLASH_STR;
 
@@ -2433,7 +2489,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
                 {
                     // Standard Logging -  log player rename
                     //sl_LogPlayerRename( &gi, ent->client->pers.netname, s, level.time );
-                    gi.bprintf(PRINT_HIGH, "%s changed name to %s\n", ent->client->pers.netname, s);
+					safe_bprintf(PRINT_HIGH, "%s changed name to %s\n", ent->client->pers.netname, s);
                     ent->name_change_frame = level.framenum;
                 }
             }
@@ -2456,7 +2512,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 				thinker->nextthink = level.time + 2 + random()*2;
 				thinker->owner = ent;
 			} else {
-				gi.cprintf(ent, PRINT_HIGH, "Server restricting rate to %d\n",(int)maxrate->value);
+				safe_cprintf(ent, PRINT_HIGH, "Server restricting rate to %d\n", (int)maxrate->value);
 			}
 			Info_SetValueForKey( userinfo, "rate", va("%i", (int)maxrate->value) );
 		}
@@ -2704,39 +2760,51 @@ Changing levels will NOT cause this to be called again, but
 loadgames will.
 ============
 */
-qboolean ClientConnect (edict_t *ent, char *userinfo)
+qboolean ClientConnect(edict_t *ent, char *userinfo)
 {
 	char	*value, *skinvalue; //*command;
 	int		i;
 	edict_t	*doot; int j;
 
-	ent->client = NULL;
-	ent->inuse = false;
-	ent->skins[0]=0;
-	ent->move_frame=0;
+	// acebot
+	//note hypov8 check for bots spawned if game didnt start?
+	if (!ent->is_bot /*&& (level.modeset != DEATHMATCH_RUNNING || level.modeset != TEAMPLAY_RUNNING)*/)
+	{
+		ent->client = NULL;
+		ent->inuse = false;
+		ent->skins[0] = 0;
+		ent->move_frame = 0;
 
-//	Snap, bunnyhop
-	ent->strafejump_count = 0;
-	ent->jump_framenum = 0;
-	ent->land_framenum = 1;
+		//	Snap, bunnyhop
+		ent->strafejump_count = 0;
+		ent->jump_framenum = 0;
+		ent->land_framenum = 1;
 
-    // client idle variables
-    ent->check_idle = 0;
-    ent->check_talk = 0;
-    ent->check_shoot = 0;
+		// client idle variables
+		ent->check_idle = 0;
+		ent->check_talk = 0;
+		ent->check_shoot = 0;
+	}
 
 	// check to see if they are on the banned IP list
-	value = Info_ValueForKey (userinfo, "ip");
-	if (SV_FilterPacket(value))
-		return false;
-
+	if (!ent->is_bot)
+	{
+		value = Info_ValueForKey(userinfo, "ip");
+		if (SV_FilterPacket(value))
+			return false;
+	}
 	// check for a password
-	value = Info_ValueForKey (userinfo, "password");
-	if (strcmp(password->string, value) != 0)
-		return false;
-	
-	if (CheckPlayerBan (userinfo))
-		return false;
+	if (!ent->is_bot){
+		value = Info_ValueForKey(userinfo, "password");
+		if (strcmp(password->string, value) != 0)
+			return false;
+	}
+// acebot
+	if (!ent->is_bot)
+	{
+		if (CheckPlayerBan(userinfo))
+			return false;
+	}
 
 // Ridah, if this isn't a loadgame, try to add them to the character list
 	if (!deathmatch->value && (ent->inuse == false))
@@ -2762,10 +2830,11 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 			memset(ent->client->pers.rconx,0,32);
 			ent->client->pers.textbuf[0]=0;
 
-            ent->client->pers.polyblender=0;
-            ent->client->pers.fakeThief=0;
-            ent->client->pers.mute=0;
-          
+			ent->client->pers.polyblender = 0;
+			ent->client->pers.fakeThief = 0;
+			ent->client->pers.mute = 0;
+
+
 			InitClientPersistant (ent->client);
 		}
 
@@ -2792,32 +2861,48 @@ qboolean ClientConnect (edict_t *ent, char *userinfo)
 		
 		for_each_player (doot,j)
 			if ((doot->client->pers.admin == ADMIN) || (doot->client->pers.rconx[0]))
-				gi.cprintf(doot, PRINT_CHAT, "%s (%s) connected\n", ent->client->pers.netname,ent->client->pers.ip);		
+				safe_cprintf(doot, PRINT_CHAT, "%s (%s) connected\n", ent->client->pers.netname, ent->client->pers.ip);
 	}
 
 	// Ridah, make sure they have to join a team
-
-	if (teamplay->value)
-		ent->client->pers.team = 0;
-
+	if (!ent->is_bot)
+	{
+		if (teamplay->value)
+			ent->client->pers.team = 0;
+	}
 // check to see if a player was disconnected
 	i = 0;
 	skinvalue = Info_ValueForKey (userinfo, "skin");
 	while (i < level.player_num)
 	{
-		if (!teamplay->value)
-			if ((Q_stricmp (ent->client->pers.netname,playerlist[i].netname) == 0) && 
-				(Q_stricmp (skinvalue,playerlist[i].skin) == 0))
-				ent->client->showscores = SCORE_REJOIN;
-			else;
-		else if (Q_stricmp (ent->client->pers.netname,playerlist[i].netname) == 0)
-				ent->client->showscores = SCORE_REJOIN;
-
+		if (!ent->is_bot)
+		{
+			if (!teamplay->value)
+			{
+				if ((Q_stricmp(ent->client->pers.netname, playerlist[i].netname) == 0) &&
+					(Q_stricmp(skinvalue, playerlist[i].skin) == 0))
+					ent->client->showscores = SCORE_REJOIN;
+				else
+					;//??
+			}
+			else //end dm
+			{
+				if (Q_stricmp(ent->client->pers.netname, playerlist[i].netname) == 0)
+					ent->client->showscores = SCORE_REJOIN;
+			}
+		}
+		else//bot
+		{
+			ent->client->showscores = NO_SCOREBOARD;
+		}
 		i++;
 	}
 
-	if (!teamplay->value) ent->client->pers.spectator = PLAYING;
-
+	if (!ent->is_bot)
+	{
+		if (!teamplay->value)
+			ent->client->pers.spectator = PLAYING;
+	}
 /*	for (i=1;i<=maxclients->value;i++) {
 		if (g_edicts[i].inuse && g_edicts[i].client && g_edicts[i].client->pers.rconx[0]) {
 			cprintf(g_edicts+i,PRINT_HIGH,"%s is connecting\n",ent->client->pers.netname);
@@ -2845,7 +2930,7 @@ void ClientDisconnect (edict_t *ent)
 		return;
 
 //	sl_LogPlayerDisconnect( &gi, level, ent );	// Standard Logging
-    ent->client->pers.fakeThief = 0;
+	ent->client->pers.fakeThief = 0;
 
 // Papa - store player info after they disconnect	
 	if ((ent->client->pers.spectator == PLAYING) && (level.player_num < 63))
@@ -2854,7 +2939,7 @@ void ClientDisconnect (edict_t *ent)
 		playerlist[level.player_num].deposits = ent->client->resp.deposited;
         playerlist[level.player_num].acchit = ent->client->resp.acchit;
         playerlist[level.player_num].accshot = ent->client->resp.accshot;
-        playerlist[level.player_num].mute = ent->client->pers.mute;
+		playerlist[level.player_num].mute = ent->client->pers.mute;
         //do the fav too
         for(z=0;z<8;z++)
         {
@@ -2878,17 +2963,21 @@ void ClientDisconnect (edict_t *ent)
 			continue;
 		if (g_edicts[i].client->chase_target == ent) {
 			if(g_edicts[i].client->update_cam>0)
-            {
-			//	g_edicts[i].client->ps=g_edicts[i].client->temp_ps;
-                memcpy(&g_edicts[i].client->ps,&g_edicts[i].client->temp_ps,sizeof(player_state_t)); 
-            }
+			{
+				//	g_edicts[i].client->ps=g_edicts[i].client->temp_ps;
+				memcpy(&g_edicts[i].client->ps, &g_edicts[i].client->temp_ps, sizeof(player_state_t));
+			}
 			g_edicts[i].client->chase_target = NULL;
 			g_edicts[i].client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
 		}
 	}
 
-	gi.bprintf (PRINT_HIGH, "%s checked out\n", ent->client->pers.netname);
-		
+	safe_bprintf(PRINT_HIGH, "%s checked out\n", ent->client->pers.netname);
+
+// ACEBOT_ADD
+	ACEIT_PlayerRemoved(ent);
+// ACEBOT_END
+
 	// send effect
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
@@ -2983,18 +3072,18 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 					b[i]=0;
 					break;
 				}
-			gi.cprintf(ent,PRINT_HIGH,"%s",b);
+			safe_cprintf(ent, PRINT_HIGH, "%s", b);
 			if (i<j)
 				memmove(client->pers.textbuf,client->pers.textbuf+i,j+1-i);
 			else
 				client->pers.textbuf[0]=0;
 		} else {
-			gi.cprintf(ent,PRINT_HIGH,"%s",client->pers.textbuf);
+			safe_cprintf(ent, PRINT_HIGH, "%s", client->pers.textbuf);
 			client->pers.textbuf[0]=0;
 		}
 	}
 
-    // JOSEPH 24-FEB-99
+	// JOSEPH 24-FEB-99
 	if (level.cut_scene_end_count)
 	{
 		level.cut_scene_end_count--;
@@ -3040,37 +3129,61 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 	if (ent->client->chase_target)
 	{
-		// snap, for alternate chase modes...
-		if (ucmd->upmove && 10 < (level.framenum - ent->client->chase_check)){
-			ent->client->chase_check = level.framenum;
-			if(ent->client->chasemode == LOCKED_CHASE){
-				ent->client->chasemode = FREE_CHASE;
-				DeathmatchScoreboard (ent);
-			}
-			else if(ent->client->chasemode == FREE_CHASE){
-				ent->client->chasemode = EYECAM_CHASE;
-				DeathmatchScoreboard (ent);
-			}
-			else if(ent->client->chasemode == EYECAM_CHASE){
-				ent->client->chasemode = LOCKED_CHASE;
-				DeathmatchScoreboard (ent);
-			}
-		}//end snap
-		if (ent->solid != SOLID_NOT)
-		{	// stop chasing
-			if(ent->client->update_cam>0)
-            {
-			//	ent->client->ps=ent->client->temp_ps;
-                memcpy(&ent->client->ps,&ent->client->temp_ps,sizeof(player_state_t)); 
-            }
+
+	}
+
+	if (ent->client->chase_target)
+	{	
+		if (ent->client->chase_target->client->pers.spectator == SPECTATING
+				|| ent->client->chase_target->inuse == false )
+		{ //hypo release chasecam when player leaves or enters spec
+		/*	ent->flags = NULL;
 			ent->client->chase_target = NULL;
-			ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+			ent->client->pers.team = 0;
+			ent->client->pers.spectator = SPECTATING;
+			ent->flags &= ~FL_GODMODE;
+			ent->movetype == MOVETYPE_NOCLIP;
+			ent->client->ps.pmove.pm_type = PM_SPECTATOR;
+			ent->client->pers.weapon = NULL;
+			ent->solid = SOLID_NOT;
+			ent->svflags |= SVF_NOCLIENT;
+			*/
 		}
 		else
-		{
-			goto chasing;
+		{		// snap, for alternate chase modes...
+			if (ucmd->upmove && 10 < (level.framenum - ent->client->chase_check))
+			{
+				ent->client->chase_check = level.framenum;
+				if (ent->client->chasemode == LOCKED_CHASE){
+					ent->client->chasemode = FREE_CHASE;
+					DeathmatchScoreboard(ent);
+				}
+				else if (ent->client->chasemode == FREE_CHASE){
+					ent->client->chasemode = EYECAM_CHASE;
+					DeathmatchScoreboard(ent);
+				}
+				else if (ent->client->chasemode == EYECAM_CHASE){
+					ent->client->chasemode = LOCKED_CHASE;
+					DeathmatchScoreboard(ent);
+				}
+			}//end snap
+			if (ent->solid != SOLID_NOT)
+			{	// stop chasing
+				if (ent->client->update_cam > 0)
+				{
+					//	ent->client->ps=ent->client->temp_ps;
+					memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
+				}
+				ent->client->chase_target = NULL;
+				ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+			}
+			else
+			{
+				goto chasing;
+			}
 		}
 	}
+
 
 	if (ent->flags & FL_CHASECAM)
 	{
@@ -3281,7 +3394,7 @@ chasing:
     
     //check if idle
     if(ent->client->pers.spectator!=SPECTATING
-       && (level.modeset==MATCH || level.modeset==TEAMPLAY || level.modeset==FREEFORALL))
+		&& (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING || level.modeset == FREEFORALL))
     {
         if(((level.framenum - ent->check_idle)>(idle_client->value*10)) 
             && ((level.framenum - ent->check_talk)>(idle_client->value*10)) 
@@ -3565,7 +3678,14 @@ car_resume:
 		}
 	}
 
-	Think_FlashLight (ent);
+// ACEBOT_ADD
+	if (!ent->is_bot && !ent->deadflag && !ent->client->pers.spectator) //hypov8 acebot spectator???
+		ACEND_PathMap(ent);
+// ACEBOT_END
+
+// acebot
+	if (!ent->is_bot)
+		Think_FlashLight (ent);
 
 	// BEGIN:	Xatrix/Ridah/Navigator/18-mar-1998
 	if (!deathmatch->value && nav_dynamic->value && !(ent->flags & (FL_HOVERCAR_GROUND | FL_HOVERCAR | FL_BIKE | FL_CAR)))
@@ -3663,6 +3783,10 @@ car_resume:
 		}
 	}
 
+// ACEBOT_ADD //botfather
+	if (!ent->is_bot && !ent->deadflag && !(ent->solid == SOLID_NOT) )
+		ACEND_PathMap(ent);
+// ACEBOT_END
 	for (i = 1; i <= maxclients->value; i++) {
 		other = g_edicts + i;
 		if (other->inuse && other->client->chase_target == ent)
@@ -3688,7 +3812,7 @@ void ClientBeginServerFrame (edict_t *ent)
 
 	if (ent->kickdelay) {
 		if (!--ent->kickdelay) {
-			gi.bprintf(PRINT_HIGH,ent->kickmess,ent->client->pers.netname);
+			safe_bprintf(PRINT_HIGH, ent->kickmess, ent->client->pers.netname);
 			gi.AddCommandString(va("kick %i\n", (int)(ent - g_edicts - 1)));
 		}
 		return;
@@ -3712,7 +3836,7 @@ void ClientBeginServerFrame (edict_t *ent)
 /*
 	if (teamplay->value && !ent->client->pers.team && (ent->movetype == MOVETYPE_NOCLIP) && ((int)(level.time*10)%10 == 0))
 	{
-		gi.centerprintf( ent, "--------------------------------------------------------\n\nYou are a spectator!\n\nPress the corresponding number\nto join a team.\n\nValid teams are:\n\n%12s - 1\n%12s - 2\n\n--------------------------------------------------------\n", team_names[1], team_names[2] );
+		safe_centerprintf( ent, "--------------------------------------------------------\n\nYou are a spectator!\n\nPress the corresponding number\nto join a team.\n\nValid teams are:\n\n%12s - 1\n%12s - 2\n\n--------------------------------------------------------\n", team_names[1], team_names[2] );
 	}
 */
 
@@ -3804,50 +3928,58 @@ void ClientBeginServerFrame (edict_t *ent)
 		}
 	}
 
-  
+
 checks:
-    if (level.framenum>ent->client->resp.checkdelta) {
-		ent->client->resp.checkdelta=level.framenum+70;
-		gi.WriteByte(13);
-		gi.WriteString(no_shadows->value ? "cl_nodelta 0\ngl_shadows 0\n" : "cl_nodelta 0\n");
-		gi.unicast(ent, true);
-    }  else if (level.framenum>ent->client->resp.checkpvs) {
-		char buf[40];
-		ent->client->resp.checkpvs=level.framenum+90;
-		sprintf(buf,"%s $gl_clear $r_drawworld\n",lockpvs); 
-		gi.WriteByte(13);
-		gi.WriteString(buf);
-		gi.unicast(ent, true);
-    }  else if (level.framenum>ent->client->resp.checkfoot) {
-		char buf[40];
-		ent->client->resp.checkfoot=level.framenum+50;
-		sprintf(buf,"%s $cl_forwardspeed $cl_sidespeed\n",lockfoot); 
-		gi.WriteByte(13);
-		gi.WriteString(buf);
-		gi.unicast(ent, true);
-	} else if (level.framenum>ent->client->resp.checktime) {
-		char buf[32];
-		ent->client->resp.checktime=level.framenum+130;
-		sprintf(buf,"%s $timescale $fixedtime\n",scaletime);
-		gi.WriteByte(13);
-		gi.WriteString(buf);
-		gi.unicast(ent, true);
-	} else if (level.framenum>ent->client->resp.checktex) {
-		char buf[48];
-		ent->client->resp.checktex=level.framenum+120;  //120
-		sprintf(buf,"%s $gl_picmip $gl_maxtexsize $gl_polyblend\n",locktex);
-		gi.WriteByte(13);
-		gi.WriteString(buf);
-		gi.unicast(ent, true);
-	} 
-    else if (level.framenum>ent->client->resp.checkmouse) {
-		char buf[32];
-		ent->client->resp.checkmouse=level.framenum+30;  //120
-		sprintf(buf,"%s $m_pitch\n",lockmouse);
-		gi.WriteByte(13);
-		gi.WriteString(buf);
-		gi.unicast(ent, true);
-	} 
+	if (!ent->is_bot)
+	{
+		if (level.framenum > ent->client->resp.checkdelta) {
+			ent->client->resp.checkdelta = level.framenum + 70;
+			gi.WriteByte(13);
+			gi.WriteString(no_shadows->value ? "cl_nodelta 0\ngl_shadows 0\n" : "cl_nodelta 0\n");
+			gi.unicast(ent, true);
+		}
+		else if (level.framenum > ent->client->resp.checkpvs) {
+			char buf[40];
+			ent->client->resp.checkpvs = level.framenum + 90;
+			sprintf(buf, "%s $gl_clear $r_drawworld\n", lockpvs);
+			gi.WriteByte(13);
+			gi.WriteString(buf);
+			gi.unicast(ent, true);
+		}
+		else if (level.framenum > ent->client->resp.checkfoot) {
+			char buf[40];
+			ent->client->resp.checkfoot = level.framenum + 50;
+			sprintf(buf, "%s $cl_forwardspeed $cl_sidespeed\n", lockfoot);
+			gi.WriteByte(13);
+			gi.WriteString(buf);
+			gi.unicast(ent, true);
+		}
+		else if (level.framenum > ent->client->resp.checktime) {
+			char buf[32];
+			ent->client->resp.checktime = level.framenum + 130;
+			sprintf(buf, "%s $timescale $fixedtime\n", scaletime);
+			gi.WriteByte(13);
+			gi.WriteString(buf);
+			gi.unicast(ent, true);
+		}
+		else if (level.framenum > ent->client->resp.checktex) {
+			char buf[48];
+			ent->client->resp.checktex = level.framenum + 120;  //120
+			sprintf(buf, "%s $gl_picmip $gl_maxtexsize $gl_polyblend\n", locktex);
+			gi.WriteByte(13);
+			gi.WriteString(buf);
+			gi.unicast(ent, true);
+		}
+		else if (level.framenum>ent->client->resp.checkmouse) {
+			char buf[32];
+			ent->client->resp.checkmouse = level.framenum + 30;  //120
+			sprintf(buf, "%s $m_pitch\n", lockmouse);
+			gi.WriteByte(13);
+			gi.WriteString(buf);
+			gi.unicast(ent, true);
+		}
+	}
+	
 }
 
 void cprintf(edict_t *ent, int printlevel, char *fmt, ...)

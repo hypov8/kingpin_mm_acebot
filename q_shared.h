@@ -131,7 +131,7 @@ extern vec3_t vec3_origin;
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 
 // microsoft's fabs seems to be ungodly slow...
-float Q_fabs (float f);
+float Q_fabs(float f);
 //#define	fabs(f) Q_fabs(f)
 #if !defined C_ONLY && !defined __linux__
 extern long Q_ftol( float f );
@@ -210,6 +210,11 @@ float	anglemod(float a);
 float LerpAngle (float a1, float a2, float frac);
 // Ridah
 float AngleDiff (float a2, float a1);
+
+// NET_ANTILAG	//et-xreal antilag
+void            LerpPosition(vec3_t start, vec3_t end, float frac, vec3_t out);
+// END_LAG
+
 
 #ifdef WIN32
 #define BOX_ON_PLANE_SIDE(emins, emaxs, p)	\
@@ -337,7 +342,7 @@ CVARS (console variables)
 
 #define	CVAR_ARCHIVE	1	// set to cause it to be saved to vars.rc
 #define	CVAR_USERINFO	2	// added to userinfo  when changed
-#define	CVAR_SERVERINFO	4	// added to serverinfo when changed
+#define	CVAR_SERVERINFO	4	// added to serverinfo when changed//hypo rules shown in game browser
 #define	CVAR_NOSET		8	// don't allow change from console at all,
 							// but can be set from the command line
 #define	CVAR_LATCH		16	// save changes until server restart
@@ -1467,4 +1472,3 @@ typedef struct
 	int			weapon_usage;
  	
 } player_state_t;
-

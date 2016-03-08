@@ -859,9 +859,12 @@ void SV_Physics_Toss (edict_t *ent)
 
 // move origin
 	VectorScale (ent->velocity, FRAMETIME, move);
+
 	trace = SV_PushEntity (ent, move);
 	if (!ent->inuse)
+	{
 		return;
+	}
 
 	if (trace.fraction < 1)
 	{
@@ -1349,6 +1352,11 @@ void G_RunEntity (edict_t *ent)
 
 	switch ( (int)ent->movetype)
 	{
+// ACEBOT_ADD
+	case MOVETYPE_WALK:
+		SV_RunThink(ent);
+		break;
+// ACEBOT_END
 	case MOVETYPE_PUSH:
 	case MOVETYPE_STOP:
 		SV_Physics_Pusher (ent);

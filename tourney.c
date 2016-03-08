@@ -53,12 +53,21 @@ ban_t	rconx_pass[100];
 //
 //===============================================================
 
+/*
+================
+PublicSetup
+server cmd "publicsetup"
+================
+*/
 void PublicSetup ()  // returns the server into ffa mode and resets all the cvars (settings)
 {
 	edict_t		*self;
 	int			i;
-
-	level.modeset = FREEFORALL;
+//hypov8 thois shoul be set by tea
+	if (default_teamplay)
+		level.modeset = TEAMPLAY_SPAWNING;
+	else
+		level.modeset = FREEFORALL; 
 	gi.cvar_set("dmflags",default_dmflags);
 	gi.cvar_set("teamplay",default_teamplay);
 	gi.cvar_set("password",default_password);
@@ -77,11 +86,19 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 		ClientBeginDeathmatch( self );	
 	}
 	
-	gi.bprintf(PRINT_HIGH,"The server is once again public.\n");
+	safe_bprintf(PRINT_HIGH, "The server is once again public.\n");
 }
 
+/*
+================
+CheckAllPlayersSpawned
+level.modeset = MATCHSETUP
+teamplay. used when console command "matchsetup" is used
 
-void MatchSetup () // Places the server in prematch mode
+Places the server in prematch mode
+================
+*/
+void MatchSetup ()
 {
 	edict_t		*self;
 	int			i;
@@ -102,11 +119,15 @@ void MatchSetup () // Places the server in prematch mode
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 //		player_die (self, self, self, 1, vec3_origin, 0, 0);
+// acebot ??
+		//teamplay
+		//could cause conflict?
+//end
 		ClientBeginDeathmatch( self );	
 	}
 
-	gi.bprintf(PRINT_HIGH,"The server is now ready to setup a match.\n");
-	gi.bprintf(PRINT_HIGH,"Players need to join the correct teams.\n");
+	safe_bprintf(PRINT_HIGH, "The server is now ready to setup a match.\n");
+	safe_bprintf(PRINT_HIGH, "Players need to join the correct teams.\n");
 	
 }
 int memalloced[3] = {0,0,0};
@@ -134,7 +155,16 @@ void ResetServer () // completely resets the server including map
 
 int team_startcash[2]={0,0};
 
-void MatchStart()  // start the match
+/*
+================
+MatchStart
+level.modeset = FINALCOUNT;
+server command "matchstart"
+
+start the match
+================
+*/
+void MatchStart()
 {
 	int			i;
 	edict_t		*self;
@@ -142,7 +172,7 @@ void MatchStart()  // start the match
 	level.player_num=0;
 	level.modeset = FINALCOUNT;
 	level.startframe = level.framenum;
-	gi.bprintf (PRINT_HIGH,"FINAL COUNTDOWN STARTED.  15 SECONDS TO MATCH.\n");
+	safe_bprintf(PRINT_HIGH, "FINAL COUNTDOWN STARTED.  15 SECONDS TO MATCH.\n");
 	team_cash[1]=team_startcash[0]; team_startcash[0]=0;
 	team_cash[2]=team_startcash[1]; team_startcash[1]=0;
 	UPDATESCORE
@@ -196,7 +226,15 @@ void SpawnPlayer () // Here I spawn players - 1 per server frame in hopes of red
 			team1 = true;
 			self->client->pers.spectator = PLAYING;
 //			player_die (self, self, self, 1, vec3_origin, 0, 0);
-			ClientBeginDeathmatch( self );	
+//acebot add
+			if (!self->is_bot)
+			{
+// ACEBOT_ADD				
+				//ACEIT_PlayerAdded(self); //add real players to bot serch invitory
+// ACEBOT_END				
+				ClientBeginDeathmatch(self);
+			}
+
 			self->client->resp.is_spawn = true;
 			break;
 		}
@@ -249,18 +287,25 @@ void SpawnPlayers ()  // Same idea but 1 player per team
 	if ((!team1) && (!team2))
 		level.is_spawn = true;
 }
+/*
+================
+Start_Match
+level.modeset = DEATHMATCH_SPAWNING;
 
+game will now load clients as active
+================
+*/
 void Start_Match () // Starts the match
 {
 	edict_t		*self;
 	int			i;
 
 	level.startframe = level.framenum;
-	level.modeset = STARTINGMATCH;
+	level.modeset = DEATHMATCH_SPAWNING;
 	level.is_spawn = false;
 	for_each_player(self,i)
 	{
-		gi.centerprintf(self,"The Match has begun.\n");
+		safe_centerprintf(self, "The Match has begun.\n");
 		self->client->resp.is_spawn = false;
 		self->client->resp.enterframe = level.framenum;
 	}
@@ -269,20 +314,28 @@ void Start_Match () // Starts the match
 	gi.WriteString("play world/pawnbuzz_out.wav");
 	gi.multicast (vec3_origin, MULTICAST_ALL);
 
-//	level.modeset = MATCH;
+//	level.modeset = DEATHMATCH_RUNNING;
 }
 
+/*
+================
+Start_Pub
+level.modeset = TEAMPLAY_SPAWNING;
+
+starting team game
+================
+*/
 void Start_Pub () // Starts a pub
 {
 	edict_t		*self;
 	int			i;
 
 	level.startframe = level.framenum;
-	level.modeset = STARTINGPUB;
+	level.modeset = TEAMPLAY_SPAWNING;
 	level.is_spawn = false;
 	for_each_player(self,i)
 	{
-		gi.centerprintf(self,"Let the Fun Begin!\n");
+		safe_centerprintf(self, "Let the Fun Begin!\n");
 		self->client->resp.is_spawn = false;
 		self->client->resp.enterframe = level.framenum;
 	}
@@ -292,6 +345,13 @@ void Start_Pub () // Starts a pub
 	gi.multicast (vec3_origin, MULTICAST_ALL);
 }
 
+/*
+================
+SetupMapVote
+ENDMATCHVOTING
+game ended. vote
+================
+*/
 void SetupMapVote () // at the end of a level - starts the vote for the next map
 {
 	edict_t *self;
@@ -384,24 +444,38 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 	}*/
 }
 
+/*
+================
+MatchEnd
+level.modeset = MATCHSETUP ?
+move players to spec
+================
+*/
 void MatchEnd () // end of the match
 {
 	edict_t *self;
 	int i;
-
-	level.modeset = MATCHSETUP;
+// acebot
+	ACEND_SaveNodes(); //save file nodes
+	num_players = 0;
+//end
+	level.modeset = ENDMATCHVOTING; // MATCHSETUP; //hypov8 setup???
 	level.startframe = level.framenum;
 	for_each_player(self,i)
 	{
 		HideWeapon(self);
 		if (self->client->flashlight) self->client->flashlight = false;
-		gi.centerprintf(self,"The Match has ended!");
+		safe_centerprintf(self, "The Match has ended!");
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 		meansOfDeath = MOD_RESTART;
+// acebot
+		self->nextthink = 0; //reset bots think
+//end
 //		player_die (self, self, self, 1, vec3_origin, 0, 0);
 
-		ClientBeginDeathmatch( self );
+// acebot ???
+		//////////////ClientBeginDeathmatch( self ); //hypov8 match end, spawn client again???
 	}
 	gi.WriteByte( svc_stufftext );
 	gi.WriteString( va("play world/cypress%i.wav", 2+(rand()%4)) );
@@ -409,19 +483,50 @@ void MatchEnd () // end of the match
 
 }
 
+/*
+================
+CheckAllPlayersSpawned
+DEATHMATCH_SPAWNING = level.modeset = DEATHMATCH_RUNNING
+TEAMPLAY_SPAWNING = level.modeset = TEAMPLAY_RUNNING;
 
-void CheckAllPlayersSpawned () // when starting a match this function is called until all the players are in the game
+when starting a match this function is called until all the players are in the game
+then sets mode dm or bm
+================
+*/
+void CheckAllPlayersSpawned()
 {
 
-	if (teamplay->value)
-		SpawnPlayers ();
+	if (teamplay->value) //hypov8 ToDo: acebot teamplay
+	{
+		// acebot
+		if (!level.bots_spawned)
+		{
+			ACEND_InitNodes();
+			ACEND_LoadNodes();
+			ACESP_LoadBots();
+		}
+		else
+		//end
+		SpawnPlayers();
+	}
 	else
-		SpawnPlayer ();
+	{
+		// acebot
+		if (!level.bots_spawned)
+		{
+			ACEND_InitNodes();
+			ACEND_LoadNodes();
+			ACESP_LoadBots();
+		}
+		else
+		//end
+		SpawnPlayer();
+	}
 		
-	if ((level.is_spawn) && (level.modeset == STARTINGMATCH))
-		level.modeset = MATCH;
-	if ((level.is_spawn) && (level.modeset == STARTINGPUB))
-		level.modeset = TEAMPLAY;
+	if ((level.is_spawn) && (level.modeset == DEATHMATCH_SPAWNING))
+		level.modeset = DEATHMATCH_RUNNING;
+	if ((level.is_spawn) && (level.modeset == TEAMPLAY_SPAWNING))
+		level.modeset = TEAMPLAY_RUNNING;
 
 		
 }
@@ -433,15 +538,27 @@ void CheckIdleMatchSetup () // restart the server if its empty in matchsetup mod
 	int		i;
 	edict_t	*doot;
 
+	level.bots_spawned = 0;
+
 	for_each_player (doot,i)
 		count++;
 	if (count == 0)
 		ResetServer ();
 }
 
+/*
+================
+CheckStartMatch
+calls Start_Match() when time is up
+level.modeset = DEATHMATCH_SPAWNING;
 
-void CheckStartMatch () // 15 countdown before matches
+15 countdown before matches
+================
+*/
+void CheckStartMatch () 
 {
+	level.bots_spawned = 0; //hypov8 // acebots
+
 	if (level.framenum >= level.startframe + 145)
 	{
 		Start_Match ();
@@ -449,11 +566,22 @@ void CheckStartMatch () // 15 countdown before matches
 	}
 
 	if ((level.framenum % 10 == 0 ) && (level.framenum > level.startframe + 49))
-		gi.bprintf(PRINT_HIGH,"The Match will start in %d seconds!\n", (140 - (level.framenum - level.startframe)) / 10);
+		safe_bprintf(PRINT_HIGH, "DEATHMATCH:: The Match will start in %d seconds!\n", (140 - (level.framenum - level.startframe)) / 10);
 }
 
-void CheckStartPub () // 35 second countdown before server starts
+/*
+================
+CheckStartPub
+calls Start_Pub()
+->level.modeset = TEAMPLAY_SPAWNING;
+
+35 second countdown before server starts
+================
+*/
+void CheckStartPub ()
 {
+	level.bots_spawned = 0; //hypov8 // acebots
+
 	if (level.framenum >= 345)
 	{
 		Start_Pub ();
@@ -461,7 +589,7 @@ void CheckStartPub () // 35 second countdown before server starts
 	}
 
 	if ((level.framenum % 10 == 0 ) && (level.framenum > 299))
-		gi.bprintf(PRINT_HIGH,"The Server will start in %d seconds!\n", (340 - (level.framenum )) / 10);
+		safe_bprintf(PRINT_HIGH, "TEAMPLAY:: The Server will start in %d seconds!\n", (340 - (level.framenum)) / 10);
 }
 
 void getTeamTags();
@@ -475,16 +603,30 @@ void CheckEndMatch () // check if time,frag,cash limits have been reached in a m
 	if(level.framenum % 100 == 0 && !level.manual_tagset){
 		getTeamTags();
 	}
+	// acebot
+	//safe_bprintf(PRINT_HIGH, "--> ACEND_SaveNodes.\n");
+	//ACEND_SaveNodes(); //save file nodes
+	//num_players = 0;
+	//end
 
 	for_each_player (doot,i)
 		count++;
-	if (count == 0)
-		ResetServer ();
+	//if (count == 0)
+	//	ResetServer ();
 
 	if ((int)fraglimit->value && (int)teamplay->value==4){
 		if (team_cash[1]>=(int)fraglimit->value || team_cash[2]>=(int)fraglimit->value) {
-			gi.bprintf (PRINT_HIGH, "Fraglimit hit.\n");
+			safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 			MatchEnd ();
+			//hypo
+			if (count == 0)
+				ResetServer();
+			else
+				if (!allow_map_voting)
+					EndDMLevel();
+				else
+					SetupMapVote();
+			//end
 			return;
 		}
 	}
@@ -493,8 +635,17 @@ void CheckEndMatch () // check if time,frag,cash limits have been reached in a m
 	{
 		if ((team_cash[1] >= (int)cashlimit->value) || (team_cash[2] >= (int)cashlimit->value))
 		{
-			gi.bprintf (PRINT_HIGH, "Cashlimit hit.\n");
-			MatchEnd ();
+			safe_bprintf(PRINT_HIGH, "Cashlimit hit.\n");
+			MatchEnd();
+			//hypo
+			if (count == 0)
+				ResetServer();
+			else
+				if (!allow_map_voting)
+					EndDMLevel();
+				else
+					SetupMapVote();
+			//end
 			return;
 		}
 	}
@@ -502,22 +653,31 @@ void CheckEndMatch () // check if time,frag,cash limits have been reached in a m
 	if ((int)timelimit->value) {
 		if (level.framenum > (level.startframe + ((int)timelimit->value) * 600 - 1))
 		{
-			gi.bprintf (PRINT_HIGH, "Timelimit hit.\n");
+			safe_bprintf(PRINT_HIGH, "Timelimit hit.\n");
 			MatchEnd();
+			//hypo
+			if (count == 0)
+				ResetServer();
+			else
+				if (!allow_map_voting)
+					EndDMLevel();
+				else
+					SetupMapVote();
+			//end
 			return;
 		}
 		if (((level.framenum - level.startframe ) % 10 == 0 ) && (level.framenum > (level.startframe + (((int)timelimit->value  * 600) - 155))))  
 		{
-			gi.bprintf(PRINT_HIGH,"The Match will end in  %d seconds\n", (((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
+			safe_bprintf(PRINT_HIGH, "The Match will end in  %d seconds\n", (((int)timelimit->value * 600) + level.startframe - level.framenum) / 10);
 			return;
 		}
 		if (((level.framenum - level.startframe ) % 600 == 0 ) && (level.framenum > (level.startframe + (((int)timelimit->value * 600) - 3000))))  
 		{
-			gi.bprintf(PRINT_HIGH,"The Match will end in  %d minutes\n", (((int)timelimit->value * 600) + level.startframe - level.framenum ) / 600);
+			safe_bprintf(PRINT_HIGH, "The Match will end in  %d minutes\n", (((int)timelimit->value * 600) + level.startframe - level.framenum) / 600);
 			return;
 		}
 		if ((level.framenum - level.startframe ) % 3000 == 0 )
-			gi.bprintf(PRINT_HIGH,"The Match will end in  %d minutes\n", (((int)timelimit->value * 600) + level.startframe - level.framenum ) / 600);
+			safe_bprintf(PRINT_HIGH, "The Match will end in  %d minutes\n", (((int)timelimit->value * 600) + level.startframe - level.framenum) / 600);
 	}
 
 	
@@ -574,7 +734,7 @@ void CheckVote() // check the timelimit for an admin vote
 		switch (level.voteset)
 		{
 			case VOTE_ON_ADMIN:
-				gi.bprintf(PRINT_HIGH,"The request for admin has failed!\n");
+				safe_bprintf(PRINT_HIGH, "The request for admin has failed!\n");
 				break;
 		}
 		level.voteset = NO_VOTES;
@@ -591,31 +751,38 @@ int	CheckNameBan (char *name)
 	strcpy(n,name);
 	for (i=0;i<strlen(n);i++) n[i]=tolower(n[i]);
 	for (i=0;i<num_netnames;i++) {
-		if (strstr(n,netname[i].value))
+		if (strstr(n,netname[i].value)) 
 			return true;
 	}
 	return false;
 }
 
-int	CheckPlayerBan (char *userinfo)
+int	CheckPlayerBan(char *userinfo)
 {
+
 	char	*value, *test;
 	int		i;
-    char    temp[22];
+	char    temp[22];
 
-	value = Info_ValueForKey (userinfo, "name");
-	if (CheckNameBan(value))
-		return true;
+	if (num_netnames) //add hypov8, if missing
+	{
+		value = Info_ValueForKey(userinfo, "name");
+		if (CheckNameBan(value))
+			return true;
+	}
 
-    value = Info_ValueForKey (userinfo, "ip");
-	
-    strcpy(temp, value);
-    test = strrchr(temp,':');
-    test[0]='\0';
+	if (num_ips) //add hypov8, if missing
+	{
+		value = Info_ValueForKey(userinfo, "ip");
 
-    for (i=0;i<num_ips;i++)
-		if (strstr(temp, ip[i].value))
+		strcpy(temp, value);
+		test = strrchr(temp, ':');
+		test[0] = '\0';
+
+		for (i = 0; i < num_ips; i++)
+			if (strstr(temp, ip[i].value))
 				return true;
+	}
     
 /*    for (i=0;i<num_ips;i++) {
 		isSame = true;

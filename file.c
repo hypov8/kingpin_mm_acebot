@@ -291,7 +291,7 @@ int proccess_ini_file()
 		case DISABLE_ANON_TEXT_KEYWORD:
 			disable_anon_text = true;
 			break;
-		case DISABLE_CURSE_KEYWORD:
+	    case DISABLE_CURSE_KEYWORD:
 			disable_curse = true;
 			break;
         case UNLIMITED_CURSE_KEYWORD:

@@ -835,6 +835,22 @@ int Q_log2(int val)
 	return answer;
 }
 
+// NET_ANTILAG	//et-xreal antilag
+/*
+=================
+LerpPosition
+hypov8 calculate a historical origin
+with % between 2 frames
+=================
+*/
+void LerpPosition(vec3_t start, vec3_t end, float frac, vec3_t out)
+{
+	vec3_t          dist;
+
+	VectorSubtract(end, start, dist);
+	VectorMA(start, frac, dist, out);
+}
+// END_LAG
 
 
 //====================================================================================

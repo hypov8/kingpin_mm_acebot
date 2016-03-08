@@ -142,7 +142,9 @@ struct node_s
 	// used by NAV_GetHidePos() to speed things up
 	float		last_sight_check;
 	qboolean	last_sight_result;
-
+// ACEBOT_ADD
+	int type;
+// ACEBOT_END
 };
 
 // ..................................................................

@@ -667,7 +667,7 @@ void use_target_changelevel (edict_t *self, edict_t *other, edict_t *activator)
 	if (deathmatch->value)
 	{
 		if (activator && activator->client)
-			gi.bprintf (PRINT_HIGH, "%s exited the level.\n", activator->client->pers.netname);
+			safe_bprintf(PRINT_HIGH, "%s exited the level.\n", activator->client->pers.netname);
 	}
 
 	// if going to a new unit, clear cross triggers
@@ -1530,7 +1530,7 @@ void target_timer_use (edict_t *self, edict_t *other, edict_t *activator)
             if (timerValue[TeamID][PlayerID] > 0)
             // was started
             {
-                gi.bprintf(PRINT_HIGH, "%s stopped timer %i in %.1fs\n", activator->client->pers.netname, TeamID, (level.framenum-timerValue[TeamID][PlayerID])/10.0);
+				safe_bprintf(PRINT_HIGH, "%s stopped timer %i in %.1fs\n", activator->client->pers.netname, TeamID, (level.framenum - timerValue[TeamID][PlayerID]) / 10.0);
                 timerValue[TeamID][PlayerID] = 0;
             }
             // was _not_ started
@@ -1543,7 +1543,7 @@ void target_timer_use (edict_t *self, edict_t *other, edict_t *activator)
         // start
         /*if (!timerValue[TeamID][PlayerID])*/ {
             timerValue[TeamID][PlayerID] = level.framenum;
-            gi.bprintf(PRINT_HIGH, "%s started timer %i\n", activator->client->pers.netname, TeamID);
+			safe_bprintf(PRINT_HIGH, "%s started timer %i\n", activator->client->pers.netname, TeamID);
         }
     }
 }

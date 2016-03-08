@@ -212,7 +212,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 //
 	if ((ent->message) && !(activator->svflags & SVF_MONSTER))
 	{
-		gi.centerprintf (activator, "%s", ent->message);
+		safe_centerprintf(activator, "%s", ent->message);
 		if (ent->noise_index)
 			gi.sound (activator, CHAN_AUTO, ent->noise_index, 1, ATTN_NORM, 0);
 		// JOSEPH 29-MAR-99
@@ -595,7 +595,7 @@ qboolean KillBox (edict_t *ent)
 			break;
 
 		// nail it
-		T_Damage (tr.ent, ent, ent, vec3_origin, ent->s.origin, vec3_origin, 100000, 0, DAMAGE_NO_PROTECTION, MOD_TRIGGER_HURT); //MOD TELEFRAG
+		T_Damage(tr.ent, ent, ent, vec3_origin, ent->s.origin, vec3_origin, 100000, 0, DAMAGE_NO_PROTECTION, MOD_TRIGGER_HURT); //MOD TELEFRAG
 
 		// if we didn't kill it, fail
 		if (tr.ent->solid)

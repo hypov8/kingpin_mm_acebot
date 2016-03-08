@@ -293,7 +293,7 @@ field_t		castmemoryfields[] =
 };
 
 
-char lockpvs[8],scaletime[8],locktex[8],lockfoot[8],lockmouse[8];
+char lockpvs[8], scaletime[8], locktex[8], lockfoot[8], lockmouse[8];
 
 /*
 ============
@@ -340,6 +340,12 @@ void InitGame (void)
 	sv_maxvelocity = gi.cvar ("sv_maxvelocity", "2000", 0);
 	sv_gravity = gi.cvar ("sv_gravity", "800", 0);
 
+// NET_ANTILAG	//et-xreal antilag
+	sv_antilag_noexp = gi.cvar("sv_antilag_noexp", "0", CVAR_SERVERINFO);
+	sv_antilag_botdelay = gi.cvar("sv_antilag_botdelay", "0", CVAR_SERVERINFO);
+	sv_antilag = gi.cvar("sv_antilag", "1", CVAR_SERVERINFO);
+// END_LAG
+
 	// noset vars
 	dedicated = gi.cvar ("dedicated", "0", CVAR_NOSET);
 
@@ -347,6 +353,7 @@ void InitGame (void)
 	sv_cheats = gi.cvar ("cheats", "0", CVAR_LATCH);
 	gi.cvar ("gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_LATCH);
 	gi.cvar ("gamedate", __DATE__ , CVAR_SERVERINFO | CVAR_LATCH);
+
 
     no_spec = gi.cvar ("no_spec", "0", CVAR_SERVERINFO);
     no_shadows = gi.cvar ("no_shadows", "0", CVAR_SERVERINFO);
@@ -435,7 +442,7 @@ void InitGame (void)
 
 	timescale		= gi.cvar("timescale", "1.0", 0);
 
-    // speed hack fix
+	// speed hack fix
 	gi.cvar_set("sv_enforcetime","1");
 
 	teamplay		= gi.cvar("teamplay", "0", CVAR_LATCH|CVAR_SERVERINFO);
@@ -515,8 +522,8 @@ void InitGame (void)
 	locktex[i]=0;
     for (i=0;i<7;i++) lockfoot[i]='a'+(rand()%26);
     lockfoot[i]=0;
-    for (i=0;i<7;i++) lockmouse[i]='a'+(rand()%26);
-    lockmouse[i]=0;
+	for (i = 0; i<7; i++) lockmouse[i] = 'a' + (rand() % 26);
+	lockmouse[i] = 0;
 }
 
 //=========================================================

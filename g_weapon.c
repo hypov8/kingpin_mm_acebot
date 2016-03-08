@@ -185,13 +185,18 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 	static float lastshotgun = 0;
 	vec3_t		tempvec;
 	int			conweap = 0;
-
+	//int passent;
 	self->client->resp.accshot++;
 	hit=0;
 
 	PlayerNoise(self, start, PNOISE_WEAPON);
 
+// NET_ANTILAG	//et-xreal antilag
+	G_HistoricalTraceBegin(self, NULL);
+// END_LAG
+
 	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT );
+
 	if (!(tr.fraction < 1.0))
 	{
 		vectoangles (aimdir, dir);
@@ -221,22 +226,20 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 
 		tr = gi.trace (start, NULL, NULL, end, self, content_mask);
 
-		if (mod == MOD_BLACKJACK)
-		{
-			vec3_t newvec;
-
-			VectorSubtract(start, tr.endpos, newvec);
-			if (VectorLength(newvec) > 32) return;
-			conweap = 1; 
-		}
-
 		// JOSEPH 19-JAN-99
+		//hypo will never happen, its fire lead?
 		if ((mod == MOD_BLACKJACK) || (mod == MOD_CROWBAR))
 		{
 			vec3_t newvec;
 
 			VectorSubtract(start, tr.endpos, newvec);
-			if (VectorLength(newvec) > 32) return;
+
+// NET_ANTILAG	//et-xreal antilag
+			if (VectorLength(newvec) > 32){ G_HistoricalTraceEnd(self, NULL);	return; }
+
+			//if (VectorLength(newvec) > 32) return;
+// END_LAG
+
 			conweap = 1; 
 		}
 		// END JOSEPH
@@ -690,8 +693,11 @@ bolt:
 		gi.WritePosition (tr.endpos);
 		gi.multicast (pos, MULTICAST_PVS);
 	}
-
 	if (hit && (int)teamplay->value!=1) self->client->resp.acchit++;
+
+// NET_ANTILAG	//et-xreal antilag
+	G_HistoricalTraceEnd(self, NULL);
+// END_LAG
 }
 // END JOSEPH
 
@@ -1128,6 +1134,11 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	grenade->s.renderfx  |= RF_REFL_MAP;
 	// END JOSEPH
 
+// NET_ANTILAG	//et-xreal antilag
+	grenade->antilagPingTimer = self->client->ping; //hypov8 set ping for missile, used in old frame traces,
+	grenade->antilagToTrace = true;
+// END_LAG
+
 	// Ridah, Grenade Avoidance: notify AI of our existance
 /*
 	{
@@ -1225,6 +1236,12 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 	grenade->dmg = damage;
 	grenade->dmg_radius = damage_radius;
 	grenade->classname = "hgrenade";
+
+// NET_ANTILAG	//et-xreal antilag
+	grenade->antilagPingTimer = self->client->ping; //hypov8 set ping for missile, used in old frame traces,
+	grenade->antilagToTrace = true;
+// END_LAG
+
 	if (held)
 		grenade->spawnflags = 3;
 	else
@@ -1368,6 +1385,11 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->health = 10;
 	rocket->takedamage = DAMAGE_YES;
 	rocket->die = rocket_die;
+
+// NET_ANTILAG	//et-xreal antilag
+	rocket->antilagPingTimer = self->client->ping; //hypov8 set ping for missile, used in old frame traces,
+	rocket->antilagToTrace = true;
+// END_LAG
 
 	PlayerNoise(self, start, PNOISE_WEAPON);
 
@@ -2363,6 +2385,9 @@ void fire_flamethrower (edict_t *self, vec3_t start, vec3_t forward, int damage,
 	VectorMA( start, 8, xup, start );
 	VectorMA ( start, (FLAME_SPEED*FLAME_LIFETIME), xforward, end );
 
+// NET_ANTILAG	//et-xreal antilag
+	G_HistoricalTraceBegin(self, NULL);
+// END_LAG
 	
 	tr = gi.trace (start, mins, maxs, end, self, MASK_SOLID);
 
@@ -2377,6 +2402,10 @@ void fire_flamethrower (edict_t *self, vec3_t start, vec3_t forward, int damage,
 
 			T_Damage (self, self, self, forward, self->s.origin, vec3_origin, damage, kick, 10, mod);
 			gi.sound (self, CHAN_BODY, gi.soundindex ("world/fire.wav"), 1, ATTN_NORM, 0);
+
+// NET_ANTILAG	//et-xreal antilag
+			G_HistoricalTraceEnd(self, NULL);
+// END_LAG
 			return;
 		}
 	}
@@ -2409,6 +2438,10 @@ void fire_flamethrower (edict_t *self, vec3_t start, vec3_t forward, int damage,
 	junc->think = FlameJunc_Think;
 	junc->nextthink = level.time + 0.1;
 
+// NET_ANTILAG	//et-xreal antilag
+	junc->antilagPingTimer = self->client->ping; //hypov8 set ping for missile, used to trace players in old frames
+	junc->antilagToTrace = true; //run antilag on this when think is called
+// END_LAG
 
 	if (self->svflags & SVF_MONSTER)
 	{
@@ -2426,6 +2459,12 @@ void fire_flamethrower (edict_t *self, vec3_t start, vec3_t forward, int damage,
 			}
 		}
 	}
+
+
+// NET_ANTILAG	//et-xreal antilag
+	G_HistoricalTraceEnd(self, NULL);
+// END_LAG
+
 /*
 	if (!tr.ent->takedamage && (tr.fraction > 0.1))
 	{
@@ -2536,6 +2575,11 @@ static qboolean fire_concussion (edict_t *self, vec3_t start, vec3_t aimdir, flo
 //	vec3_t		tempvec;
 	int			conweap = 0;
 	qboolean	is_mdx = false;
+
+// NET_ANTILAG	//et-xreal antilag
+	G_HistoricalTraceBegin(self, NULL);
+// END_LAG
+
 
 	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT );
 	if (!(tr.fraction < 1.0))
@@ -2965,6 +3009,9 @@ bolt:
 		gi.multicast (pos, MULTICAST_PVS);
 	}
 */
+// NET_ANTILAG	//et-xreal antilag
+	G_HistoricalTraceEnd(self, NULL);
+// END_LAG
 
 	if (is_mdx)
 		return true;

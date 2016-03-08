@@ -2143,7 +2143,7 @@ void Resp_MagicJ_GotDollar( edict_t *self, edict_t *other, response_t response )
 			else
 			{
 				Voice_Specific( self, other, specific, 6 );
-				// gi.cprintf( self, PRINT_HIGH, "You don't have a dollar to give.\n" );
+				// safe_cprintf( self, PRINT_HIGH, "You don't have a dollar to give.\n" );
 
 				response = resp_no;
 			}
@@ -2188,7 +2188,7 @@ void Resp_Rummy_GotWine ( edict_t *self, edict_t *other, response_t response )
 			}
 			else
 			{
-				// gi.cprintf( self, PRINT_HIGH, "FIXME: You don't have any wine to give.\n" );
+				// safe_cprintf( self, PRINT_HIGH, "FIXME: You don't have any wine to give.\n" );
 				
 				Voice_Specific( self, other, player_whiskey, 1 );
 				response = resp_no;
@@ -2197,14 +2197,14 @@ void Resp_Rummy_GotWine ( edict_t *self, edict_t *other, response_t response )
 		}
 		else
 		{
-			// gi.cprintf( self, PRINT_HIGH, "FIXME: You don't have any wine to give.\n" );
+			// safe_cprintf( self, PRINT_HIGH, "FIXME: You don't have any wine to give.\n" );
 			Voice_Specific( self, other, player_whiskey, 1 );
 			response = resp_no;
 		}
 	}
 	else if (response == resp_no)
 	{
-		//gi.cprintf( self, PRINT_HIGH, "FIXME: I aint go any drink to give.\n" );
+		//safe_cprintf( self, PRINT_HIGH, "FIXME: I aint go any drink to give.\n" );
 		Voice_Specific( self, other, player_whiskey, 1 );
 		Voice_Player_Specific(self, TT_NO);
 	}

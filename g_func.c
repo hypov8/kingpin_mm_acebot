@@ -1758,7 +1758,7 @@ void door_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *sur
 		return;
 	self->touch_debounce_time = level.time + 5.0;
 
-	gi.centerprintf (other, "%s", self->message);
+	safe_centerprintf(other, "%s", self->message);
 	// JOSEPH 29-MAR-99
 	//gi.sound (other, CHAN_AUTO, gi.soundindex ("misc/talk1.wav"), 1, ATTN_NORM, 0);
 	// END JOSEPH
@@ -2181,7 +2181,7 @@ void door_touch_subdoor (edict_t *self, edict_t *other, cplane_t *plane, csurfac
 		return;
 	self->touch_debounce_time = level.time + 5.0;
 
-	gi.centerprintf (other, "%s", self->message);
+	safe_centerprintf(other, "%s", self->message);
 	// JOSEPH 29-MAR-99
 	//gi.sound (other, CHAN_AUTO, gi.soundindex ("misc/talk1.wav"), 1, ATTN_NORM, 0);
 	// END JOSEPH

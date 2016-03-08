@@ -4,7 +4,7 @@
 
 void	Svcmd_Test_f (void)
 {
-	gi.cprintf (NULL, PRINT_HIGH, "Svcmd_Test_f()\n");
+	safe_cprintf(NULL, PRINT_HIGH, "Svcmd_Test_f()\n");
 }
 
 /*
@@ -71,7 +71,7 @@ static qboolean StringToFilter (char *s, ipfilter_t *f)
 	{
 		if (*s < '0' || *s > '9')
 		{
-			gi.cprintf(NULL, PRINT_HIGH, "Bad filter address: %s\n", s);
+			safe_cprintf(NULL, PRINT_HIGH, "Bad filter address: %s\n", s);
 			return false;
 		}
 		
@@ -141,7 +141,7 @@ void SVCmd_AddIP_f (void)
 	int		i;
 	
 	if (gi.argc() < 3) {
-		gi.cprintf(NULL, PRINT_HIGH, "Usage:  addip <ip-mask>\n");
+		safe_cprintf(NULL, PRINT_HIGH, "Usage:  addip <ip-mask>\n");
 		return;
 	}
 
@@ -152,7 +152,7 @@ void SVCmd_AddIP_f (void)
 	{
 		if (numipfilters == MAX_IPFILTERS)
 		{
-			gi.cprintf (NULL, PRINT_HIGH, "IP filter list is full\n");
+			safe_cprintf(NULL, PRINT_HIGH, "IP filter list is full\n");
 			return;
 		}
 		numipfilters++;
@@ -173,7 +173,7 @@ void SVCmd_RemoveIP_f (void)
 	int			i, j;
 
 	if (gi.argc() < 3) {
-		gi.cprintf(NULL, PRINT_HIGH, "Usage:  sv removeip <ip-mask>\n");
+		safe_cprintf(NULL, PRINT_HIGH, "Usage:  sv removeip <ip-mask>\n");
 		return;
 	}
 
@@ -187,10 +187,10 @@ void SVCmd_RemoveIP_f (void)
 			for (j=i+1 ; j<numipfilters ; j++)
 				ipfilters[j-1] = ipfilters[j];
 			numipfilters--;
-			gi.cprintf (NULL, PRINT_HIGH, "Removed.\n");
+			safe_cprintf(NULL, PRINT_HIGH, "Removed.\n");
 			return;
 		}
-	gi.cprintf (NULL, PRINT_HIGH, "Didn't find %s.\n", gi.argv(2));
+	safe_cprintf(NULL, PRINT_HIGH, "Didn't find %s.\n", gi.argv(2));
 }
 
 /*
@@ -203,11 +203,11 @@ void SVCmd_ListIP_f (void)
 	int		i;
 	byte	b[4];
 
-	gi.cprintf (NULL, PRINT_HIGH, "Filter list:\n");
+	safe_cprintf(NULL, PRINT_HIGH, "Filter list:\n");
 	for (i=0 ; i<numipfilters ; i++)
 	{
 		*(unsigned *)b = ipfilters[i].compare;
-		gi.cprintf (NULL, PRINT_HIGH, "%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
+		safe_cprintf(NULL, PRINT_HIGH, "%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
 	}
 }
 
@@ -231,12 +231,12 @@ void SVCmd_WriteIP_f (void)
 	else
 		sprintf (name, "%s"DIR_SLASH"listip.cfg", game->string);
 
-	gi.cprintf (NULL, PRINT_HIGH, "Writing %s.\n", name);
+	safe_cprintf(NULL, PRINT_HIGH, "Writing %s.\n", name);
 
 	f = fopen (name, "wb");
 	if (!f)
 	{
-		gi.cprintf (NULL, PRINT_HIGH, "Couldn't open %s\n", name);
+		safe_cprintf(NULL, PRINT_HIGH, "Couldn't open %s\n", name);
 		return;
 	}
 	
@@ -276,11 +276,49 @@ void	ServerCommand (void)
 		SVCmd_ListIP_f ();
 	else if (Q_stricmp (cmd, "writeip") == 0)
 		SVCmd_WriteIP_f ();
-    else if (!Q_stricmp(cmd,"banip")) 
-        Cmd_BanDicks_f(NULL, 1);
-    else if (!Q_stricmp(cmd,"banname")) 
-        Cmd_BanDicks_f(NULL, 0);
-	else
-		gi.cprintf (NULL, PRINT_HIGH, "Unknown server command \"%s\"\n", cmd);
+
+
+// ACEBOT_ADD //hypov8 ctf? bagman?
+
+	else if (Q_stricmp(cmd, "acedebug") == 0)
+		if (strcmp(gi.argv(2), "on") == 0)
+		{
+			safe_bprintf(PRINT_MEDIUM, "ACE: Debug Mode On\n");
+			debug_mode = true;
+		}
+		else
+		{
+			safe_bprintf(PRINT_MEDIUM, "ACE: Debug Mode Off\n");
+			debug_mode = false;
+		}
+
+	else if (Q_stricmp(cmd, "addbot") == 0)
+	{
+		/* bots need to be added between game start and end. less issues and for bot saves */
+		if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING)
+		{
+			//if ( ctf->value) // name, skin, team 
+			//	ACESP_SpawnBot(gi.argv(2), gi.argv(3), gi.argv(4), NULL);
+			//else // name, skin
+			ACESP_SpawnBot(NULL, gi.argv(2), gi.argv(3), NULL);
+		}
+	}
+
+	// removebot
+	else if (Q_stricmp(cmd, "removebot") == 0)
+		ACESP_RemoveBot(gi.argv(2));
+
+	// Node saving
+	else if (Q_stricmp(cmd, "savenodes") == 0)
+		ACEND_SaveNodes();
+
+// ACEBOT_END
+
+	else if (!Q_stricmp(cmd, "banip"))
+		Cmd_BanDicks_f(NULL, 1);
+	else if (!Q_stricmp(cmd, "banname"))
+		Cmd_BanDicks_f(NULL, 0);
+    else
+		safe_cprintf(NULL, PRINT_HIGH, "Unknown server command \"%s\"\n", cmd);
 }
 

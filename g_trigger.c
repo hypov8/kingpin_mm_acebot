@@ -288,7 +288,7 @@ void trigger_key_use (edict_t *self, edict_t *other, edict_t *activator)
 		}
 		else
 		{
-			gi.centerprintf (activator, "You need the %s", self->item->pickup_name);
+			safe_centerprintf(activator, "You need the %s", self->item->pickup_name);
 		}
 		// END JOSEPH
 		return;
@@ -404,7 +404,7 @@ void trigger_counter_use(edict_t *self, edict_t *other, edict_t *activator)
 		if (! (self->spawnflags & 1))
 		{
 			if (developer->value)
-				gi.centerprintf(activator, "%i more to go...", self->count);
+				safe_centerprintf(activator, "%i more to go...", self->count);
 			// JOSEPH 29-MAR-99
 			//gi.sound (activator, CHAN_AUTO, gi.soundindex ("misc/talk1.wav"), 1, ATTN_NORM, 0);
 			// END JOSEPH
@@ -416,8 +416,8 @@ void trigger_counter_use(edict_t *self, edict_t *other, edict_t *activator)
 	{
 		if (developer->value)
 		{
-			// gi.centerprintf(activator, "Sequence completed!");
-			gi.centerprintf (activator, "Armagedon virus installed successfully");
+			// safe_centerprintf(activator, "Sequence completed!");
+			safe_centerprintf(activator, "Armagedon virus installed successfully");
 		}
 
 		// JOSEPH 29-MAR-99

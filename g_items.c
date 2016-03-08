@@ -1269,14 +1269,14 @@ static void drop_temp_touch (edict_t *ent, edict_t *other, cplane_t *plane, csur
 	if (other == ent->owner)
 		return;
 
-//	gi.bprintf(PRINT_HIGH,"calling drop_temp_touch\n");
+//	safe_bprintf(PRINT_HIGH,"calling drop_temp_touch\n");
 	Touch_Item (ent, other, plane, surf);
 }
 
 static void drop_make_touchable (edict_t *ent)
 {
 
-//	gi.bprintf(PRINT_HIGH,"calling drop_make touchable\n");
+//	safe_bprintf(PRINT_HIGH,"calling drop_make touchable\n");
 
 	ent->touch = Touch_Item;
 	if (deathmatch->value)

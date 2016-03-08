@@ -50,6 +50,12 @@ cvar_t	*filterban;
 cvar_t	*sv_maxvelocity;
 cvar_t	*sv_gravity;
 
+// NET_ANTILAG	//et-xreal antilag
+cvar_t	*sv_antilag_noexp;
+cvar_t	*sv_antilag_botdelay;
+cvar_t	*sv_antilag;
+// END_LAG
+
 cvar_t	*sv_rollspeed;
 cvar_t	*sv_rollangle;
 cvar_t	*gun_x;
@@ -149,6 +155,11 @@ void ShutdownGame (void)
 	edict_t		*ent;
 	char buf[1024];
 	char buf1[16];
+
+// acebot
+	ACEND_SaveNodes(); //save file nodes
+	num_players = 0;
+//end
 
 	buf[0]=0;
 	for (i=0 ; i<maxclients->value ; i++) {
@@ -456,7 +467,7 @@ void EndDMLevel (void)
 		ent = G_Spawn ();
 		ent->classname = "target_changelevel";
 		ent->map = nextmap;
-//		gi.bprintf (PRINT_HIGH, "Next map will be: %s.\n", ent->map);
+//		safe_bprintf(PRINT_HIGH, "Next map will be: %s.\n", ent->map);
 	
 		goto done;
 	}
@@ -528,7 +539,7 @@ void CheckDMRules (void)
 	{
 		if (level.framenum > (level.startframe + ((int)timelimit->value) * 600 - 1))
 		{
-			gi.bprintf (PRINT_HIGH, "Timelimit hit.\n");
+			safe_bprintf(PRINT_HIGH, "Timelimit hit.\n");
 			if (count == 0)
 				ResetServer();
 			else
@@ -544,7 +555,7 @@ void CheckDMRules (void)
 	{
 		if ((int)teamplay->value==4){
 			if (team_cash[1]>=(int)fraglimit->value || team_cash[2]>=(int)fraglimit->value) {
-				gi.bprintf (PRINT_HIGH, "Fraglimit hit.\n");
+				safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 				if (!allow_map_voting)
 					EndDMLevel ();
 				else
@@ -558,7 +569,7 @@ void CheckDMRules (void)
 					continue;
 
 				if (cl->resp.score >= fraglimit->value) {
-					gi.bprintf (PRINT_HIGH, "Fraglimit hit.\n");
+					safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 					if (!allow_map_voting)
 						EndDMLevel ();
 					else
@@ -573,7 +584,7 @@ void CheckDMRules (void)
 	{
 		if ((team_cash[1] >= cashlimit->value) || (team_cash[2] >= cashlimit->value))
 		{
-			gi.bprintf (PRINT_HIGH, "Cashlimit hit.\n");
+			safe_bprintf(PRINT_HIGH, "Cashlimit hit.\n");
 				if (!allow_map_voting)
 					EndDMLevel ();
 				else
@@ -746,6 +757,19 @@ void G_RunFrame (void)
 	// Process Generic Combat AI layer
 
 	AI_ProcessCombat ();
+
+
+// NET_ANTILAG	//et-xreal antilag
+	// store the client's current position for antilag traces
+	//added here b4 each player/entity trys to do a lookup
+	for (i = 0; i < game.maxclients; i++)
+	{
+		ent = &g_edicts[1 + i];
+		G_StoreClientPosition(ent);
+	}
+// END_LAG
+
+
 
 
 	//
@@ -993,10 +1017,35 @@ void G_RunFrame (void)
 		if (i > 0 && i <= maxclients->value)
 		{
 			ClientBeginServerFrame (ent);
+// ACEBOT_ADD - RiEvEr
+			if (ent->is_bot)
+			{		//dont run bots when not ingame
+				if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING)
+				G_RunEntity(ent);
+			}
+// ACEBOT_END
+
 		}
 		else
 		{
+// NET_ANTILAG	//et-xreal antilag
+			qboolean antilagtotrace = 0;
+			edict_t	*owner = NULL;
+
+			if (ent->antilagToTrace && !sv_antilag_noexp->value) //item will cause damage so back trace
+			{
+				antilagtotrace = 1; //incase item is removed from world
+				owner = ent->owner;
+				G_HistoricalTraceBegin(ent, owner);
+			}
+// END_LAG
+
 			G_RunEntity (ent);
+
+// NET_ANTILAG	//et-xreal antilag
+			if (antilagtotrace)
+				G_HistoricalTraceEnd(ent, owner);
+// END_LAG
 
 			// Ridah, fast walking speed
 			if (	(ent->cast_info.aiflags & AI_FASTWALK)
@@ -1013,70 +1062,75 @@ void G_RunFrame (void)
 			}
 		}
 
-		// Ridah, update lights if using directional lighting
-		if (!(r_directional_lighting->value) && !deathmatch->value)
+		if (!ent->is_bot)
 		{
-			if (ent->s.renderfx2 & RF2_DIR_LIGHTS)
+			// Ridah, update lights if using directional lighting
+			if (!(r_directional_lighting->value) && !deathmatch->value)
 			{
-				VectorSet( ent->s.last_lighting_update_pos, -9999, -9999, -9999 );
+				if (ent->s.renderfx2 & RF2_DIR_LIGHTS)
+				{
+					VectorSet(ent->s.last_lighting_update_pos, -9999, -9999, -9999);
+				}
+			}
+			else if (((ent->s.renderfx2 & RF2_DIR_LIGHTS) || (ent->client) || deathmatch->value))
+			{
+				if (!level.num_light_sources)	// no lights to source from, so default back to no dir lighting
+				{
+					ent->s.renderfx2 &= ~RF2_DIR_LIGHTS;
+				}
+				else
+				{
+
+					if (ent->client)
+						ent->s.renderfx2 |= RF2_DIR_LIGHTS;
+
+					// if single player, only calculate if it's visible to our player
+					if ((!VectorCompare(ent->s.last_lighting_update_pos, ent->s.origin))
+						&& ((ent->client && !deathmatch->value)
+						|| ((VectorDistance(ent->s.origin, ent->s.last_lighting_update_pos) > (deathmatch->value ? 128 : 64))
+						&& ((deathmatch->value)
+						|| (level.cut_scene_time)
+						|| ((gi.inPVS(g_edicts[1].s.origin, ent->s.origin))
+						&& (infront(&g_edicts[1], ent)))))))
+					{
+						UpdateDirLights(ent);
+
+						VectorCopy(ent->s.origin, ent->s.last_lighting_update_pos);
+					}
+					else if (showlights->value && gi.inPVS(g_edicts[1].s.origin, ent->s.origin))
+					{
+						UpdateDirLights(ent);
+					}
+
+				}
 			}
 		}
-		else if (((ent->s.renderfx2 & RF2_DIR_LIGHTS) || (ent->client) || deathmatch->value))
-		{
-			if (!level.num_light_sources)	// no lights to source from, so default back to no dir lighting
-			{
-				ent->s.renderfx2 &= ~RF2_DIR_LIGHTS;
-			}
-			else
-			{
-
-				if (ent->client)
-					ent->s.renderfx2 |= RF2_DIR_LIGHTS;
-
-				// if single player, only calculate if it's visible to our player
-				if (	(!VectorCompare(ent->s.last_lighting_update_pos, ent->s.origin))
-					 &&	(	(ent->client && !deathmatch->value)
-						||	(	(VectorDistance( ent->s.origin, ent->s.last_lighting_update_pos ) > (deathmatch->value ? 128 : 64))
-							 &&	(	(deathmatch->value)
-								 ||	(level.cut_scene_time)
-								 ||	(	(gi.inPVS( g_edicts[1].s.origin, ent->s.origin))
-									 &&	(infront( &g_edicts[1], ent ) ))))))
-				{
-					UpdateDirLights( ent );
-
-					VectorCopy( ent->s.origin, ent->s.last_lighting_update_pos );
-				}
-				else if (showlights->value && gi.inPVS( g_edicts[1].s.origin, ent->s.origin))
-				{
-					UpdateDirLights( ent );
-				}
-
-			}
-		}
-
 	}
 
 // Papa 10.6.99
 // these is where the server checks the state of the current mode
 // all the called functions are found in tourney.c
 
+	/* hypo game will be teamplay?? */
 	if (level.modeset == FREEFORALL)
-		CheckStartPub ();
+		CheckStartMatch();//CheckStartPub ();
 
 	if (level.modeset == MATCHSETUP)
 		CheckIdleMatchSetup ();
 
+	/* server command issued "matchstart" */
 	if (level.modeset == FINALCOUNT)
-		CheckStartMatch ();
+		CheckStartPub();  //CheckStartMatch();
 
-	if ((level.modeset == STARTINGMATCH) || (level.modeset == STARTINGPUB))
+	/* game is ready to spawn players */
+	if ((level.modeset == DEATHMATCH_SPAWNING) || (level.modeset == TEAMPLAY_SPAWNING))
 		CheckAllPlayersSpawned ();
 
-	if (level.modeset == MATCH)
+	if (level.modeset == DEATHMATCH_RUNNING)
 		CheckEndMatch ();
 
-	if (level.modeset == TEAMPLAY) 
-		CheckDMRules ();
+	if (level.modeset == TEAMPLAY_RUNNING)
+		CheckEndMatch(); //mm ver					// seems old?? //CheckDMRules ();
 
 	if (level.modeset == ENDMATCHVOTING) 
 		CheckEndVoteTime ();
@@ -1095,7 +1149,8 @@ void G_RunFrame (void)
 			t = ((350 -  level.framenum ) / 10);
 			sprintf(buf,"start in %d",t);
 			gi.cvar_set(TIMENAME,buf);
-		} else if (!level.intermissiontime && ((level.modeset == MATCH) || (level.modeset == TEAMPLAY))) {
+		}
+		else if (!level.intermissiontime && ((level.modeset == DEATHMATCH_RUNNING) || (level.modeset == TEAMPLAY_RUNNING))) {
 			t = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
 			if (t>0) {
 				sprintf(buf,"%d:%02d",t/60,t%60);

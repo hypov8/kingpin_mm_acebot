@@ -304,8 +304,8 @@ void safebag_touch( edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 
 			// let everyone know how much was deposited
 			amount = team_cash[self->style] - precash;
-			gi.bprintf( PRINT_MEDIUM, "%s deposited $%i\n", other->client->pers.netname, amount );
-            other->client->pers.fakeThief = 0;
+			safe_bprintf(PRINT_MEDIUM, "%s deposited $%i\n", other->client->pers.netname, amount);
+			other->client->pers.fakeThief = 0;
 
 			last_safe_deposit[self->style] = level.time;
 		}
@@ -337,7 +337,7 @@ void safebag_touch( edict_t *self, edict_t *other, cplane_t *plane, csurface_t *
 
 			// let everyone know how much was stolen
 			other->client->pers.fakeThief = amount = precash - team_cash[self->style];
-			gi.bprintf( PRINT_MEDIUM, "%s stole $%i from %s's safe!\n", other->client->pers.netname, amount, team_names[self->style] );
+			safe_bprintf(PRINT_MEDIUM, "%s stole $%i from %s's safe!\n", other->client->pers.netname, amount, team_names[self->style]);
 
 			last_safe_withdrawal[self->style] = level.time;
 
@@ -637,13 +637,13 @@ qboolean Teamplay_ValidateJoinTeam( edict_t *self, int teamindex )
 
 	self->client->pers.team = teamindex;
 	self->client->pers.spectator = PLAYING;
-	if ((level.modeset != STARTINGMATCH) && (level.modeset != STARTINGPUB))
+	if ((level.modeset != DEATHMATCH_SPAWNING) && (level.modeset != TEAMPLAY_SPAWNING))
 	{
-		gi.bprintf( PRINT_HIGH, "%s joined %s\n", self->client->pers.netname, team_names[teamindex] );
+		safe_bprintf(PRINT_HIGH, "%s joined %s\n", self->client->pers.netname, team_names[teamindex]);
 //		sl_WriteStdLogPlayerEntered( &gi, level, self );	// Standard Logging
 	}
 
-	if ((level.modeset == TEAMPLAY) || (level.modeset == MATCH) || (level.modeset == STARTINGMATCH) || (level.modeset == STARTINGPUB))
+	if ((level.modeset == TEAMPLAY_RUNNING) || (level.modeset == DEATHMATCH_RUNNING) || (level.modeset == DEATHMATCH_SPAWNING) || (level.modeset == TEAMPLAY_SPAWNING))
 	{
 		self->movetype = MOVETYPE_WALK;
 		self->solid = SOLID_BBOX;
