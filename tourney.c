@@ -53,6 +53,18 @@ ban_t	rconx_pass[100];
 //
 //===============================================================
 
+
+//hypo added, seems to cause issues
+qboolean for_each_player(edict_t *JOE_BLOGGS)
+{
+	if (JOE_BLOGGS->inuse
+		&& JOE_BLOGGS->client
+		&& JOE_BLOGGS->client->pers.connected)
+		return true;
+
+	return false;
+}
+
 /*
 ================
 PublicSetup
@@ -76,8 +88,8 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 	gi.cvar_set("cashlimit",default_cashlimit);
 	gi.cvar_set("dm_realmode",default_dm_realmode);
 	level.startframe = level.framenum;
-	for_each_player (self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 		meansOfDeath = MOD_RESTART;
@@ -106,8 +118,8 @@ void MatchSetup ()
 	level.modeset = MATCHSETUP;
 	level.startframe = level.framenum;
 
-	for_each_player (self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{		self = &g_edicts[i];  if (!for_each_player(self)) continue;
 /*		self->movetype = MOVETYPE_NOCLIP;
 		self->solid = SOLID_NOT;
 		self->svflags |= SVF_NOCLIENT;
@@ -179,8 +191,8 @@ void MatchStart()
 
     G_ClearUp (NULL, FOFS(classname));
 
-	for_each_player (self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
 		self->client->pers.bagcash = 0;
 		self->client->resp.deposited = 0;
 		self->client->resp.score = 0;
@@ -303,8 +315,8 @@ void Start_Match () // Starts the match
 	level.startframe = level.framenum;
 	level.modeset = DEATHMATCH_SPAWNING;
 	level.is_spawn = false;
-	for_each_player(self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
 		safe_centerprintf(self, "The Match has begun.\n");
 		self->client->resp.is_spawn = false;
 		self->client->resp.enterframe = level.framenum;
@@ -333,8 +345,8 @@ void Start_Pub () // Starts a pub
 	level.startframe = level.framenum;
 	level.modeset = TEAMPLAY_SPAWNING;
 	level.is_spawn = false;
-	for_each_player(self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
 		safe_centerprintf(self, "Let the Fun Begin!\n");
 		self->client->resp.is_spawn = false;
 		self->client->resp.enterframe = level.framenum;
@@ -365,8 +377,8 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 	level.modeset = ENDMATCHVOTING;
 	level.startframe = level.framenum;
 
-	for_each_player (self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
 		HideWeapon(self);
 		if (self->client->flashlight) self->client->flashlight = false;
 		self->movetype = MOVETYPE_NOCLIP;
@@ -461,8 +473,8 @@ void MatchEnd () // end of the match
 //end
 	level.modeset = ENDMATCHVOTING; // MATCHSETUP; //hypov8 setup???
 	level.startframe = level.framenum;
-	for_each_player(self,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
 		HideWeapon(self);
 		if (self->client->flashlight) self->client->flashlight = false;
 		safe_centerprintf(self, "The Match has ended!");
@@ -540,8 +552,10 @@ void CheckIdleMatchSetup () // restart the server if its empty in matchsetup mod
 
 	level.bots_spawned = 0;
 
-	for_each_player (doot,i)
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
 		count++;
+	}
 	if (count == 0)
 		ResetServer ();
 }
@@ -593,15 +607,20 @@ void CheckStartPub ()
 }
 
 void getTeamTags();
-void CheckEndMatch () // check if time,frag,cash limits have been reached in a match
+void CheckEndMatch() // check if time,frag,cash limits have been reached in a match
 {
 	int			i;
-	int		count=0;
+	int		count = 0;
 	edict_t	*doot;
 
-    // snap - team tags
-	if(level.framenum % 100 == 0 && !level.manual_tagset){
-		getTeamTags();
+	// snap - team tags
+
+	if (level.modeset == TEAMPLAY_RUNNING) // add hypov8
+	{
+		if (level.framenum % 100 == 0 && !level.manual_tagset)
+		{
+			getTeamTags();
+		}
 	}
 	// acebot
 	//safe_bprintf(PRINT_HIGH, "--> ACEND_SaveNodes.\n");
@@ -609,8 +628,11 @@ void CheckEndMatch () // check if time,frag,cash limits have been reached in a m
 	//num_players = 0;
 	//end
 
-	for_each_player (doot,i)
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
+	if (doot->is_bot) continue; //hypov8 ill change to next map, instead of waiting for bots to vote
 		count++;
+	}
 	//if (count == 0)
 	//	ResetServer ();
 
@@ -693,8 +715,8 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 
 	if (level.framenum == (level.startframe + 10))
 	{
-		for_each_player (player,i)
-		{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
 			if (scoreboard_first)
 				player->client->showscores = SCOREBOARD;
 			else
@@ -706,8 +728,8 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 	if (level.framenum > (level.startframe + 300))
 	{
 		memset (&count, 0, sizeof(count));
-		for_each_player(player,i)
-		{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
 			count[player->vote]++;
 		}
 		wining_map = 1;
@@ -827,9 +849,11 @@ void getTeamTags(){
 	int			namesLen[2] = { 0, 0 };
 	char		teamTag[2][12];
 	int			teamTagsFound[2]= { FALSE, FALSE };
+	int team;
 
-	for_each_player (doot,i){
-		int team = doot->client->pers.team;
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
+		team = doot->client->pers.team;
 		if(team && namesLen[team-1] < 64){
 			strcpy(names[team-1][namesLen[team-1]++], doot->client->pers.netname);
 		}

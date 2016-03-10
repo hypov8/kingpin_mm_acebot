@@ -375,8 +375,9 @@ void VoteMapScoreboardMessage (edict_t *ent)
 		num_vote_set = 8;
 
 	memset (&count, 0, sizeof(count));
-	for_each_player(player,i)
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
+	if (!player->is_bot)
 		count[player->vote]++;
 	}
 
@@ -1774,8 +1775,8 @@ void Cmd_Score_f (edict_t *ent)
 	else if (ent->client->showscores == SCOREBOARD2)
 	{
 		found = false;
-		for_each_player(dood,i)
-		{
+		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+		{	dood = &g_edicts[i];  if (!for_each_player(dood)) continue;
 			if (dood->client->pers.spectator == SPECTATING)
 				found = true;
 		}

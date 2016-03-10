@@ -168,8 +168,8 @@ void ACEAI_PickLongRangeGoal(edict_t *self)
 	int i;
 	short int node; //hypo
 	float weight,best_weight=0.0;
-	int current_node,goal_node;
-	edict_t *goal_ent;
+	int current_node, goal_node = INVALID;
+	edict_t *goal_ent = NULL;
 	float cost;
 	
 	// look for a target 
@@ -199,10 +199,10 @@ void ACEAI_PickLongRangeGoal(edict_t *self)
 
 		cost = ACEND_FindCost(current_node,item_table[i].node);
 		
-		if (node == INVALID) 
+		if (cost == INVALID) 
 			continue;
 
-		if(cost == INVALID || cost < 2) // ignore invalid and very short hops
+		if(cost < 2) // ignore invalid and very short hops
 			continue;
 	
 		weight = ACEIT_ItemNeed(self, item_table[i].item);
@@ -291,7 +291,7 @@ void ACEAI_PickShortRangeGoal(edict_t *self)
 {
 	edict_t *target;
 	float weight,best_weight=0.0;
-	edict_t *best;
+	edict_t *best = NULL;
 	int index;
 	
 	// look for a target (should make more efficent later)
@@ -339,6 +339,7 @@ void ACEAI_PickShortRangeGoal(edict_t *self)
 
 	if(best_weight)
 	{
+
 		self->movetarget = best;
 		
 		if(debug_mode && self->goalentity != self->movetarget)
@@ -358,24 +359,10 @@ qboolean ACEAI_FindEnemy(edict_t *self)
 	int i;
 	int	j = -1;
 	//char *namex;
-	float range, range_tmp;
+	float range, range_tmp = 0;
 	vec3_t v;
 
-#if 1 //hypo used to test players info
-	for (i = 0; i < num_players; i++)
-	{
-		if (players[i] == NULL || players[i] == self ||
-			players[i]->solid == SOLID_NOT)
 
-			//namex = players[i]->client->pers.netname;
-
-			//safe_bprintf(PRINT_HIGH, "player =s.\n", namex);
-			continue;
-	}
-#endif
-
-
-	
 	for (i = 0; i < num_players; i++)
 	{
 		if(players[i] == NULL || players[i] == self || 
@@ -479,16 +466,9 @@ void ACEAI_ChooseWeapon(edict_t *self)
 	range = VectorLength(v);
 		
 	// Longer range 
-	if(range > 150)
-	{
-/*		// choose BFG if enough ammo
-		if(self->client->pers.inventory[ITEMLIST_CELLS] > 50)
-			if(ACEAI_CheckShot(self) && ACEIT_ChangeWeapon(self, FindItem("bfg10k")))
-				return;*/
-
+	if(range > 80)
 		if(ACEAI_CheckShot(self) && ACEIT_ChangeWeapon(self,FindItem("Bazooka")))
 			return;
-	}
 	
 	// Only use GL in certain ranges and only on targets at or below our level
 	if(range > 100 && range < 500 && self->enemy->s.origin[2] - 20 < self->s.origin[2])
@@ -497,8 +477,8 @@ void ACEAI_ChooseWeapon(edict_t *self)
 
 	// Flamethrower wasn't in so I've sorted it.
 	if (range < 256 && self->enemy->s.origin[2] - 20 < self->s.origin[2])
-	if(ACEIT_ChangeWeapon(self,FindItem("FlameThrower")))
-		return;
+		if(ACEIT_ChangeWeapon(self,FindItem("FlameThrower")))
+			return;
 	
 	if(ACEIT_ChangeWeapon(self,FindItem("Tommygun")))
 		return;

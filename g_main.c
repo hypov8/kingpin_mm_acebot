@@ -498,8 +498,8 @@ done:
 	//hack to fix bug
 	strcpy(changenext, ent->map);
 
-	for_each_player(ent,i) 
-	{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	ent = &g_edicts[i];  if (!for_each_player(ent)) continue;
 		HideWeapon(ent);
 		if (ent->client->flashlight) ent->client->flashlight = false;
 	}
@@ -530,8 +530,10 @@ void CheckDMRules (void)
 	if (!deathmatch->value)
 		return;
 
-	for_each_player (doot,i)
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
 		count++;
+	}
 	if ((count == 0) && (level.framenum > 12000))
 		ResetServer ();
 
@@ -867,7 +869,7 @@ void G_RunFrame (void)
 
 			    if (!ent->deadflag)
 				{
-					edict_t *trav=NULL;
+					//edict_t *trav=NULL;
 					float	damage=1;
 
 					if (!deathmatch->value)

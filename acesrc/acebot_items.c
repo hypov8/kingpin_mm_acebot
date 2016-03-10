@@ -72,7 +72,7 @@ edict_t *players[MAX_CLIENTS];		// pointers to all players in the game
 void ACEIT_PlayerAdded(edict_t *ent)
 {
 	players[num_players++] = ent;
-	gi.dprintf("player added to bot lib #%i, %s\n", num_players,ent->client->pers.netname );
+	gi.dprintf(" Added: %s, Inuse = %i\n", ent->client->pers.netname, num_players);
 
 	//safe_bprintf(PRINT_HIGH, "Working ... 1\n");
 }
@@ -83,7 +83,7 @@ void ACEIT_PlayerAdded(edict_t *ent)
 void ACEIT_PlayerRemoved(edict_t *ent)
 {
 	int i;
-	int pos;
+	int pos =0;
 
 	// watch for 0 players
 	if(num_players == 0)
@@ -106,7 +106,7 @@ void ACEIT_PlayerRemoved(edict_t *ent)
 		players[i] = players[i+1];
 
 	num_players--;
-	gi.dprintf("player removed from bot lib #%i, %s\n", num_players, ent->client->pers.netname);
+	gi.dprintf(" Removed: %s, Inuse = %i\n", ent->client->pers.netname, num_players);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -626,7 +626,13 @@ void ACEIT_BuildItemNodeTable (qboolean rebuild)
 
 #ifdef DEBUG
 	FILE *pOut; // for testing
-	if((pOut = fopen("items.txt","wt"))==NULL)
+	cvar_t	*game_dir;
+	char buf[32];
+
+	game_dir = gi.cvar("game", "", 0);
+	sprintf(buf, "%s\\items.txt", game_dir->string);
+
+	if ((pOut = fopen(buf, "wt")) == NULL) //hypov8 //comp\\items.txt
 		return;
 #endif
 	

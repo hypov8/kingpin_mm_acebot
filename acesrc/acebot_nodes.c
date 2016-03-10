@@ -291,7 +291,7 @@ qboolean ACEND_FollowPath(edict_t *self)
 ///////////////////////////////////////////////////////////////////////
 void ACEND_GrapFired(edict_t *self)
 {
-	int closest_node;
+	//int closest_node;
 	
 	if(!self->owner)
 		return; // should not be here
@@ -479,7 +479,7 @@ void ACEND_ShowNode(int node)
 
 	return; // commented out for now. uncommend to show nodes during debugging,
 	        // but too many will cause overflows. You have been warned.
-
+#if 0 //show nodes
 	ent = G_Spawn();
 
 	ent->movetype = MOVETYPE_NONE;
@@ -500,7 +500,7 @@ void ACEND_ShowNode(int node)
 
 	VectorCopy(nodes[node].origin,ent->s.origin);
 	gi.linkentity (ent);
-
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -734,8 +734,11 @@ void ACEND_SaveNodes()
 	int i,j;
 	int version = 1;
 	cvar_t	*game_dir;
-	char buf[16];
+	char buf[32];
 	
+	if (!(level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING))
+		return;
+
 	// Resolve paths
 	ACEND_ResolveAllPaths();
 
@@ -747,7 +750,6 @@ void ACEND_SaveNodes()
 	strcpy(filename, buf);
 //end
 
-	//strcpy(filename,"comp\\nav\\");
 	strcat(filename,level.mapname);
 	strcat(filename,".nod");
 
@@ -781,11 +783,12 @@ void ACEND_LoadNodes(void)
 	char filename[60];
 	int version;
 	cvar_t	*game_dir;
-	char buf[16];
+	char buf[32];
 #if 1
 //hypo mod folder for bots dir
 	game_dir = gi.cvar("game", "", 0);
 	sprintf(buf, "%s\\nav\\", game_dir->string);
+
 	strcpy(filename,buf); 
 //end
 #else
@@ -833,7 +836,7 @@ void ACEND_LoadNodes(void)
 	
 	safe_bprintf(PRINT_MEDIUM, "done.\n");
 	
-	ACEIT_BuildItemNodeTable(true);
-
+	//ACEIT_BuildItemNodeTable(true);
+	ACEIT_BuildItemNodeTable(false); //hypov8 causing func_plate to be invalid
 }
 

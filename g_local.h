@@ -26,14 +26,32 @@
 
 #include <ctype.h>
 
+//hypo debug
+#if 0
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
+
+#ifdef _DEBUG
+#ifndef DBG_NEW
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
+#endif
+#endif  // _DEBUG
+#endif
+//end
+
 // ACEBOT_ADD
 //#include "acesrc\acebot.h"
 // ACEBOT_END
 
 // Papa 10.6.99 
-
+#if 0
 #define for_each_player(JOE_BLOGGS,INDEX) for(INDEX=1;INDEX<=maxclients->value;INDEX++)if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse && JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
-
+#else
+qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
+#endif //hypo for_each_player
 // Theses are the various mode a server can be in
 
 #define FREEFORALL			0 //hypo confused??
@@ -90,7 +108,7 @@
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Monkey Mod v1.52 hy1"
+#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy02"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -1258,6 +1276,7 @@ void HideWeapon (edict_t *ent);
 void FetchClientEntData (edict_t *ent);
 void ErrorMSGBox(edict_t *ent, char *string);
 void Cmd_Spec_f (edict_t *self);
+void EndDMLevel(void); //added hypo, for tourney.c
 
 // 
 //	g_pawn.c

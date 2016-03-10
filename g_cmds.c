@@ -4100,8 +4100,8 @@ void Cmd_Yes_f (edict_t *ent)
 		ent->vote = YES;
 		nop=0;
 		novy=0;
-		for_each_player(dude,i)
-		{
+	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+	{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
 			if ((dude->vote == YES) || (dude->vote == CALLED_VOTE))
 				novy ++;
 			nop++;
@@ -4112,8 +4112,8 @@ void Cmd_Yes_f (edict_t *ent)
 			switch (level.voteset) // Papa - if you wanted to add different types of votes, you could do it here
 			{
 				case VOTE_ON_ADMIN :
-					for_each_player (dude,i)
-					{
+					for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+					{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
 						if (dude->vote == CALLED_VOTE)
 						{
 							dude->client->pers.admin = ELECTED;
@@ -4123,8 +4123,8 @@ void Cmd_Yes_f (edict_t *ent)
 					}
 					break;
 			}
-			for_each_player (dude,i)
-			{
+			for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+			{ dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
 				if (dude->vote == CALLED_VOTE)
 					dude->vote = HASNT_VOTED;
 			}
@@ -4146,8 +4146,8 @@ void Cmd_No_f (edict_t *ent)
 		ent->vote = NO;
 		nop=0;
 		novn=0;
-		for_each_player(dude,i)
-		{
+		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+		{ dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
 			if (dude->vote == NO)
 				novn ++;
 			nop++;
@@ -4160,8 +4160,8 @@ void Cmd_No_f (edict_t *ent)
 					safe_bprintf(PRINT_HIGH,"The request for admin has been voted down!\n");
 					break;
 			}
-			for_each_player (dude,i)
-			{
+			for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+			{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
 				if (dude->vote == CALLED_VOTE)
 					dude->vote = HASNT_VOTED;
 			}
@@ -4218,8 +4218,8 @@ void Cmd_Elect_f (edict_t *ent)
 
 	if (level.voteset == NO_VOTES)  
 	{
-		for_each_player(dude,i)
-		{
+		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+		{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
 			dude->vote = 0;
 			count++;
 		}

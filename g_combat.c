@@ -702,7 +702,7 @@ void CheckHealthTarget( edict_t *targ, char *target )
 
 void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir, vec3_t point, vec3_t normal, int damage, int knockback, int dflags, int mod)
 {
-	gclient_t	*client;
+	gclient_t	*client = NULL;
 	int			take;
 	int			save;
 	int			asave;
@@ -785,7 +785,8 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		dmg *= 4;
 	}
 
-	client = targ->client;
+	if (targ->client)
+		client = targ->client;
 
 	// JOSEPH 11-APR-99
 	if ((mod == MOD_BLACKJACK) || (mod == MOD_CROWBAR))

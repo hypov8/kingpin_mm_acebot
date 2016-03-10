@@ -2859,9 +2859,11 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 	{
 		gi.dprintf ("%s (%s) connected\n", ent->client->pers.netname,ent->client->pers.ip);
 		
-		for_each_player (doot,j)
+		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
+		{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
 			if ((doot->client->pers.admin == ADMIN) || (doot->client->pers.rconx[0]))
 				safe_cprintf(doot, PRINT_CHAT, "%s (%s) connected\n", ent->client->pers.netname, ent->client->pers.ip);
+		}
 	}
 
 	// Ridah, make sure they have to join a team
@@ -3394,6 +3396,7 @@ chasing:
     
     //check if idle
     if(ent->client->pers.spectator!=SPECTATING
+		&& (!ent->is_bot) /* hypov8 added so it dont check bots for idle issues(no nodes etc..) */
 		&& (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING || level.modeset == FREEFORALL))
     {
         if(((level.framenum - ent->check_idle)>(idle_client->value*10)) 

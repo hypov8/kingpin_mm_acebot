@@ -75,12 +75,14 @@ void ACESP_SaveBots()
     FILE *pOut;
 	int i,count = 0;
 	cvar_t	*game_dir;
-	char buf[16];
+	char buf[32];
 
 #if 1
 	//hypo mod folder for bots dir
 	game_dir = gi.cvar("game", "", 0);
 	sprintf(buf, "%s\\bots.tmp", game_dir->string);
+	
+	
 	//strcpy(filename, buf);
 	if ((pOut = fopen(buf, "wb")) == NULL)
 		//end
@@ -124,7 +126,7 @@ void ACESP_LoadBots()
 	char userinfo[MAX_INFO_STRING];
 	int i, count;
 	cvar_t	*game_dir;
-	char buf[16];
+	char buf[32];
 
 	level.bots_spawned = true;
 
@@ -132,6 +134,7 @@ void ACESP_LoadBots()
 	//hypo mod folder for bots dir
 	game_dir = gi.cvar("game", "", 0);
 	sprintf(buf, "%s\\bots.tmp", game_dir->string);
+
 	//strcpy(filename, buf);
 	if ((pIn = fopen(buf, "rb")) == NULL)
 	//end
@@ -194,7 +197,7 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 	int		i;
 	client_persistant_t	saved;
 	client_respawn_t	resp;
-	char *s;
+	//char *s;
 	
 	// find a spawn point
 	// do it before setting health back up, so farthest
@@ -570,7 +573,7 @@ void ACESP_Respawn (edict_t *self)
 ///////////////////////////////////////////////////////////////////////
 edict_t *ACESP_FindFreeClient (void)
 {
-	edict_t *bot;
+	edict_t *bot = NULL;
 	int	i;
 	int max_count=0;
 	
