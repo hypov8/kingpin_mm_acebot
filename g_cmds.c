@@ -529,7 +529,7 @@ void Cmd_Join_f (edict_t *self, char *teamcmd)
 					self->switch_teams_frame = level.framenum;
 
 					// kill us if currently in game
-					if ((self->client->pers.team) && (!(level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL)))
+					if ((self->client->pers.team) && (!(level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH)))
 					{
                         Cmd_Spec_f (self);
 					}
@@ -2446,7 +2446,7 @@ void Cmd_Use_f (edict_t *ent)
 		}
 		return;
 	}	
-	else if ((teamplay->value) && ((!ent->client->pers.team) || (level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL)))
+	else if ((teamplay->value) && ((!ent->client->pers.team) || (level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH)))
 	{
 //		if (level.framenum > (ent->switch_teams_frame + 20)) // Kingpin's join team menu
 			if (s)
@@ -2470,7 +2470,7 @@ void Cmd_Use_f (edict_t *ent)
 		return;
 	}
 
-  /*  if((teamplay->value) && (ent->client->pers.team>0) && (level.modeset==FINALCOUNT))
+  /*  if((teamplay->value) && (ent->client->pers.team>0) && (level.modeset==TEAM_PRE_MATCH))
         return;*/
 
 	it = FindItem (s);
@@ -3990,17 +3990,17 @@ void Cmd_PrintSettings_f (edict_t *ent)
 	cprintf(ent, PRINT_HIGH,"======================\n\n");
 	switch (level.modeset)
 	{
-		case FREEFORALL :
-		case TEAMPLAY_RUNNING:
+		case DM_PRE_MATCH :
+		case DM_MATCH_RUNNING:
 			cprintf(ent, PRINT_HIGH,"Server State    : Public\n");
 			break;
 		case MATCHSETUP :
 			cprintf(ent, PRINT_HIGH,"Server State    : Match Setup\n");
 			break;
-		case FINALCOUNT :
+		case TEAM_PRE_MATCH :
 			cprintf(ent, PRINT_HIGH,"Server State    : Final Countdown\n");
 			break;
-		case DEATHMATCH_RUNNING :
+		case TEAM_MATCH_RUNNING:
 			cprintf(ent, PRINT_HIGH,"Server State    : DeathMatch\n");
 			break;
 	}
@@ -5052,6 +5052,9 @@ void ClientCommand (edict_t *ent)
 // ACEBOT_ADD
 	if (ACECM_Commands(ent))
 		return;
+
+	if (ent->is_bot) 
+		return; //hypo bot wont use console?
 // ACEBOT_END
 
 	if (!ent->inuse)
@@ -5070,6 +5073,9 @@ void ClientCommand (edict_t *ent)
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&1) {
 #endif
+// ACEBOT_ADD
+				if (!ent->is_bot)
+// ACEBOT_END
 				KICKENT(ent,"%s is being kicked for using a see-thru cheat!\n");
 #ifdef DOUBLECHECK
 			} else {
@@ -5094,6 +5100,9 @@ void ClientCommand (edict_t *ent)
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&2) {
 #endif
+// ACEBOT_ADD
+				if (!ent->is_bot)
+// ACEBOT_END
 				KICKENT(ent,"%s is being kicked for using a speed cheat!\n");
 #ifdef DOUBLECHECK
 			} else {
@@ -5124,7 +5133,7 @@ void ClientCommand (edict_t *ent)
 				if(!cmd3 || atof(cmd3)==0.0f)
 				{
 					if (kick_flamehack->value || (ent->client->pers.spectator == SPECTATING && no_spec->value
-						&& (level.modeset ==DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING || level.modeset == FREEFORALL)))
+						&& ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING) || (level.modeset == DM_PRE_MATCH))))
 					{
 						KICKENT(ent, "%s is being kicked for having a flame hack!\n");
 					}
@@ -5512,7 +5521,8 @@ void ClientCommand (edict_t *ent)
 
 	//end -taunts tical
 
-	else if (teamplay->value)
+	//else if (teamplay->value)
+	else if  ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)) //hypo was only in teamplay?
 	{
 		if (Q_stricmp (cmd, "matchsetup") == 0)
 			Cmd_MatchSetup_f (ent);

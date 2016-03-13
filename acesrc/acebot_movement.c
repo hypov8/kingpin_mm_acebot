@@ -228,7 +228,10 @@ qboolean ACEMV_CheckEyes(edict_t *self, usercmd_t *ucmd)
 	// check will be done first.
 		
 	// If open space move ok
-	if(traceRight.fraction != 1 || traceLeft.fraction != 1 || strcmp(traceLeft.ent->classname,"func_door")!=0)
+	if(traceRight.fraction != 1 
+		|| traceLeft.fraction != 1 
+		|| strcmp(traceLeft.ent->classname,"func_door")!=0
+		|| strcmp(traceLeft.ent->classname, "func_door_rotating") != 0) //hypov8 add
 	{
 		// Special uppoint logic to check for slopes/stairs/jumping etc.
 		VectorSet(offset, 0, 18, 24);

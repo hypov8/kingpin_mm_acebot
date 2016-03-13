@@ -450,6 +450,11 @@ void EndDMLevel (void)
 	char		*nextmap, changenext[MAX_QPATH];
 	int i;
 
+// acebot
+	ACEND_SaveNodes(); //save file nodes
+	num_players = 0;
+//end
+
 //	gi.cvar_set("password",default_password);
 
 	// stay on same level flag
@@ -514,10 +519,10 @@ done:
 
 /*
 =================
-CheckDMRules
+CheckEndDM
 =================
 */
-void CheckDMRules (void)
+void CheckEndDM(void)
 {
 	int			i;
 	gclient_t	*cl;
@@ -532,10 +537,11 @@ void CheckDMRules (void)
 
 	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
 	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
+	//if (doot->is_bot) continue; //hypov8 ill change to next map, instead of waiting for bots to vote
 		count++;
 	}
 	if ((count == 0) && (level.framenum > 12000))
-		ResetServer ();
+		ResetServer (); //hypov8 bots count?
 
 	if (timelimit->value)
 	{
@@ -546,7 +552,7 @@ void CheckDMRules (void)
 				ResetServer();
 			else
 				if (!allow_map_voting)
-					EndDMLevel ();
+					EndDMLevel(); //hypo MatchEnd(); // 
 				else
 					SetupMapVote();
 			return;
@@ -559,7 +565,7 @@ void CheckDMRules (void)
 			if (team_cash[1]>=(int)fraglimit->value || team_cash[2]>=(int)fraglimit->value) {
 				safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 				if (!allow_map_voting)
-					EndDMLevel ();
+					EndDMLevel(); //hypo MatchEnd(); // 
 				else
 					SetupMapVote();
 				return;
@@ -573,7 +579,7 @@ void CheckDMRules (void)
 				if (cl->resp.score >= fraglimit->value) {
 					safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 					if (!allow_map_voting)
-						EndDMLevel ();
+						EndDMLevel(); //hypo MatchEnd(); // 
 					else
 						SetupMapVote();
 					return;
@@ -588,7 +594,7 @@ void CheckDMRules (void)
 		{
 			safe_bprintf(PRINT_HIGH, "Cashlimit hit.\n");
 				if (!allow_map_voting)
-					EndDMLevel ();
+					EndDMLevel(); //hypo MatchEnd(); // 
 				else
 					SetupMapVote();
 			return;
@@ -1022,7 +1028,7 @@ void G_RunFrame (void)
 // ACEBOT_ADD - RiEvEr
 			if (ent->is_bot)
 			{		//dont run bots when not ingame
-				if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING)
+				if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
 				G_RunEntity(ent);
 			}
 // ACEBOT_END
@@ -1113,26 +1119,29 @@ void G_RunFrame (void)
 // these is where the server checks the state of the current mode
 // all the called functions are found in tourney.c
 
-	/* hypo game will be teamplay?? */
-	if (level.modeset == FREEFORALL)
-		CheckStartMatch();//CheckStartPub ();
+	/* hypo game will be DM. server cmd "publicsetup" */
+	if (level.modeset == DM_PRE_MATCH)
+		CheckStartDM(); //hypov8 edited, game is allways dm mode?, make teamplay games use TEAM_PRE_MATCH
 
+	/* server cmd "matchsetup" */
 	if (level.modeset == MATCHSETUP)
 		CheckIdleMatchSetup ();
 
-	/* server command issued "matchstart" */
-	if (level.modeset == FINALCOUNT)
-		CheckStartPub();  //CheckStartMatch();
+	/* server cmd "matchstart" ..hypo now used in teampay */
+	if (level.modeset == TEAM_PRE_MATCH)
+		CheckStartTeamMatch();
 
 	/* game is ready to spawn players */
-	if ((level.modeset == DEATHMATCH_SPAWNING) || (level.modeset == TEAMPLAY_SPAWNING))
+	if ((level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING))
 		CheckAllPlayersSpawned ();
 
-	if (level.modeset == DEATHMATCH_RUNNING)
-		CheckEndMatch ();
+	/* team game in progress */
+	if (level.modeset == TEAM_MATCH_RUNNING)
+		CheckEndTeamMatch ();
 
-	if (level.modeset == TEAMPLAY_RUNNING)
-		CheckEndMatch(); //mm ver					// seems old?? //CheckDMRules ();
+	/*deathmatch game in progress */
+	if (level.modeset == DM_MATCH_RUNNING)
+		CheckEndDM ();
 
 	if (level.modeset == ENDMATCHVOTING) 
 		CheckEndVoteTime ();
@@ -1143,16 +1152,16 @@ void G_RunFrame (void)
 	if ((int)timelimit->value && !(level.framenum%10)) {
 		char buf[16];
 		int t;
-		if (level.modeset == FINALCOUNT) {
-			t =	((150 - (level.framenum - level.startframe)) / 10);
+		if (level.modeset == TEAM_PRE_MATCH) {
+			t =	((150 - (level.framenum - level.startframe)) / 10); //hypo
 			sprintf(buf,"start in %d",t);
 			gi.cvar_set(TIMENAME,buf);
-		} else if (level.modeset == FREEFORALL) {
-			t = ((350 -  level.framenum ) / 10);
+		} else if (level.modeset == DM_PRE_MATCH) {
+			t = ((150 - (level.framenum - level.startframe)) / 10); //hypo was 350
 			sprintf(buf,"start in %d",t);
 			gi.cvar_set(TIMENAME,buf);
 		}
-		else if (!level.intermissiontime && ((level.modeset == DEATHMATCH_RUNNING) || (level.modeset == TEAMPLAY_RUNNING))) {
+		else if (!level.intermissiontime && ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))) {
 			t = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
 			if (t>0) {
 				sprintf(buf,"%d:%02d",t/60,t%60);

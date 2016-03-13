@@ -122,6 +122,10 @@ void BeginIntermission (edict_t *targ, char *changenext)
 
 	game.autosaved = false;
 
+	// acebot
+	//ToDo: acebot player intermision
+	//end
+
 	// respawn any dead clients
 	for (i=0 ; i<maxclients->value ; i++)
 	{
@@ -305,7 +309,7 @@ void SpectatorScoreboardMessage (edict_t *ent)
 		}
 	}
 
-	if ((level.modeset != MATCHSETUP) && (level.modeset != FINALCOUNT) && (level.modeset != FREEFORALL)
+	if ((level.modeset != MATCHSETUP) && (level.modeset != TEAM_PRE_MATCH) && (level.modeset != DM_PRE_MATCH)
 		&& ent->client->pers.spectator == SPECTATING) {
 		SHOWCHASENAME
 		CHASEMESSAGE
@@ -481,7 +485,7 @@ void MOTDScoreboardMessage (edict_t *ent)
 	int		i, j;
 	int		yofs;
 	int			found;
-	edict_t		*player;
+	edict_t		*player = NULL;
 	char		*seperator = "==================================";
 	char	*selectheader[] =
 		{
@@ -560,15 +564,15 @@ void MOTDScoreboardMessage (edict_t *ent)
 			stringlength += j;
 		}
 
-		if (level.modeset == FREEFORALL)
+		if (level.modeset == DM_PRE_MATCH)
 			Com_sprintf (temp, sizeof(temp), "The Game will start soon.");
-		else if (level.modeset == DEATHMATCH_RUNNING)
+		else if (level.modeset == TEAM_MATCH_RUNNING)
 			Com_sprintf (temp, sizeof(temp), "in Match Mode. (Please don't join)");
 		else if (level.modeset == MATCHSETUP)
 			Com_sprintf (temp, sizeof(temp), "in Match Setup Mode.");
-		else if (level.modeset == FINALCOUNT)
+		else if (level.modeset == TEAM_PRE_MATCH)
 			Com_sprintf (temp, sizeof(temp), "and is in the Final Countdown before a Match.");
-		else if (level.modeset == TEAMPLAY_RUNNING)
+		else if (level.modeset == DM_MATCH_RUNNING)
 			Com_sprintf (temp, sizeof(temp), "in Public Mode, so please join in.");
 
 
@@ -1045,7 +1049,7 @@ void MatchSetupScoreboardMessage (edict_t *ent)
 	int		x, y;
 	int		found;
 	gclient_t	*cl;
-	edict_t		*cl_ent, *player;
+	edict_t		*cl_ent, *player = NULL;
 	char	*tag;
 	int		team;
 	char *header;
@@ -1088,9 +1092,9 @@ void MatchSetupScoreboardMessage (edict_t *ent)
 		
 	if (level.modeset == MATCHSETUP)
 		Com_sprintf (temp, sizeof(temp), "in Match Setup Mode.");
-	else if (level.modeset == FINALCOUNT)
+	else if (level.modeset == TEAM_PRE_MATCH)
 		Com_sprintf (temp, sizeof(temp), "and is in the Final Countdown before a Match.");
-	else if (level.modeset == FREEFORALL)
+	else if (level.modeset == DM_PRE_MATCH)
 		Com_sprintf (temp, sizeof(temp), "The Game will start soon.");
 
 	Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
@@ -1651,7 +1655,7 @@ void DeathmatchScoreboard (edict_t *ent)
 		RejoinScoreboardMessage (ent);
 /*	else if (ent->client->showscores == SCOREBOARD)
 		if (teamplay->value)
-			if ((level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL))
+			if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
 				MatchSetupScoreboardMessage (ent, ent->enemy);
 			else
 				GrabDaLootScoreboardMessage (ent, ent->enemy);
@@ -1663,7 +1667,7 @@ void DeathmatchScoreboard (edict_t *ent)
 		VoteMapScoreboardMessage(ent);
 	else {
 		if (teamplay->value)
-			if ((level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL))
+			if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
 				MatchSetupScoreboardMessage (ent);
 			else
 				GrabDaLootScoreboardMessage (ent);
@@ -1688,7 +1692,7 @@ void NoScoreboardMessage (edict_t *ent)
 	string[0] = 0;
 	stringlength = 0;
 
-	if ((level.modeset != MATCHSETUP) && (level.modeset != FINALCOUNT)//SNAP
+	if ((level.modeset != MATCHSETUP) && (level.modeset != TEAM_PRE_MATCH)//SNAP
 		&& ent->client->pers.spectator == SPECTATING) {
 		SHOWCHASENAME
 		CHASEMESSAGE
@@ -1720,7 +1724,7 @@ void DeathmatchScoreboardNew (edict_t *ent)
 	default:
         {
             if (teamplay->value)
-                if ((level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL))
+                if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
                     MatchSetupScoreboardMessage (ent);
                 else
                     GrabDaLootScoreboardMessage (ent);
@@ -2361,27 +2365,27 @@ void G_SetStats (edict_t *ent)
 
 	if ((int)timelimit->value)
 	{
-		if (level.modeset == FREEFORALL)
-			ent->client->ps.stats[STAT_TIMER] = ((350 -  level.framenum ) / 10);
+		if (level.modeset == DM_PRE_MATCH)
+			ent->client->ps.stats[STAT_TIMER] = ((150 -  level.framenum ) / 10); //hypov8 begin dm spawn timmer. was 350
 
-//	else if ((level.modeset == FREEFORALL) && (timelimit->value))
+//	else if ((level.modeset == DM_PRE_MATCH) && (timelimit->value))
 //		if (level.framenum > ((timelimit->value * 600) - 605))  
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
 //		else
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
-//	else if ((level.modeset == TEAMPLAY_RUNNING) && (timelimit->value))
+//	else if ((level.modeset == DM_MATCH_RUNNING) && (timelimit->value))
 //		if (level.framenum > ((timelimit->value * 600) - 605))  
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
 //		else
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
 
-		else if (level.modeset == FINALCOUNT)
-			ent->client->ps.stats[STAT_TIMER] =	((150 - (level.framenum - level.startframe)) / 10);
+		else if (level.modeset == TEAM_PRE_MATCH)
+			ent->client->ps.stats[STAT_TIMER] = ((150 - (level.framenum - level.startframe)) / 10); //hypov8 begin team spawn timmer. was 150
 
 		else if (level.modeset == ENDMATCHVOTING)
 			ent->client->ps.stats[STAT_TIMER] =	((300 - (level.framenum - level.startframe)) / 10);
 
-		else if ((level.modeset == DEATHMATCH_RUNNING) || (level.modeset == TEAMPLAY_RUNNING))
+		else if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
 			if (level.framenum > (level.startframe + (((int)timelimit->value  * 600) - 605)))  
 				ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
 			else

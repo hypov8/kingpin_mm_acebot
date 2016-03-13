@@ -54,15 +54,15 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #endif //hypo for_each_player
 // Theses are the various mode a server can be in
 
-#define FREEFORALL			0 //hypo confused??
-#define FINALCOUNT			1
-#define MATCHSETUP			2
-#define DEATHMATCH_RUNNING			3 //game is active and FFA
-#define MATCHEND			4
-#define DEATHMATCH_SPAWNING		5 //start dm
-#define TEAMPLAY_RUNNING			6 //game is active and teams
-#define TEAMPLAY_SPAWNING		7 //pub? norma deathmatch?
-#define	ENDMATCHVOTING		8
+#define DM_PRE_MATCH			0 //free for all DM
+#define TEAM_PRE_MATCH			1 //server command "matchstart"
+#define MATCHSETUP			2 //
+#define TEAM_MATCH_RUNNING	3 //game is active and TEAMPLAY
+#define MATCHEND			4 // NOT USED
+#define TEAM_MATCH_SPAWNING	5 //spawn players right b4 teamplay starts
+#define DM_MATCH_RUNNING	6 //game is active and DM
+#define DM_MATCH_SPAWNING	7 //spawn players right b4 dm starts
+#define	ENDMATCHVOTING		8 // load scoreboard
 
 // admin types
 
@@ -108,7 +108,7 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy02"
+#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy03"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -530,6 +530,7 @@ typedef struct
 	int		player_num; 
 
 	qboolean bots_spawned; //hypov8 load bots once only while loading players
+	int lastTeamSpawned; //will asigne bots 1 for each team in sequence
 
     // snap - team tags
 	int		manual_tagset;
@@ -612,7 +613,7 @@ typedef struct //bot->acebot.xxx
 	int			new_target;		//if new target. dont shoot straight away
 	int			old_target;		//old player target. shoot if more than xx seconds
 	int			botNewTargetTime; //timer to allow bot to start attacking
-	int			lastTeamSpawned; // will spawn bots on opisite team to last bot(when adding null values)
+	//int			lastTeamSpawned; // will spawn bots on opisite team to last bot(when adding null values)
 	cvar_t		*game_dir;		//add game dir to bot libary
 	//vec3_t		rocketOwner;		//origin for boot to look at for strafe/dodge
 } acebot_t;
@@ -1305,13 +1306,13 @@ void ChasePrev(edict_t *ent);
 void PublicSetup ();
 void MatchSetup ();
 void MatchStart();
-void Start_Match ();
+void Start_TeamMatch ();
 void SetupMapVote ();
-void CheckStartPub();
-void CheckStartMatch ();
+void CheckStartDM();
+void CheckStartTeamMatch();
 void CheckAllPlayersSpawned ();
 void CheckIdleMatchSetup ();
-void CheckEndMatch ();
+void CheckEndTeamMatch ();
 void CheckVote();
 void CheckEndVoteTime ();
 void MatchEnd();

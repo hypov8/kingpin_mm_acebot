@@ -475,11 +475,11 @@ void ACEND_InitNodes(void)
 ///////////////////////////////////////////////////////////////////////
 void ACEND_ShowNode(int node)
 {
-	edict_t *ent;
-
 	return; // commented out for now. uncommend to show nodes during debugging,
 	        // but too many will cause overflows. You have been warned.
 #if 0 //show nodes
+	edict_t *ent;
+
 	ent = G_Spawn();
 
 	ent->movetype = MOVETYPE_NONE;
@@ -694,8 +694,11 @@ void ACEND_ResolveAllPaths()
 {
 	int i, from, to;
 	int num=0;
-	
-	safe_bprintf(PRINT_HIGH,"Resolving all paths...");
+	//gi.bprintf();
+	//gi.cprintf();
+
+	gi.dprintf("Resolving all paths...");
+	//safe_bprintf(PRINT_HIGH, "Resolving all paths...");
 
 	for(from=0;from<numnodes;from++)
 	for(to=0;to<numnodes;to++)
@@ -715,8 +718,8 @@ void ACEND_ResolveAllPaths()
 						path_table[i][to] = path_table[i][from];
 		}
 	}
-
-	safe_bprintf(PRINT_MEDIUM,"done (%d updated)\n",num);
+	gi.dprintf("done (%d updated)\n",num);
+	//safe_bprintf(PRINT_MEDIUM,"done (%d updated)\n",num);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -736,22 +739,33 @@ void ACEND_SaveNodes()
 	cvar_t	*game_dir;
 	char buf[32];
 	
-	if (!(level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING))
+	if (!((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)))
 		return;
 
 	// Resolve paths
 	ACEND_ResolveAllPaths();
 
-	safe_bprintf(PRINT_MEDIUM,"Saving node table...");
+	gi.dprintf("Saving node table...");
+	//safe_bprintf(PRINT_MEDIUM,"Saving node table...");
 
 //hypo mod folder for bots dir
 	game_dir = gi.cvar("game", "", 0);
 	sprintf(buf, "%s\\nav\\", game_dir->string);
 	strcpy(filename, buf);
+
+	//if (!CreateDirectory(buf, NULL))
+	//	{
+	//		if (GetLastError() != 183L) //hypo ERROR_ALREADY_EXISTS
+	//		return;
+	//	}
 //end
 
 	strcat(filename,level.mapname);
 	strcat(filename,".nod");
+
+
+
+
 
 	if((pOut = fopen(filename, "wb" )) == NULL)
 		return; // bail
@@ -770,7 +784,8 @@ void ACEND_SaveNodes()
 
 	fclose(pOut);
 	
-	safe_bprintf(PRINT_MEDIUM,"done.\n");
+	gi.dprintf("done.\n");
+	//safe_bprintf(PRINT_MEDIUM,"done.\n");
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -800,9 +815,11 @@ void ACEND_LoadNodes(void)
 	if((pIn = fopen(filename, "rb" )) == NULL)
     {
 		// Create item table
-		safe_bprintf(PRINT_MEDIUM, "ACE: No node file found, creating new one...");
+		gi.dprintf("ACE: No node file found, creating new one...");
+		//safe_bprintf(PRINT_MEDIUM, "ACE: No node file found, creating new one...");
 		ACEIT_BuildItemNodeTable(false);
-		safe_bprintf(PRINT_MEDIUM, "done.\n");
+		gi.dprintf("done.\n");
+		//safe_bprintf(PRINT_MEDIUM, "done.\n");
 		return; 
 	}
 
@@ -811,7 +828,8 @@ void ACEND_LoadNodes(void)
 	
 	if(version == 1) 
 	{
-		safe_bprintf(PRINT_MEDIUM,"ACE: Loading node table...");
+		gi.dprintf("ACE: Loading node table...");
+		//safe_bprintf(PRINT_MEDIUM,"ACE: Loading node table...");
 
 		fread(&numnodes,sizeof(int),1,pIn); // read count
 		fread(&num_items,sizeof(int),1,pIn); // read facts count
@@ -828,13 +846,15 @@ void ACEND_LoadNodes(void)
 	else
 	{
 		// Create item table
-		safe_bprintf(PRINT_MEDIUM, "ACE: No node file found, creating new one...");
+		gi.dprintf("ACE: No node file found, creating new one...");
+		//safe_bprintf(PRINT_MEDIUM, "ACE: No node file found, creating new one...");
 		ACEIT_BuildItemNodeTable(false);
-		safe_bprintf(PRINT_MEDIUM, "done.\n");
+		gi.dprintf("done.\n");
+		//safe_bprintf(PRINT_MEDIUM, "done.\n");
 		return; // bail
 	}
-	
-	safe_bprintf(PRINT_MEDIUM, "done.\n");
+	gi.dprintf("done.\n");
+	//safe_bprintf(PRINT_MEDIUM, "done.\n");
 	
 	//ACEIT_BuildItemNodeTable(true);
 	ACEIT_BuildItemNodeTable(false); //hypov8 causing func_plate to be invalid

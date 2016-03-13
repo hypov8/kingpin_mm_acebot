@@ -376,20 +376,20 @@ qboolean ACEAI_FindEnemy(edict_t *self)
 #endif
 		if (teamplay->value && self->client->pers.team == players[i]->client->pers.team)
 			continue;
-
+//hypov8
 		if (self->acebot.old_target == i && players[i]->health < 1)
 		{
 			self->acebot.old_target = -1; //reset to no players stop bot hunting same player after death
 			continue;
 		}
-
+//end
 
 		if(!players[i]->deadflag && visible(self, players[i]) && gi.inPVS (self->s.origin, players[i]->s.origin))
 		{
 			//self->enemy = players[i];
-//hypov8
 
-//end
+
+
 			// Base selection on distance.
 			VectorSubtract(self->s.origin, players[i]->s.origin, v);
 			range = VectorLength(v);

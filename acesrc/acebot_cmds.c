@@ -86,7 +86,8 @@ qboolean ACECM_Commands(edict_t *ent)
 	else if(Q_stricmp (cmd, "findnode") == 0 && debug_mode)
 	{
 		node = ACEND_FindClosestReachableNode(ent,BOTNODE_DENSITY, BOTNODE_ALL);
-		safe_bprintf(PRINT_MEDIUM,"node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+		gi.dprintf("node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+		//safe_bprintf(PRINT_MEDIUM,"node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
 	}
 
 	else if(Q_stricmp (cmd, "movenode") == 0 && debug_mode)
@@ -95,7 +96,8 @@ qboolean ACECM_Commands(edict_t *ent)
 		nodes[node].origin[0] = atof(gi.argv(2));
 		nodes[node].origin[1] = atof(gi.argv(3));
 		nodes[node].origin[2] = atof(gi.argv(4));
-		safe_bprintf(PRINT_MEDIUM,"node: %d moved to x: %f y: %f z %f\n",node, nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+		gi.dprintf("node: %d moved to x: %f y: %f z %f\n",node, nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+		//safe_bprintf(PRINT_MEDIUM,"node: %d moved to x: %f y: %f z %f\n",node, nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
 	}
 
 	else

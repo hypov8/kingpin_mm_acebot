@@ -295,12 +295,12 @@ void	ServerCommand (void)
 	else if (Q_stricmp(cmd, "addbot") == 0)
 	{
 		/* bots need to be added between game start and end. less issues and for bot saves */
-		if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING)
+		if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
 		{
-			//if ( ctf->value) // name, skin, team 
-			//	ACESP_SpawnBot(gi.argv(2), gi.argv(3), gi.argv(4), NULL);
-			//else // name, skin
-			ACESP_SpawnBot(NULL, gi.argv(2), gi.argv(3), NULL);
+			if ( teamplay->value) // name, skin, team 
+				ACESP_SpawnBot(gi.argv(4), gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031" dragon
+			else // name, skin			
+				ACESP_SpawnBot(NULL, gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031"
 		}
 	}
 

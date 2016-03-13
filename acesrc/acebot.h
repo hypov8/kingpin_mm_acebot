@@ -266,7 +266,7 @@ void     ACESP_HoldSpawn(edict_t *self);
 void     ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team);
 void     ACESP_Respawn (edict_t *self);
 edict_t *ACESP_FindFreeClient (void);
-void     ACESP_SetName(edict_t *bot, char *name, char *skin, char *team);
+void     ACESP_SetName(edict_t *bot, char *name, char *skin/*, char *team*/);
 void     ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo);
 void     ACESP_ReAddBots();
 void     ACESP_RemoveBot(char *name);

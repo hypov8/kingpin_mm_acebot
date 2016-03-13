@@ -8,7 +8,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DDebug2|Win32'">
     <LocalDebuggerCommand>$(OutDir)..\kingpin.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments> +set game comp +exec server.cfg +set dedicated 1 +deathmatch 1 +map play</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments> +set game comp +exec server.cfg +set dedicated 1 +set teamplay 0</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(OutDir)..\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

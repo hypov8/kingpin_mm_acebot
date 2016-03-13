@@ -618,7 +618,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 
 	if (!self->deadflag && (self->health + damage > 0))
 	{
-		self->client->respawn_time = level.time + 1.0;
+		self->client->respawn_time = level.time + 2.0;
 		LookAtKiller (self, inflictor, attacker);
 
 		self->client->ps.pmove.pm_type = PM_DEAD;
@@ -1223,9 +1223,9 @@ edict_t *SelectBagmanSpawnPoint(edict_t *ent)
 edict_t *SelectDeathmatchSpawnPoint(edict_t *ent)
 {
 	// Ridah, in teamplay, spawn at base
-	if (teamplay->value == 1 && ent->client->pers.team != 0)
-		//	return SelectFarthestDeathmatchSpawnPoint (ent, (rand()%10 < 9));
-		return SelectBagmanSpawnPoint(ent);
+	if (teamplay->value && ent->client->pers.team != 0) //hypo bm and team dm
+			return SelectFarthestDeathmatchSpawnPoint (ent, (rand()%10 < 3)); //hypov8 used old method. if teams not set, use dm starts
+		//return SelectBagmanSpawnPoint(ent);
 	else if ((int)(dmflags->value) & DF_SPAWN_FARTHEST)
 		return SelectFarthestDeathmatchSpawnPoint(ent, false);
 	else
@@ -1453,6 +1453,14 @@ void CopyToBodyQue (edict_t *ent)
 
 void respawn (edict_t *self)
 {
+
+	if ((level.modeset != TEAM_MATCH_RUNNING) && (level.modeset != DM_MATCH_RUNNING))
+	{
+		self->deadflag = 0;
+		gi.dprintf("%s caught respawing after match\n", self->client->pers.netname);
+		return; //hypov8 dont respawn, fixes last person dying loosing there mouse pitch
+	}
+
 	if (deathmatch->value || coop->value)
 	{
 		// make sure on the last death frame
@@ -1480,7 +1488,7 @@ void respawn (edict_t *self)
 		self->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
 		self->client->ps.pmove.pm_time = 14;
 
-		self->client->respawn_time = level.time;
+		self->client->respawn_time = level.time; 
 
 // NET_ANTILAG	//et-xreal antilag
 		G_ResetMarkers(self);
@@ -1514,6 +1522,17 @@ void PutClientInServer (edict_t *ent)
 	int		i;
 	client_persistant_t	saved;
 	client_respawn_t	resp;
+#if 0
+	// ACEBOT_ADD
+	if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)
+		|| (level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING)) //free???
+	{
+		if (ent->inuse && ent->client->pers.spectator != SPECTATING)
+			ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
+	}						//also called in match begin
+	// ACEBOT_END
+#endif
+
 
 	// find a spawn point
 	// do it before setting health back up, so farthest
@@ -1588,8 +1607,8 @@ void PutClientInServer (edict_t *ent)
 	ent->groundentity = NULL;
 	ent->client = &game.clients[index];
 	ent->takedamage = DAMAGE_AIM;
-	if (((teamplay->value) && ((level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT)))
-		|| (level.modeset == FREEFORALL) || (ent->client->pers.spectator == SPECTATING))
+	if (((teamplay->value) && ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH)))
+		|| (level.modeset == DM_PRE_MATCH) || (ent->client->pers.spectator == SPECTATING))
 	{
 		ent->movetype = MOVETYPE_NOCLIP;
 		ent->solid = SOLID_NOT;
@@ -1918,22 +1937,22 @@ void ClientBeginDeathmatch (edict_t *ent)
 	save = ent->client->showscores;
 	G_InitEdict (ent);
 
-//hypo	//if ((level.modeset == FREEFORALL) || (level.modeset == TEAMPLAY_RUNNING))
+//hypo	//if ((level.modeset == DM_PRE_MATCH) || (level.modeset == DM_MATCH_RUNNING))
 	//hypov8 could be used to rejoin and use old stats? or cleared on exit?
-	if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING)
+	if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
 	{
 		InitClientResp (ent->client);
 	}
-
+#if 1
 // ACEBOT_ADD
-	if (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING
-		|| level.modeset == DEATHMATCH_SPAWNING || level.modeset == TEAMPLAY_SPAWNING) //free???
+	if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)
+		|| (level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING)) //free???
 	{
 		if (ent->inuse && ent->client->pers.spectator != SPECTATING)
 			ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
 	}						//also called in match begin
 // ACEBOT_END
-
+#endif
 	// locate ent at a spawn point
 	PutClientInServer (ent);
 
@@ -1946,7 +1965,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 	// Teamplay: if they aren't assigned to a team, make them a spectator
 	if (teamplay->value)
 	{
-		if ((level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL) || (level.modeset == ENDMATCHVOTING))
+		if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH) || (level.modeset == ENDMATCHVOTING))
 		{
 			ent->movetype = MOVETYPE_NOCLIP;
 			ent->solid = SOLID_NOT;
@@ -1994,7 +2013,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
-		else if (level.modeset != TEAMPLAY_SPAWNING)
+		else if (level.modeset != DM_MATCH_SPAWNING)
 		{
 			safe_bprintf(PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 //			sl_WriteStdLogPlayerEntered( &gi, level, ent );	// Standard Logging
@@ -2003,11 +2022,11 @@ void ClientBeginDeathmatch (edict_t *ent)
 	ent->client->showscores = save;
  
 
-	if (level.modeset == FINALCOUNT)
+	if (level.modeset == TEAM_PRE_MATCH)
 		ent->client->showscores = NO_SCOREBOARD;
 	else if (level.modeset == MATCHSETUP)
 		ent->client->showscores = SCOREBOARD;
-	else if ((level.modeset == FREEFORALL) && (ent->client->showscores == NO_SCOREBOARD))
+	else if ((level.modeset == DM_PRE_MATCH) && (ent->client->showscores == NO_SCOREBOARD))
 		ent->client->showscores = SCOREBOARD;
 	else if (ent->solid != SOLID_NOT)
 		ent->client->showscores = NO_SCOREBOARD;
@@ -2768,7 +2787,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 
 	// acebot
 	//note hypov8 check for bots spawned if game didnt start?
-	if (!ent->is_bot /*&& (level.modeset != DEATHMATCH_RUNNING || level.modeset != TEAMPLAY_RUNNING)*/)
+	if (!ent->is_bot /*&& (level.modeset != TEAM_MATCH_RUNNING || level.modeset != DM_MATCH_RUNNING)*/)
 	{
 		ent->client = NULL;
 		ent->inuse = false;
@@ -2900,6 +2919,11 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 		i++;
 	}
 
+
+
+	//if (ent->is_bot && teamplay->value)
+	//	ent->client->pers.spectator = PLAYING;
+
 	if (!ent->is_bot)
 	{
 		if (!teamplay->value)
@@ -2977,7 +3001,12 @@ void ClientDisconnect (edict_t *ent)
 	safe_bprintf(PRINT_HIGH, "%s checked out\n", ent->client->pers.netname);
 
 // ACEBOT_ADD
-	ACEIT_PlayerRemoved(ent);
+	if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)
+		|| (level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING))
+		{
+			if (ent->client->pers.spectator != SPECTATING)
+			ACEIT_PlayerRemoved(ent);
+		}
 // ACEBOT_END
 
 	// send effect
@@ -3397,7 +3426,7 @@ chasing:
     //check if idle
     if(ent->client->pers.spectator!=SPECTATING
 		&& (!ent->is_bot) /* hypov8 added so it dont check bots for idle issues(no nodes etc..) */
-		&& (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING || level.modeset == FREEFORALL))
+		&& (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING || level.modeset == DM_PRE_MATCH))
     {
         if(((level.framenum - ent->check_idle)>(idle_client->value*10)) 
             && ((level.framenum - ent->check_talk)>(idle_client->value*10)) 
@@ -3812,6 +3841,11 @@ void ClientBeginServerFrame (edict_t *ent)
 {
 	gclient_t	*client;
 	int			buttonMask;
+
+	if (ent->is_bot && !(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
+		return; /* caught bots trying to respawn after match end */
+
+
 
 	if (ent->kickdelay) {
 		if (!--ent->kickdelay) {

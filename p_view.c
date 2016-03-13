@@ -460,7 +460,7 @@ void SV_CalcBlend (edict_t *ent)
     // black spectator screen
     if(ent->client->pers.spectator==SPECTATING && no_spec->value
         && !(ent->client->pers.admin > NOT_ADMIN || ent->client->pers.rconx[0])
-		&& (level.modeset == DEATHMATCH_RUNNING || level.modeset == TEAMPLAY_RUNNING || level.modeset == FREEFORALL))
+		&& (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING || level.modeset == DM_PRE_MATCH))
         SV_AddBlend (0.0, 0.0, 0.0, 1.0, ent->client->ps.blend);
 
 	// add for damage

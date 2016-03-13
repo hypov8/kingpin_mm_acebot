@@ -99,6 +99,7 @@ void ACESP_SaveBots()
 		if (bot->inuse && bot->is_bot)
 			count++;
 	}
+	gi.dprintf("Saved %i Bots to Disk\n", count);
 	
 	fwrite(&count,sizeof (int),1,pOut); // Write number of bots
 
@@ -180,6 +181,7 @@ void ACESP_HoldSpawn(edict_t *self)
 		self->client->pers.netname, CTFTeamName(self->client->resp.ctf_team));
 	else
 #endif
+
 		safe_bprintf (PRINT_MEDIUM, "%s entered the game\n", self->client->pers.netname);
 
 }
@@ -197,7 +199,7 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 	int		i;
 	client_persistant_t	saved;
 	client_respawn_t	resp;
-	//char *s;
+	char *s;
 	
 	// find a spawn point
 	// do it before setting health back up, so farthest
@@ -253,8 +255,8 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 
 	//hypov8 shouldent be needed anymore
 #if 0
-	if (((teamplay->value) && ((level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT)))
-		|| (level.modeset == FREEFORALL) || (bot->client->pers.spectator == SPECTATING))
+	if (((teamplay->value) && ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH)))
+		|| (level.modeset == DM_PRE_MATCH) || (bot->client->pers.spectator == SPECTATING))
 	{
 		bot->movetype = MOVETYPE_NOCLIP;
 		bot->solid = SOLID_NOT;
@@ -304,6 +306,18 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 		CTFAssignSkin(bot, s);
 	}
 #endif
+
+	if (teamplay->value)
+	{
+		client->pers.team = team;
+		//client->pers.spectator = PLAYING; // CTF_STATE_START;
+		s = Info_ValueForKey(client->pers.userinfo, "skin");
+		//////CTFAssignSkin(bot, s);
+	}
+
+client->pers.spectator = PLAYING; // CTF_STATE_START;
+
+
 	//KP_ADD
 	bot->s.renderfx2 = 0;
 	bot->onfiretime = 0;
@@ -547,6 +561,9 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 ///////////////////////////////////////////////////////////////////////
 void ACESP_Respawn (edict_t *self)
 {
+	if (!((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)))
+		gi.dprintf("bot respawned after match\n");
+
 	CopyToBodyQue (self);
 
 /*	if(ctf->value)
@@ -564,7 +581,7 @@ void ACESP_Respawn (edict_t *self)
 	self->client->ps.pmove.pm_flags = PMF_TIME_TELEPORT;
 	self->client->ps.pmove.pm_time = 14;
 
-	self->client->respawn_time = level.time + 50;//hypov8 add 5 secs to respawn
+	self->client->respawn_time = level.time; // +5;//hypov8 add 5 secs to respawn
 	
 }
 
@@ -606,7 +623,7 @@ edict_t *ACESP_FindFreeClient (void)
 ///////////////////////////////////////////////////////////////////////
 // Set the name of the bot and update the userinfo
 ///////////////////////////////////////////////////////////////////////
-void ACESP_SetName(edict_t *bot, char *name, char *skin, char *team)
+void ACESP_SetName(edict_t *bot, char *name, char *skin/*, char *team*/)
 {
 	float rnd;
 	char userinfo[MAX_INFO_STRING];
@@ -703,7 +720,7 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 	
 	if (!bot)
 	{
-		safe_bprintf (PRINT_MEDIUM, "Server is full, increase Maxclients.\n");
+		gi.dprintf("Server is full, increase Maxclients.\n");
 		return;
 	}
 
@@ -721,12 +738,41 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 //end
 
 	bot->yaw_speed = 100; // yaw speed
-//	bot->inuse = true;
-	//bot->is_bot = true;
+	bot->inuse = true;
+	bot->is_bot = true;
+
+	bot->client->pers.team = 0; //hypo set default
+
+	if (teamplay->value)
+	{
+		if (strlen(team) > 0)
+		//if (team[0] != '\0') //NULL
+		{
+			if (strcmp(team[0],team_names[1][0] ) == 0) // "d" //hypo 1st letter team_name[team_1][char_0]
+				bot->client->pers.team = TEAM_1;
+			else
+				bot->client->pers.team = TEAM_2;
+		}
+		else //null
+		{
+			if (level.lastTeamSpawned != TEAM_1)
+			{
+				level.lastTeamSpawned = TEAM_1;
+				bot->client->pers.team = TEAM_1;
+			}
+			else
+			{
+				level.lastTeamSpawned = TEAM_2;
+				bot->client->pers.team = TEAM_2;
+			}
+		}
+	}
+
+
 
 	// To allow bots to respawn
 	if(userinfo == NULL)
-		ACESP_SetName(bot, name, skin, team);
+		ACESP_SetName(bot, name, skin/*, team*/);
 	else
 		ClientConnect (bot, userinfo);
 	
@@ -748,31 +794,34 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 	else
 
 #endif
+#if 0
 		if (teamplay->value)
 		{
 			if (team != NULL)
 			{
-				if (strcmp(team, "d") == 0)
+				if (strcmp(team[0], "d") == 0) //hypo 1st letter
 					ACESP_PutClientInServer(bot, false, TEAM_1);
 				else
 					ACESP_PutClientInServer(bot, false, TEAM_2);
 			}
 			else //null
 			{
-				if (bot->acebot.lastTeamSpawned != TEAM_1)
+				if (level.lastTeamSpawned != TEAM_1)
 				{
-					bot->acebot.lastTeamSpawned = TEAM_1;
+					level.lastTeamSpawned = TEAM_1;
 					ACESP_PutClientInServer(bot, false, TEAM_1);
 				}
 				else
 				{
-					bot->acebot.lastTeamSpawned = TEAM_2;
+					level.lastTeamSpawned = TEAM_2;
 					ACESP_PutClientInServer(bot, false, TEAM_2);
 				}
 			}
 		}
 		else //end teamplay
- 			ACESP_PutClientInServer (bot,false,TEAM_NONE);
+
+#endif
+			ACESP_PutClientInServer(bot, false, bot->client->pers.team /*TEAM_NONE*/);
 
 	//safe_bprintf(PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 //hypo
@@ -818,7 +867,8 @@ void ACESP_RemoveBot(char *name)
 	}
 
 	if(!freed)	
-		safe_bprintf (PRINT_MEDIUM, "%s not found\n", name);
+		gi.dprintf("%s not found\n", name);
+		//safe_bprintf (PRINT_MEDIUM, "%s not found\n", name);
 	
 	ACESP_SaveBots(); // Save them again
 }

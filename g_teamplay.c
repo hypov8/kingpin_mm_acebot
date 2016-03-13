@@ -133,7 +133,7 @@ void cashspawn_think( edict_t *self )
 {
 	edict_t	*cash;
 
-	if ((num_cash_items > MAX_CASH_ITEMS) || (level.modeset == MATCHSETUP) || (level.modeset == FINALCOUNT) || (level.modeset == FREEFORALL))
+	if ((num_cash_items > MAX_CASH_ITEMS) || (level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
 	{
 		self->nextthink = level.time + self->delay;
 		return;
@@ -637,18 +637,26 @@ qboolean Teamplay_ValidateJoinTeam( edict_t *self, int teamindex )
 
 	self->client->pers.team = teamindex;
 	self->client->pers.spectator = PLAYING;
-	if ((level.modeset != DEATHMATCH_SPAWNING) && (level.modeset != TEAMPLAY_SPAWNING))
+	if ((level.modeset != TEAM_MATCH_SPAWNING) && (level.modeset != DM_MATCH_SPAWNING))
 	{
 		safe_bprintf(PRINT_HIGH, "%s joined %s\n", self->client->pers.netname, team_names[teamindex]);
 //		sl_WriteStdLogPlayerEntered( &gi, level, self );	// Standard Logging
 	}
 
-	if ((level.modeset == TEAMPLAY_RUNNING) || (level.modeset == DEATHMATCH_RUNNING) || (level.modeset == DEATHMATCH_SPAWNING) || (level.modeset == TEAMPLAY_SPAWNING))
+	if ((level.modeset == DM_MATCH_RUNNING) || (level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING))
 	{
 		self->movetype = MOVETYPE_WALK;
 		self->solid = SOLID_BBOX;
 		self->svflags &= ~SVF_NOCLIENT;
 
+#if 1
+		// ACEBOT_ADD
+
+			if (self->inuse && self->client->pers.spectator != SPECTATING)
+				ACEIT_PlayerAdded(self); //only add to bot list if player can enter game
+						//also called in match begin
+		// ACEBOT_END
+#endif
 
 /*
 	// Validate skins

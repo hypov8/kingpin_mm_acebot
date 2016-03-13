@@ -16,177 +16,15 @@
     <Filter Include="Source Files\acesrc">
       <UniqueIdentifier>{c64a922b-9bb7-4286-adb4-b799b6b8a830}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\kpsdk">
+      <UniqueIdentifier>{6a52f950-a946-4385-8018-5eeaed510f32}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ai_bitch.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_bum_sit.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_dog.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_punk.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_runt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_shorty.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_thug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_thug_sit.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ai_whore.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_all.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_crystalpalace.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_log.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_posionville.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_radiocity.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_shipyards.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_skidrow.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_steeltown.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ep_trainyard.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="file.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_ai.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_ai_ents.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_ai_fight.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_ai_memory.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_cast.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="G_chase.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_cmds.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_combat.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_func.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_items.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_joe_misc.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_misc.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_pawn.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_phys.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_save.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_spawn.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_svcmds.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_target.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_teamplay.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_trigger.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_utils.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_weapon.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gslog.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="m_bbox.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="m_move.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_client.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_hud.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_view.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="p_weapon.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="q_shared.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdlog.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tourney.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vehicles.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="voice.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="voice_bitch.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="voice_punk.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g_antilag.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="acesrc\acebot_ai.c">
@@ -212,6 +50,171 @@
     </ClCompile>
     <ClCompile Include="g_ctf.c">
       <Filter>Source Files\acesrc</Filter>
+    </ClCompile>
+    <ClCompile Include="g_weapon.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_bitch.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_bum_sit.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_dog.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_punk.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_runt.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_shorty.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_thug.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_thug_sit.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_whore.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_all.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_crystalpalace.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_log.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_posionville.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_radiocity.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_shipyards.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_skidrow.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_steeltown.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="ep_trainyard.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="file.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai_ents.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai_fight.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_ai_memory.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_antilag.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_cast.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="G_chase.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_cmds.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_combat.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_func.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_items.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_joe_misc.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_main.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_misc.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_pawn.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_phys.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_save.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_spawn.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_svcmds.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_target.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_teamplay.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_trigger.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="g_utils.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlog.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="m_bbox.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="m_move.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="p_client.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="p_hud.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="p_view.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="p_weapon.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="q_shared.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="voice_punk.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="voice_bitch.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="voice.c">
+      <Filter>Source Files\kpsdk</Filter>
+    </ClCompile>
+    <ClCompile Include="vehicles.c">
+      <Filter>Source Files\kpsdk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
