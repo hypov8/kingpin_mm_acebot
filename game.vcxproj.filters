@@ -48,9 +48,6 @@
     <ClCompile Include="acesrc\acebot_spawn.c">
       <Filter>Source Files\acesrc</Filter>
     </ClCompile>
-    <ClCompile Include="g_ctf.c">
-      <Filter>Source Files\acesrc</Filter>
-    </ClCompile>
     <ClCompile Include="g_weapon.c">
       <Filter>Source Files\kpsdk</Filter>
     </ClCompile>
@@ -324,9 +321,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="acesrc\acebot.h">
-      <Filter>Source Files\acesrc</Filter>
-    </ClInclude>
-    <ClInclude Include="g_ctf.h">
       <Filter>Source Files\acesrc</Filter>
     </ClInclude>
   </ItemGroup>

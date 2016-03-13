@@ -108,7 +108,7 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy03"
+#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy04"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
