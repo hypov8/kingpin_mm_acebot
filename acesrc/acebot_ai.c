@@ -123,7 +123,7 @@ void ACEAI_Think (edict_t *self)
 	
 	// Look for enemies
 
-	if (ACEAI_FindEnemy(self) && self->acebot.botNewTargetTime <= level.framenum) //hypo add timer for bot to not own so much
+	if (ACEAI_FindEnemy(self) && self->acebot.botNewTargetTime <= level.time) //hypo add timer for bot to not own so much
 	{	
 		ACEAI_ChooseWeapon(self);
 		ACEMV_Attack (self, &ucmd);
@@ -409,6 +409,8 @@ qboolean ACEAI_FindEnemy(edict_t *self)
 		}
 		//continue;
 	}
+	if (sv_botskill->value < 0.0f) sv_botskill->value = 0;
+	if (sv_botskill->value > 4.0f) sv_botskill->value = 4;
 
 	if (j != -1)
 	{
@@ -416,11 +418,9 @@ qboolean ACEAI_FindEnemy(edict_t *self)
 		if (self->acebot.new_target != self->acebot.old_target)
 		{
 			self->acebot.old_target = j;
-			self->acebot.botNewTargetTime = level.framenum + 20; //give player 2 seconds leway between seeing n being shot
+			self->acebot.botNewTargetTime = level.time + (4 - sv_botskill->value); //give player 2 seconds leway between seeing n being shot
 			return false;
 		}
-
-
 
 		self->enemy = players[j];
 		return true;

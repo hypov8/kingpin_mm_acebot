@@ -687,8 +687,10 @@ void ACEMV_Attack (edict_t *self, usercmd_t *ucmd)
 	VectorCopy(self->enemy->s.origin,target);
 
 	// modify attack angles based on accuracy (mess this up to make the bot's aim not so deadly)
-	target[0] += (random()-0.5) * 40;
-	target[1] += (random()-0.5) * 40;
+
+
+	target[0] += (random() - 0.5) * sv_botskill->value * 10;
+	target[1] += (random() - 0.5) * sv_botskill->value * 10;
 	
 	// Set direction
 	VectorSubtract (target, self->s.origin, self->move_vector);
