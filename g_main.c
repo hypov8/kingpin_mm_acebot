@@ -545,6 +545,17 @@ void CheckEndDM(void)
 	//if (doot->is_bot) continue; //hypov8 ill change to next map, instead of waiting for bots to vote
 		count++;
 	}
+// ACEBOT_ADD
+#ifndef SPAWNBOTS
+	if (count && !level.bots_spawned)
+	{
+		ACEND_InitNodes();
+		ACEND_LoadNodes();
+		ACESP_LoadBots();
+	}
+#endif
+// ACEBOT_END
+
 	if ((count == 0) && (level.framenum > 12000))
 		ResetServer (); //hypov8 bots count?
 

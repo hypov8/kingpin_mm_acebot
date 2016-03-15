@@ -73,7 +73,7 @@ void ACEIT_PlayerAdded(edict_t *ent)
 {
 	players[num_players++] = ent;
 
-	gi.dprintf(" Added: %s, Inuse = %i\n", ent->client->pers.netname, num_players);
+	gi.dprintf(" Added: %s, Bot Enemy = %i\n", ent->client->pers.netname, num_players);
 	//safe_bprintf(PRINT_HIGH, "Working ... 1\n");
 }
 

@@ -505,6 +505,7 @@ void CheckAllPlayersSpawned()
 
 	if (teamplay->value) //hypov8 ToDo: acebot teamplay
 	{
+#ifdef SPAWNBOTS
 // ACEBOT_ADD
 		if (!level.bots_spawned)
 		{
@@ -514,10 +515,12 @@ void CheckAllPlayersSpawned()
 		}
 		else
 // ACEBOT_END
+#endif
 		SpawnPlayers();
 	}
 	else
 	{
+#ifdef SPAWNBOTS
 // ACEBOT_END
 		if (!level.bots_spawned)
 		{
@@ -527,6 +530,7 @@ void CheckAllPlayersSpawned()
 		}
 		else
 // ACEBOT_END
+#endif
 		SpawnPlayer();
 	}
 		
@@ -648,6 +652,18 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 	//if (doot->is_bot) continue; //hypov8 change to next map, instead of waiting for bots to vote
 		count++;
 	}
+
+// ACEBOT_ADD
+#ifndef SPAWNBOTS
+	if (count && !level.bots_spawned)
+	{
+		ACEND_InitNodes();
+		ACEND_LoadNodes();
+		ACESP_LoadBots();
+	}
+#endif
+// ACEBOT_END
+
 	if ((count == 0) && (level.framenum > 12000))
 		ResetServer(); //hypov8 bots count?
 

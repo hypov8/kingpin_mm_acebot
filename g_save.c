@@ -348,7 +348,7 @@ void InitGame (void)
 
 	// ACEBOT_ADD
 	sv_botcfg = gi.cvar("sv_botcfg", "0", 0);
-	sv_botskill = gi.cvar("sv_botskill", "2", 0);
+	sv_botskill = gi.cvar("sv_botskill", "2", CVAR_SERVERINFO);
 	// ACEBOT_END
 
 
