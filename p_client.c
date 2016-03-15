@@ -1948,9 +1948,10 @@ void ClientBeginDeathmatch (edict_t *ent)
 	if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)
 		|| (level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING)) //free???
 	{
-		if (ent->inuse && ent->client->pers.spectator != SPECTATING)
-			ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
-	}						//also called in match begin
+		if(teamplay->value == 0)
+			if (ent->inuse && ent->client->pers.spectator != SPECTATING)
+				ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
+	}									//also called in match begin
 // ACEBOT_END
 #endif
 	// locate ent at a spawn point

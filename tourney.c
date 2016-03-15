@@ -409,6 +409,21 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 //add hypov8
 		self->client->ps.pmove.pm_flags = PM_NORMAL; //fixes specing player on game end
 		self->client->ps.pmove.pm_type = PM_SPECTATOR; // switch bots to spec. elsewhere?
+		self->flags = 0;
+		self->client->buttons = 0;
+		self->client->latched_buttons = 0;
+		//self->client->respawn_time
+		self->onfireent = NULL;
+		if (self->onfiretime != 0)
+		{
+			gi.dprintf( "ent on fire RESET\n");
+			self->onfiretime = 0;
+		}
+		self->client->pers.fakeThief = 0;
+		meansOfDeath = MOD_RESTART;
+		self->flags &= ~FL_GODMODE;
+		self->health = 0;
+
 		//hypov8 move player to intermision
 		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
 		if (intermision)

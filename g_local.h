@@ -108,7 +108,7 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy04"
+#define	GAMEVERSION	"MM1.52 +lagless +acebot v-hy07"
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -529,8 +529,11 @@ typedef struct
 	int		is_spawn;  
 	int		player_num; 
 
+// acebot
 	qboolean bots_spawned; //hypov8 load bots once only while loading players
 	int lastTeamSpawned; //will asigne bots 1 for each team in sequence
+	qboolean customSkinsUsed; // will not save to bot temp file if per map was loaded
+//end
 
     // snap - team tags
 	int		manual_tagset;
@@ -612,7 +615,7 @@ typedef struct //bot->acebot.xxx
 {
 	int			new_target;		//if new target. dont shoot straight away
 	int			old_target;		//old player target. shoot if more than xx seconds
-	int			botNewTargetTime; //timer to allow bot to start attacking
+	float			botNewTargetTime; //timer to allow bot to start attacking
 	//int			lastTeamSpawned; // will spawn bots on opisite team to last bot(when adding null values)
 	cvar_t		*game_dir;		//add game dir to bot libary
 	//vec3_t		rocketOwner;		//origin for boot to look at for strafe/dodge
@@ -856,6 +859,11 @@ extern	cvar_t	*sv_antilag_noexp;
 extern	cvar_t	*sv_antilag_botdelay;
 extern	cvar_t	*sv_antilag;
 // END_LAG
+
+// ACEBOT_ADD
+extern cvar_t *sv_botcfg;
+extern cvar_t *sv_botskill;
+// ACEBOT_END
 
 extern	cvar_t	*gun_x, *gun_y, *gun_z;
 extern	cvar_t	*sv_rollspeed;

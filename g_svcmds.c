@@ -300,7 +300,7 @@ void	ServerCommand (void)
 			if ( teamplay->value) // name, skin, team 
 				ACESP_SpawnBot(gi.argv(4), gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031" dragon
 			else // name, skin			
-				ACESP_SpawnBot(NULL, gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031"
+				ACESP_SpawnBot("\0", gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031"
 		}
 	}
 

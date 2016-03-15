@@ -76,15 +76,19 @@ void ACESP_SaveBots()
 	int i,count = 0;
 	cvar_t	*game_dir;
 	char buf[32];
+	bot_skin_t player;
+
+	if (level.customSkinsUsed)
+		return; //dont write to temp skins file if a custom player file is specified in map
 
 #if 1
 	//hypo mod folder for bots dir
 	game_dir = gi.cvar("game", "", 0);
-	sprintf(buf, "%s\\bots.tmp", game_dir->string);
+	sprintf(buf, "%s\\bots\\_bots.tmp", game_dir->string);
 	
 	
 	//strcpy(filename, buf);
-	if ((pOut = fopen(buf, "wb")) == NULL)
+	if ((pOut = fopen(buf, "wb")) == NULL) //wb
 		//end
 #else		
 	if((pOut = fopen("comp\\bots.tmp", "wb" )) == NULL)
@@ -125,31 +129,98 @@ void ACESP_LoadBots()
 {
     FILE *pIn;
 	char userinfo[MAX_INFO_STRING];
+	char buffer[MAX_STRING_LENGTH];
 	int i, count;
-	cvar_t	*game_dir;
+	cvar_t	*game_dir, *map_name;
 	char buf[32];
 
+	char *line, *token;
+	bot_skin_t player; // name, skin, team;
+
 	level.bots_spawned = true;
+	level.customSkinsUsed = false;
 
-#if 1
 	//hypo mod folder for bots dir
+	map_name = gi.cvar("mapname", "", 0);
 	game_dir = gi.cvar("game", "", 0);
-	sprintf(buf, "%s\\bots.tmp", game_dir->string);
 
-	//strcpy(filename, buf);
-	if ((pIn = fopen(buf, "rb")) == NULL)
-	//end
-#else
-	if((pIn = fopen("comp\\bots.tmp", "rb" )) == NULL)
-#endif
-		return; // bail
-	
+
+
+
+	//check for individual bot config
+	sprintf(buf, "%s\\bots\\%s.cfg", game_dir->string, map_name->string); // comp\bots\mapname.cfg
+
+	if ((pIn = fopen(buf, "r")) == NULL)
+	{	
+		//use a custom config for every map thats not in the pre map.cfg
+		//will not use the bot.tmp
+		if (sv_botcfg->value == 1) //sv_botcfg "1"
+		{
+			//check for individual bot config
+			sprintf(buf, "%s\\bots\\_default.cfg", game_dir->string); // comp\bots\mapname.cfg
+
+			if ((pIn = fopen(buf, "r")) == NULL)return; // bail
+			goto customcfg;
+		}
+		
+		//hypo mod folder for bots dir
+		sprintf(buf, "%s\\bots\\_bots.tmp", game_dir->string);
+
+		//strcpy(filename, buf);
+		if ((pIn = fopen(buf, "rb")) == NULL) //	if((pIn = fopen("comp\\bots.tmp", "rb" )) == NULL)
+			return; // bail
+	}
+	else
+	{
+customcfg:
+		level.customSkinsUsed = true; //hypo dont save custom players per map
+
+		fgetline(pIn, buffer);
+		while (!feof(pIn))
+		{
+		line = buffer;
+			//token = player.name = player->skin = 
+			//strcpy(player.name, "");
+			//strcpy(player.skin, "");
+			//strcpy(player.team, "");
+
+			for (i = 1; i <= 3; i++)
+			{
+				token = COM_Parse(&line);
+				if (token[0] == '\0')
+					break;
+
+				switch (i)
+					{
+					case 1: strcpy(player.name, token);
+					case 2: strcpy(player.skin, token);
+					case 3: strcpy(player.team, token);
+						//case 4: skill = token; break;
+					}
+
+
+				if (i == 3)
+				{
+					if (teamplay->value) // name, skin, team 
+						ACESP_SpawnBot(player.team, player.name, player.skin, NULL); //sv addbot thugBot "male_thug/009 031 031" dragon
+					else // name, skin			
+						ACESP_SpawnBot("\0", player.name, player.skin, NULL); //sv addbot thugBot "male_thug/009 031 031"
+				}
+			}
+			fgetline(pIn, buffer);
+			continue;
+		}
+
+		fclose(pIn);
+	return;
+	}
+
 	fread(&count,sizeof (int),1,pIn); 
 
 	for(i=0;i<count;i++)
 	{
 		fread(userinfo,sizeof(char) * MAX_INFO_STRING,1,pIn); 
-		ACESP_SpawnBot (NULL, NULL, NULL, userinfo);
+		ACESP_SpawnBot("\0", "\0", "\0", userinfo);
 	}
 		
     fclose(pIn);
@@ -562,7 +633,12 @@ client->pers.spectator = PLAYING; // CTF_STATE_START;
 void ACESP_Respawn (edict_t *self)
 {
 	if (!((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)))
+	{
+		self->deadflag = 0;
 		gi.dprintf("bot respawned after match\n");
+		return; //hypov8 dont respawn, fixes last person dying loosing there mouse pitch
+	}
+
 
 	CopyToBodyQue (self);
 
@@ -745,10 +821,15 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 
 	if (teamplay->value)
 	{
-		if (strlen(team) > 0)
+		//if (strlen(team) > 0)
 		//if (team[0] != '\0') //NULL
+		//if (team == NULL)
+		//strcpy( team[0],'\0');
+
+		if (team[0] != '\0') // && team[0] != '0') //hypo console spits out '\0'
 		{
-			if (strcmp(team[0],team_names[1][0] ) == 0) // "d" //hypo 1st letter team_name[team_1][char_0]
+		//if (team[0] == team_names[1][0]) // "d" //hypo 1st letter team_name[team_1][char_0]
+			if (team[0] == 'd' || team[0] == 'D' || team[0] == '1')
 				bot->client->pers.team = TEAM_1;
 			else
 				bot->client->pers.team = TEAM_2;
@@ -860,8 +941,12 @@ void ACESP_RemoveBot(char *name)
 				bot->deadflag = DEAD_DEAD;
 				bot->inuse = false;
 				freed = true;
-				ACEIT_PlayerRemoved (bot);
+				///////ACEIT_PlayerRemoved (bot); // hypo now in client disconect
 				safe_bprintf (PRINT_MEDIUM, "%s removed\n", bot->client->pers.netname);
+//add hypo
+				ClientDisconnect(bot);
+//end
+
 			}
 		}
 	}
@@ -871,5 +956,6 @@ void ACESP_RemoveBot(char *name)
 		//safe_bprintf (PRINT_MEDIUM, "%s not found\n", name);
 	
 	ACESP_SaveBots(); // Save them again
+
 }
 

@@ -56,6 +56,11 @@ cvar_t	*sv_antilag_botdelay;
 cvar_t	*sv_antilag;
 // END_LAG
 
+// ACEBOT_ADD
+cvar_t *sv_botcfg;
+cvar_t *sv_botskill;
+// ACEBOT_END
+
 cvar_t	*sv_rollspeed;
 cvar_t	*sv_rollangle;
 cvar_t	*gun_x;
@@ -789,6 +794,12 @@ void G_RunFrame (void)
 	{
 		if (!ent->inuse)
 			continue;
+
+// ACEBOT_ADD
+		//if ((ent->is_bot) && !((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)))
+		if ((ent->client) && !((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)))
+				continue;
+// ACEBOT_END
 
 		level.current_entity = ent;
 

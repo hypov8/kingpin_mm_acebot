@@ -190,6 +190,16 @@ typedef struct item_table_s
 
 } item_table_t;
 
+typedef struct bot_skin_s
+{
+	char name[32];
+	char skin[64];
+	char team[32];
+	//qboolean customSkinsUsed;
+} bot_skin_t;
+
+
+
 extern int num_players;
 extern edict_t *players[MAX_CLIENTS];		// pointers to all players in the game
 
@@ -199,6 +209,8 @@ extern item_table_t item_table[MAX_EDICTS];
 extern qboolean debug_mode;
 extern int numnodes;
 extern int num_items;
+
+void ClientDisconnect(edict_t *ent); //hypov8
 
 // id Function Protos I need
 void     LookAtKiller (edict_t *self, edict_t *inflictor, edict_t *attacker);
