@@ -453,6 +453,10 @@ int read_map_file()
 		}
 
 		sscanf(buffer, "%s %s", rank, map);	
+		//hypov8 renames list to lowercase.
+		//when called at map vote. causing ram to sky rocket untill max_gltextures reached
+		strlwr(map);
+
 		strncpy(custom_list[num_custom_maps].custom_map, map, 32);
 		custom_list[num_custom_maps].rank = atoi(rank);
 		total_rank += custom_list[num_custom_maps].rank;
