@@ -2786,10 +2786,10 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 	int		i;
 	edict_t	*doot; int j;
 
-	// acebot
-	//note hypov8 check for bots spawned if game didnt start?
-	if (!ent->is_bot /*&& (level.modeset != TEAM_MATCH_RUNNING || level.modeset != DM_MATCH_RUNNING)*/)
+// acebot
+	if (!ent->is_bot)
 	{
+//end
 		ent->client = NULL;
 		ent->inuse = false;
 		ent->skins[0] = 0;
@@ -2804,27 +2804,22 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 		ent->check_idle = 0;
 		ent->check_talk = 0;
 		ent->check_shoot = 0;
-	}
 
-	// check to see if they are on the banned IP list
-	if (!ent->is_bot)
-	{
+		// check to see if they are on the banned IP list
 		value = Info_ValueForKey(userinfo, "ip");
 		if (SV_FilterPacket(value))
 			return false;
-	}
-	// check for a password
-	if (!ent->is_bot){
+
+		// check for a password
 		value = Info_ValueForKey(userinfo, "password");
 		if (strcmp(password->string, value) != 0)
 			return false;
-	}
-// acebot
-	if (!ent->is_bot)
-	{
+
 		if (CheckPlayerBan(userinfo))
 			return false;
+// acebot
 	}
+//end
 
 // Ridah, if this isn't a loadgame, try to add them to the character list
 	if (!deathmatch->value && (ent->inuse == false))
@@ -2887,11 +2882,17 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 	}
 
 	// Ridah, make sure they have to join a team
+// acebot
 	if (!ent->is_bot)
 	{
+// end
 		if (teamplay->value)
 			ent->client->pers.team = 0;
+// acebot
 	}
+//end
+
+
 // check to see if a player was disconnected
 	i = 0;
 	skinvalue = Info_ValueForKey (userinfo, "skin");
@@ -2905,7 +2906,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 					(Q_stricmp(skinvalue, playerlist[i].skin) == 0))
 					ent->client->showscores = SCORE_REJOIN;
 				else
-					;//??
+					; //??
 			}
 			else //end dm
 			{
@@ -2913,7 +2914,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 					ent->client->showscores = SCORE_REJOIN;
 			}
 		}
-		else//bot
+		else //bot
 		{
 			ent->client->showscores = NO_SCOREBOARD;
 		}

@@ -171,7 +171,7 @@ int team_startcash[2]={0,0};
 ================
 MatchStart
 level.modeset = TEAM_PRE_MATCH;
-server command "matchstart"
+ONLY server command "matchstart"
 
 start the match
 ================
@@ -441,6 +441,7 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 ================
 MatchEnd
 level.modeset =  ENDMATCHVOTING?
+ONLY used for server cmd "matchend"
 move players to spec
 ================
 */
@@ -607,7 +608,10 @@ calls Start_DM()
 void CheckStartDM ()
 {
 	if (teamplay->value) //hypov8 make teamplay games use corect varables
+	{
 		level.modeset = TEAM_PRE_MATCH;
+		return; 
+	}
 
 // acebots
 	level.bots_spawned = 0; //hypov8 

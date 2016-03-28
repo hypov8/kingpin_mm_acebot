@@ -603,6 +603,8 @@ void CheckEndDM(void)
 			}
 		}
 	}
+	/*
+	//hypo cash limit in dm
 
 	if (cashlimit->value)
 	{
@@ -616,6 +618,7 @@ void CheckEndDM(void)
 			return;
 		}
 	}
+	*/
 }
 
 /*=====================

@@ -491,6 +491,12 @@ void Cmd_Join_f (edict_t *self, char *teamcmd)
 
 	if ((!teamplay->value) && (self->client->pers.spectator == SPECTATING))
 	{
+		/* hypo stop respawns as oftern pre match? */
+		if (level.framenum < (self->switch_teams_frame + 20)) {
+			return;
+		}
+		self->switch_teams_frame = level.framenum;
+
 		self->client->pers.spectator = PLAYING;
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
