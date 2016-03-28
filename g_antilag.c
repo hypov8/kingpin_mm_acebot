@@ -286,9 +286,10 @@ G_HistoricalTraceBegin
 void G_HistoricalTraceBegin(edict_t * ent, edict_t * owner)
 {
 	int frameMinusPing;
-	if (sv_antilag->value == 1)
+									/* client don't want bullets predicted */
+	if (sv_antilag->value == 1 && !ent->cl_noAntiLag)
 	{
-		if (ent->antilagToTrace)
+		if (ent->antilagToTrace) //entity is not a player
 		{
 			frameMinusPing = level.framenum * 100 - ent->antilagPingTimer;
 			G_AdjustClientPositions(ent, frameMinusPing, true, owner); //set time relitive to explosives ping
@@ -307,8 +308,8 @@ G_HistoricalTraceEnd
 ================
 */
 void G_HistoricalTraceEnd(edict_t * ent, edict_t * owner)
-{
-	if (sv_antilag->value == 1)
+{									/* client don't want bullets predicted */
+	if (sv_antilag->value == 1 && !ent->cl_noAntiLag)
 		G_AdjustClientPositions(ent, 0, false, owner);
 }
 

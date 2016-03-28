@@ -882,6 +882,26 @@ void Cmd_Adots_f (void)
 //-------------------------------------------------------------
 #endif
 
+// NET_ANTILAG	//et-xreal antilag
+void Cmd_AntiLag_f(edict_t *self, char *antilag)
+{
+	/* client disabled antilag */
+	self->cl_noAntiLag = atoi(antilag);
+
+
+	/* print client who wont use antilag */
+	if (self->cl_noAntiLag)
+		cprintf(self, PRINT_HIGH, "Client disabled Antilag\n");
+	else
+		cprintf(self, PRINT_HIGH, "Client enabled Antilag\n");
+	
+	/* server print client change */
+	gi.dprintf("cl_noAntilag %s for %s \n", antilag, self->client->pers.netname);
+}
+// END_LAG
+
+
+
 // Ridah
 extern void ED_CallSpawn (edict_t *ent);
 
@@ -5411,6 +5431,12 @@ void ClientCommand (edict_t *ent)
 //		Cmd_Vote_f (ent);
 //	else if ((Q_stricmp (cmd, "yes") == 0) || (Q_stricmp (cmd, "no") == 0))
 //		Cmd_Response_f (ent);
+
+// NET_ANTILAG	//et-xreal antilag
+	//hypo antilag client comand to disable
+	else if ((Q_stricmp (cmd, "cl_noantilag") == 0))
+		Cmd_AntiLag_f (ent, gi.argv (1));
+// END_LAG
 		
 #if 0	// turn this off once we have the tables (not used by actual game code)
 	// Ridah, new anorm calculations
