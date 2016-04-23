@@ -210,7 +210,7 @@ void ACEND_SetGoal(edict_t *self, int goal_node)
 {
 	int node;
 
-	self->goal_node = goal_node;
+	self->acebot.goal_node = goal_node;
 	node = ACEND_FindClosestReachableNode(self, BOTNODE_DENSITY*3, BOTNODE_ALL);
 	
 	if(node == -1)
@@ -220,9 +220,9 @@ void ACEND_SetGoal(edict_t *self, int goal_node)
 		debug_printf("%s new start node selected %d\n",self->client->pers.netname,node);
 	
 	
-	self->current_node = node;
-	self->next_node = self->current_node; // make sure we get to the nearest node first
-	self->node_timeout = 0;
+	self->acebot.current_node = node;
+	self->acebot.next_node = self->acebot.current_node; // make sure we get to the nearest node first
+	self->acebot.node_timeout = 0;
 
 }
 
@@ -242,23 +242,23 @@ qboolean ACEND_FollowPath(edict_t *self)
 	//////////////////////////////////////////
 
 	// Try again?
-	if(self->node_timeout ++ > 30)
+	if(self->acebot.node_timeout ++ > 30)
 	{
-		if(self->tries++ > 3)
+		if(self->acebot.tries++ > 3)
 			return false;
 		else
-			ACEND_SetGoal(self,self->goal_node);
+			ACEND_SetGoal(self, self->acebot.goal_node);
 	}
 		
 	// Are we there yet?
-	VectorSubtract(self->s.origin,nodes[self->next_node].origin,v);
+	VectorSubtract(self->s.origin, nodes[self->acebot.next_node].origin, v);
 	
 	if(VectorLength(v) < 32) 
 	{
 		// reset timeout
-		self->node_timeout = 0;
+		self->acebot.node_timeout = 0;
 
-		if(self->next_node == self->goal_node)
+		if (self->acebot.next_node == self->acebot.goal_node)
 		{
 			if(debug_mode)
 				debug_printf("%s reached goal!\n",self->client->pers.netname);	
@@ -267,16 +267,16 @@ qboolean ACEND_FollowPath(edict_t *self)
 		}
 		else
 		{
-			self->current_node = self->next_node;
-			self->next_node = path_table[self->current_node][self->goal_node];
+			self->acebot.current_node = self->acebot.next_node;
+			self->acebot.next_node = path_table[self->acebot.current_node][self->acebot.goal_node];
 		}
 	}
 	
-	if(self->current_node == -1 || self->next_node ==-1)
+	if (self->acebot.current_node == -1 || self->acebot.next_node == -1)
 		return false;
 	
 	// Set bot's movement vector
-	VectorSubtract (nodes[self->next_node].origin, self->s.origin , self->move_vector);
+	VectorSubtract(nodes[self->acebot.next_node].origin, self->s.origin, self->acebot.move_vector);
 	
 	return true;
 }
@@ -336,15 +336,15 @@ qboolean ACEND_CheckForLadder(edict_t *self)
 			closest_node = ACEND_AddNode(self,BOTNODE_LADDER);
 	
 			// Now add link
-		    ACEND_UpdateNodeEdge(self->last_node,closest_node);	   
+			ACEND_UpdateNodeEdge(self->acebot.last_node, closest_node);
 			
 			// Set current to last
-			self->last_node = closest_node;
+			self->acebot.last_node = closest_node;
 		}
 		else
 		{
-			ACEND_UpdateNodeEdge(self->last_node,closest_node);	   
-			self->last_node = closest_node; // set visited to last
+			ACEND_UpdateNodeEdge(self->acebot.last_node, closest_node);
+			self->acebot.last_node = closest_node; // set visited to last
 		}
 		return true;
 	}
@@ -391,7 +391,7 @@ void ACEND_PathMap(edict_t *self)
     ////////////////////////////////////////////////////////
 	// Jumping
 	///////////////////////////////////////////////////////
-	if(self->is_jumping)
+	if (self->acebot.is_jumping)
 	{
 	   // See if there is a closeby jump landing node (prevent adding too many)
 		closest_node = ACEND_FindClosestReachableNode(self, 64, BOTNODE_JUMP);
@@ -400,10 +400,10 @@ void ACEND_PathMap(edict_t *self)
 			closest_node = ACEND_AddNode(self,BOTNODE_JUMP);
 		
 		// Now add link
-		if(self->last_node != -1)
-			ACEND_UpdateNodeEdge(self->last_node, closest_node);	   
+		if (self->acebot.last_node != -1)
+			ACEND_UpdateNodeEdge(self->acebot.last_node, closest_node);
 
-		self->is_jumping = false;
+		self->acebot.is_jumping = false;
 		return;
 	}
 
@@ -428,10 +428,10 @@ void ACEND_PathMap(edict_t *self)
 			return; // Do not want to do anything here.
 
 		// Here we want to add links
-		if(closest_node != self->last_node && self->last_node != INVALID)
-			ACEND_UpdateNodeEdge(self->last_node,closest_node);	   
+		if (closest_node != self->acebot.last_node && self->acebot.last_node != INVALID)
+			ACEND_UpdateNodeEdge(self->acebot.last_node, closest_node);
 
-		self->last_node = closest_node; // set visited to last
+		self->acebot.last_node = closest_node; // set visited to last
 		return;
 	}
 	 
@@ -447,14 +447,14 @@ void ACEND_PathMap(edict_t *self)
 		    closest_node = ACEND_AddNode(self,BOTNODE_MOVE);
 		
 		// Now add link
-		if(self->last_node != -1)
-			ACEND_UpdateNodeEdge(self->last_node, closest_node);	   
+		if (self->acebot.last_node != -1)
+			ACEND_UpdateNodeEdge(self->acebot.last_node, closest_node);
 			
 	 }
-	 else if(closest_node != self->last_node && self->last_node != INVALID)
-	 	ACEND_UpdateNodeEdge(self->last_node,closest_node);	   
+	 else if (closest_node != self->acebot.last_node && self->acebot.last_node != INVALID)
+		 ACEND_UpdateNodeEdge(self->acebot.last_node, closest_node);
 	
-	 self->last_node = closest_node; // set visited to last
+	 self->acebot.last_node = closest_node; // set visited to last
 	
 }
 

@@ -381,7 +381,7 @@ void VoteMapScoreboardMessage (edict_t *ent)
 	memset (&count, 0, sizeof(count));
 	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
 	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
-	if (!player->is_bot)
+	if (!player->acebot.is_bot)
 		count[player->vote]++;
 	}
 
@@ -778,7 +778,7 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 //			"%12s - 1 (%i players)"\n%12s - 2\n\n--------------------------------------------------------\n", team_names[1], team_names[2]
 
 // ACEBOT_ADD
-	if (ent->is_bot)
+	if (ent->acebot.is_bot)
 		return;
 // ACEBOT_END
 
@@ -1371,7 +1371,7 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 	int		tmax;
 
 // ACEBOT_ADD
-	if (ent->is_bot)
+	if (ent->acebot.is_bot)
 		return;
 // ACEBOT_END
 

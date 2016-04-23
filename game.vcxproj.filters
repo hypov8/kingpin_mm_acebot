@@ -9,10 +9,6 @@
       <UniqueIdentifier>{f478d6cf-fa40-43b7-9c43-b6416e16d2de}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{bbfb8b39-011c-41dd-b5f5-34a71fba058f}</UniqueIdentifier>
-      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
-    </Filter>
     <Filter Include="Source Files\acesrc">
       <UniqueIdentifier>{c64a922b-9bb7-4286-adb4-b799b6b8a830}</UniqueIdentifier>
     </Filter>

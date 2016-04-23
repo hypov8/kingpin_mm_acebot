@@ -105,14 +105,14 @@ void ACEAI_Think (edict_t *self)
 		ucmd.buttons = BUTTON_ATTACK;
 	}
 	
-	if(self->state == BOTSTATE_WANDER && self->wander_timeout < level.time)
+	if (self->acebot.state == BOTSTATE_WANDER && self->acebot.wander_timeout < level.time)
 	  ACEAI_PickLongRangeGoal(self); // pick a new long range goal
 
 	// Kill the bot if completely stuck somewhere
 	if(VectorLength(self->velocity) > 37) //
-		self->suicide_timeout = level.time + 10.0;
+		self->acebot.suicide_timeout = level.time + 10.0;
 
-	if(self->suicide_timeout < level.time)
+	if (self->acebot.suicide_timeout < level.time)
 	{
 		self->health = 0;
 		player_die (self, self, self, 100000, vec3_origin, 0, 0); //hypov8 add null
@@ -131,9 +131,9 @@ void ACEAI_Think (edict_t *self)
 	else
 	{
 		// Execute the move, or wander
-		if(self->state == BOTSTATE_WANDER)
+		if (self->acebot.state == BOTSTATE_WANDER)
 			ACEMV_Wander(self,&ucmd);
-		else if(self->state == BOTSTATE_MOVE)
+		else if (self->acebot.state == BOTSTATE_MOVE)
 			ACEMV_Move(self,&ucmd);
 	}
 	
@@ -175,13 +175,13 @@ void ACEAI_PickLongRangeGoal(edict_t *self)
 	// look for a target 
 	current_node = ACEND_FindClosestReachableNode(self,BOTNODE_DENSITY,BOTNODE_ALL);
 
-	self->current_node = current_node;
+	self->acebot.current_node = current_node;
 	
 	if(current_node == -1)
 	{
-		self->state = BOTSTATE_WANDER;
-		self->wander_timeout = level.time + 1.0;
-		self->goal_node = -1;
+		self->acebot.state = BOTSTATE_WANDER;
+		self->acebot.wander_timeout = level.time + 1.0;
+		self->acebot.goal_node = -1;
 		return;
 	}
 
@@ -263,17 +263,17 @@ void ACEAI_PickLongRangeGoal(edict_t *self)
 	// If do not find a goal, go wandering....
 	if(best_weight == 0.0 || goal_node == INVALID)
 	{
-		self->goal_node = INVALID;
-		self->state = BOTSTATE_WANDER;
-		self->wander_timeout = level.time + 1.0;
+		self->acebot.goal_node = INVALID;
+		self->acebot.state = BOTSTATE_WANDER;
+		self->acebot.wander_timeout = level.time + 1.0;
 		if(debug_mode)
 			debug_printf("%s did not find a LR goal, wandering.\n",self->client->pers.netname);
 		return; // no path? 
 	}
 	
 	// OK, everything valid, let's start moving to our goal.
-	self->state = BOTSTATE_MOVE;
-	self->tries = 0; // Reset the count of how many times we tried this goal
+	self->acebot.state = BOTSTATE_MOVE;
+	self->acebot.tries = 0; // Reset the count of how many times we tried this goal
 	 
 	if(goal_ent != NULL && debug_mode)
 		debug_printf("%s selected a %s at node %d for LR goal.\n",self->client->pers.netname, goal_ent->classname, goal_node);

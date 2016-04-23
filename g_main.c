@@ -794,6 +794,9 @@ void G_RunFrame (void)
 		ent = &g_edicts[1 + i];
 		G_StoreClientPosition(ent);
 	}
+
+	//hypo antilag msec. store frame actual time
+	level.RealTimeMSec = /*curtime*/ Sys_Milliseconds();
 // END_LAG
 
 
@@ -1051,7 +1054,7 @@ void G_RunFrame (void)
 		{
 			ClientBeginServerFrame (ent);
 // ACEBOT_ADD - RiEvEr
-			if (ent->is_bot)
+			if (ent->acebot.is_bot)
 			{		//dont run bots when not ingame
 				if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
 				G_RunEntity(ent);
@@ -1095,7 +1098,7 @@ void G_RunFrame (void)
 			}
 		}
 
-		if (!ent->is_bot)
+		if (!ent->acebot.is_bot)
 		{
 			// Ridah, update lights if using directional lighting
 			if (!(r_directional_lighting->value) && !deathmatch->value)
@@ -1139,6 +1142,7 @@ void G_RunFrame (void)
 			}
 		}
 	}
+
 
 // Papa 10.6.99
 // these is where the server checks the state of the current mode

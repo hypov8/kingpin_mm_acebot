@@ -835,23 +835,6 @@ int Q_log2(int val)
 	return answer;
 }
 
-// NET_ANTILAG	//et-xreal antilag
-/*
-=================
-LerpPosition
-hypov8 calculate a historical origin
-with % between 2 frames
-=================
-*/
-void LerpPosition(vec3_t start, vec3_t end, float frac, vec3_t out)
-{
-	vec3_t          dist;
-
-	VectorSubtract(end, start, dist);
-	VectorMA(start, frac, dist, out);
-}
-// END_LAG
-
 
 //====================================================================================
 
@@ -1581,6 +1564,38 @@ void Info_SetValueForKey (char *s, char *key, char *value)
 	}
 	*s = 0;
 }
+
+
+
+//hypo antilag
+
+/*
+================
+Sys_Milliseconds
+================
+*/
+#ifdef WIN32
+#include <windows.h> // jit/pooy
+#endif
+int	curtime;
+int Sys_Milliseconds(void)
+{
+	static int		base;
+	static qboolean	initialized = false;
+
+	if (!initialized)
+	{	// let base retain 16 bits of effectively random data
+		base = timeGetTime() & 0xffff0000;
+		initialized = true;
+	}
+	curtime = timeGetTime() - base;
+
+	return curtime;
+}
+
+
+
+
 
 //====================================================================
 

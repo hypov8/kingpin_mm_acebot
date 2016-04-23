@@ -1467,7 +1467,7 @@ void respawn (edict_t *self)
 //		self->s.frame = self->client->anim_end;
 
 // ACEBOT_ADD special respawning code
-		if (self->is_bot)
+		if (self->acebot.is_bot)
 		{
 			ACESP_Respawn(self);
 
@@ -1648,9 +1648,9 @@ void PutClientInServer (edict_t *ent)
 	ent->cast_info.aiflags |= AI_GOAL_RUN;	// make AI run towards us if in pursuit
 
 // ACEBOT_ADD
-	ent->is_bot = false;
-	ent->last_node = -1;
-	ent->is_jumping = false;
+	ent->acebot.is_bot = false;
+	ent->acebot.last_node = -1;
+	ent->acebot.is_jumping = false;
 // ACEBOT_END
 
 	VectorCopy (mins, ent->mins);
@@ -2787,7 +2787,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 	edict_t	*doot; int j;
 
 // acebot
-	if (!ent->is_bot)
+	if (!ent->acebot.is_bot)
 	{
 //end
 		ent->client = NULL;
@@ -2877,13 +2877,13 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
 		{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
 			if ((doot->client->pers.admin == ADMIN) || (doot->client->pers.rconx[0]))
-				safe_cprintf(doot, PRINT_CHAT, "%s (%s) connected\n", ent->client->pers.netname, ent->client->pers.ip);
+				safe_cprintf(doot, PRINT_CHAT, "%s (%s) connected *echo to ADMIN*\n", ent->client->pers.netname, ent->client->pers.ip);
 		}
 	}
 
 	// Ridah, make sure they have to join a team
 // acebot
-	if (!ent->is_bot)
+	if (!ent->acebot.is_bot)
 	{
 // end
 		if (teamplay->value)
@@ -2898,7 +2898,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 	skinvalue = Info_ValueForKey (userinfo, "skin");
 	while (i < level.player_num)
 	{
-		if (!ent->is_bot)
+		if (!ent->acebot.is_bot)
 		{
 			if (!teamplay->value)
 			{
@@ -2926,7 +2926,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 	//if (ent->is_bot && teamplay->value)
 	//	ent->client->pers.spectator = PLAYING;
 
-	if (!ent->is_bot)
+	if (!ent->acebot.is_bot)
 	{
 		if (!teamplay->value)
 			ent->client->pers.spectator = PLAYING;
@@ -3427,7 +3427,7 @@ chasing:
     
     //check if idle
     if(ent->client->pers.spectator!=SPECTATING
-		&& (!ent->is_bot) /* hypov8 added so it dont check bots for idle issues(no nodes etc..) */
+		&& (!ent->acebot.is_bot) /* hypov8 added so it dont check bots for idle issues(no nodes etc..) */
 		&& (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING || level.modeset == DM_PRE_MATCH))
     {
         if(((level.framenum - ent->check_idle)>(idle_client->value*10)) 
@@ -3713,12 +3713,12 @@ car_resume:
 	}
 
 // ACEBOT_ADD
-	if (!ent->is_bot && !ent->deadflag && !ent->client->pers.spectator) //hypov8 acebot spectator???
+	if (!ent->acebot.is_bot && !ent->deadflag && !ent->client->pers.spectator) //hypov8 acebot spectator???
 		ACEND_PathMap(ent);
 // ACEBOT_END
 
 // acebot
-	if (!ent->is_bot)
+	if (!ent->acebot.is_bot)
 		Think_FlashLight (ent);
 
 	// BEGIN:	Xatrix/Ridah/Navigator/18-mar-1998
@@ -3818,7 +3818,7 @@ car_resume:
 	}
 
 // ACEBOT_ADD //botfather
-	if (!ent->is_bot && !ent->deadflag && !(ent->solid == SOLID_NOT) )
+	if (!ent->acebot.is_bot && !ent->deadflag && !(ent->solid == SOLID_NOT))
 		ACEND_PathMap(ent);
 // ACEBOT_END
 	for (i = 1; i <= maxclients->value; i++) {
@@ -3844,7 +3844,7 @@ void ClientBeginServerFrame (edict_t *ent)
 	gclient_t	*client;
 	int			buttonMask;
 
-	if (ent->is_bot && !(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
+	if (ent->acebot.is_bot && !(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
 		return; /* caught bots trying to respawn after match end */
 
 
@@ -3969,7 +3969,7 @@ void ClientBeginServerFrame (edict_t *ent)
 
 
 checks:
-	if (!ent->is_bot)
+	if (!ent->acebot.is_bot)
 	{
 		if (level.framenum > ent->client->resp.checkdelta) {
 			ent->client->resp.checkdelta = level.framenum + 70;

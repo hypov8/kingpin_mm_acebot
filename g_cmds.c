@@ -5079,7 +5079,7 @@ void ClientCommand (edict_t *ent)
 	if (ACECM_Commands(ent))
 		return;
 
-	if (ent->is_bot) 
+	if (ent->acebot.is_bot)
 		return; //hypo bot wont use console?
 // ACEBOT_END
 
@@ -5100,7 +5100,7 @@ void ClientCommand (edict_t *ent)
 			if (ent->client->resp.checked&1) {
 #endif
 // ACEBOT_ADD
-				if (!ent->is_bot)
+				if (!ent->acebot.is_bot)
 // ACEBOT_END
 				KICKENT(ent,"%s is being kicked for using a see-thru cheat!\n");
 #ifdef DOUBLECHECK
@@ -5127,7 +5127,7 @@ void ClientCommand (edict_t *ent)
 			if (ent->client->resp.checked&2) {
 #endif
 // ACEBOT_ADD
-				if (!ent->is_bot)
+				if (!ent->acebot.is_bot)
 // ACEBOT_END
 				KICKENT(ent,"%s is being kicked for using a speed cheat!\n");
 #ifdef DOUBLECHECK

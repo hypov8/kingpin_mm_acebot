@@ -34,6 +34,21 @@ If you have questions concerning this license or the applicable additional terms
 #define DEBUGLAG 1
 
 /*
+=================
+LerpPosition
+hypov8 calculate a historical origin 
+with % between 2 frames
+=================
+*/
+void LerpPosition(vec3_t start, vec3_t end, float frac, vec3_t out)
+{
+	vec3_t          dist;
+
+	VectorSubtract(end, start, dist);
+	VectorMA(start, frac, dist, out);
+}
+
+/*
 ================
 G_StoreClientPosition
 ================
@@ -42,14 +57,8 @@ void G_StoreClientPosition(edict_t * ent)
 {
 	int             top;
 	
-	if(!(ent->inuse &&
-		(ent->client->pers.team == TEAM_1
-		|| ent->client->pers.team == TEAM_2
-		|| ent->client->pers.team == TEAM_NONE) 
-		/*&& ent->r.linked */
-		&& (ent->health > 0) 
-		/*&& !(ent->client->ps.pm_flags & PM_SPECTATOR)  */
-		&& (ent->client->ps.pmove.pm_type == PM_NORMAL)))
+	if(!(ent->inuse
+		&& ent->solid!=SOLID_NOT))
 	{
 		return;
 	}
@@ -76,22 +85,22 @@ move clients back in history to match an old recieved event
 */
 static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 {
-	int             i, j, chk=0;
+	int             i, j;
 
 	if (time > level.framenum * 100)
 	{
-		//hypov8 this shouldent happen? with minus ping, wil happen with botping
+		//hypov8 this is now needed with sv_antilag_botping and think inbetween frame
 		#if DEBUGLAG
 		Com_Printf("ERROR: time=%i > framenum=%i\n", time, level.framenum * 100);
 		#endif
 		time = level.framenum * 100;
+		return; //hypo test?, use normal trace, dont move anyone
 	}							// no lerping forward....
 
 	// find a pair of markers which bound the requested time
 	i = j = ent->client->topMarker;
 	do
 	{
-		chk++;
 		if(ent->client->clientMarkers[i].time <= time)
 		{
 			break;
@@ -105,17 +114,6 @@ static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 		}
 	} while(i != ent->client->topMarker);
 	
-	if (i == j && chk >= MAX_CLIENT_MARKERS) //hypov8 add incase. used up all markers. means to hi ping?
-	{							// oops, no valid stored markers
-		//if (ent->client->clientMarkers[i].time != time)
-		{
-			#ifdef DEBUGLAG
-			Com_Printf("ERROR: Reached CLIENT MARKERS %i for %s time=%i leveltime=%i\n", chk, ent->client->pers.netname, time, level.framenum * 100);
-			#endif
-			return;
-		}
-	}
-
 	// save current position to backup
 	if (ent->client->backupMarker.time != level.framenum * 100)
 	{
@@ -138,7 +136,7 @@ static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 		LerpPosition(ent->client->clientMarkers[i].mins, ent->client->clientMarkers[j].mins, frac, ent->mins);
 		LerpPosition(ent->client->clientMarkers[i].maxs, ent->client->clientMarkers[j].maxs, frac, ent->maxs);
 	}
-	else
+	else // either head (topMarker) or tail (topMarker+1) of history
 	{
 		#if DEBUGLAG
 		//Com_Printf("NOTE: USING ent->client->topMarker for %s %i %i\n", ent->client->pers.netname, time, level.framenum * 100);
@@ -160,14 +158,6 @@ move clients back to real position
 */
 static void G_ReAdjustSingleClientPosition(edict_t * ent)
 {
-
-	//int levtime;
-	//levtime = level.framenum * 100; 
-	if (!ent || !ent->client)
-	{
-		return;
-	}
-
 	// restore from backup 
 	if (ent->client->backupMarker.time == level.framenum * 100 /*(int)level.time * 1000*/)
 	{
@@ -200,7 +190,7 @@ static void G_AdjustClientPositions(edict_t * ent, int time, qboolean forward, e
 	/* 50 ping player will act as if 50ping. the rest will be like a 75 ping game */
 	/* is aimed to make all players even while will reduce aimbot accuracy */
 	if (sv_antilag_botdelay->value)
-		time += sv_antilag_botdelay->value;
+		time += (int)sv_antilag_botdelay->value;
 
 	for (i = 0; i < game.maxclients; i++, list++)
 	{
@@ -208,17 +198,11 @@ static void G_AdjustClientPositions(edict_t * ent, int time, qboolean forward, e
 		list = &g_edicts[1 + i];
 
 		// Gordon: ok lets test everything under the sun
-		if (list->client &&
-			list->inuse &&
-			(list->client->pers.team == TEAM_NONE
-			|| list->client->pers.team == TEAM_1
-			|| list->client->pers.team == TEAM_2)
+		if (list->client
+			&& list->inuse
 			&& (list != ent)  //hypov8 dont shoot ur self in the foot!!!
 			&& (list != owner) //hypo dont trace back person who created the entitiy
-			&& (list->health > 0)
-			/* && ent->client->chase_target == NULL */
-			&& list->client->pers.spectator == PLAYING
-			&& (list->client->ps.pmove.pm_type == PM_NORMAL))
+			&& list->solid != SOLID_NOT)
 		{
 			if(forward)
 			{
@@ -246,16 +230,7 @@ void G_ResetMarkers(edict_t * ent)
 	int           period;
 
 	//hypov8 no way to change server framerates?
-	//gi.cvar	trap_Cvar_VariableStringBuffer("sv_fps", buffer, sizeof(buffer) - 1);
-	//period = atoi(buffer);
-	//if(!period)
-	//{
 		period = 100; //kp seems to use 0.1 framerate  //100ms = 10fps  //50ms = sv_fps 20 
-	//}
-	//else
-	//{
-	//	period = 1000.f / period;
-	//}
 
 	ent->client->topMarker = MAX_CLIENT_MARKERS - 1;
 	for (i = MAX_CLIENT_MARKERS - 1, time = level.framenum * 100; i >= 0; i--, time -= period)
@@ -264,18 +239,12 @@ void G_ResetMarkers(edict_t * ent)
 		VectorCopy(ent->maxs, ent->client->clientMarkers[i].maxs);
 		VectorCopy(ent->s.origin, ent->client->clientMarkers[i].origin);
 		ent->client->clientMarkers[i].time = time /* *1000 */;
-
-		/* hypov8 added to reset old trace if they died before G_HistoricalTraceEnd goto run */
-
-
-		VectorCopy(ent->s.origin, ent->client->backupMarker.origin);
-		VectorCopy(ent->mins, ent->client->backupMarker.mins);
-		VectorCopy(ent->maxs, ent->client->backupMarker.maxs);
-
-
-		ent->client->backupMarker.time = 0;
-		
 	}
+	/* hypov8 added to reset old trace if they died before G_HistoricalTraceEnd got to run */
+	VectorCopy(ent->s.origin, ent->client->backupMarker.origin);
+	VectorCopy(ent->mins, ent->client->backupMarker.mins);
+	VectorCopy(ent->maxs, ent->client->backupMarker.maxs);
+	ent->client->backupMarker.time = 0;	
 }
 
 /*
@@ -285,18 +254,32 @@ G_HistoricalTraceBegin
 */
 void G_HistoricalTraceBegin(edict_t * ent, edict_t * owner)
 {
-	int frameMinusPing;
-									/* client don't want bullets predicted */
-	if (sv_antilag->value == 1 && !ent->cl_noAntiLag)
+	int frameMinusPing, mSec;
+
+	/* calculate exact time client think was run between server frames */
+	mSec =  Sys_Milliseconds() - level.RealTimeMSec;
+	
+	/*saninty check should never happen*/
+	if (mSec > 99) mSec = 99;
+	if (mSec < 0) mSec = 0;
+
+#if DEBUGLAG
+	gi.dprintf("shot %i ms afer server frame \n", mSec);
+#endif
+							
+	if (sv_antilag->value && !ent->cl_noAntiLag) /* client don't want bullets predicted */
 	{
 		if (ent->antilagToTrace) //entity is not a player
 		{
-			frameMinusPing = level.framenum * 100 - ent->antilagPingTimer;
-			G_AdjustClientPositions(ent, frameMinusPing, true, owner); //set time relitive to explosives ping
+			if (!ent->owner->cl_noAntiLag) /* client don't want rocket predicted */
+			{
+				frameMinusPing = level.framenum * 100 - ent->antilagPingTimer;
+				G_AdjustClientPositions(ent, frameMinusPing, true, owner); //set time relitive to explosives ping
+			}
 		}
 		else
 		{
-			frameMinusPing = level.framenum * 100 - ent->client->ping;
+			frameMinusPing = level.framenum * 100 - ent->client->ping + mSec;
 			G_AdjustClientPositions(ent, frameMinusPing, true, owner);
 		}
 	}
@@ -309,7 +292,13 @@ G_HistoricalTraceEnd
 */
 void G_HistoricalTraceEnd(edict_t * ent, edict_t * owner)
 {									/* client don't want bullets predicted */
-	if (sv_antilag->value == 1 && !ent->cl_noAntiLag)
+
+	if (ent->antilagToTrace) /* must b rocket */
+	{
+		if (!ent->owner->cl_noAntiLag)
+			G_AdjustClientPositions(ent, 0, false, owner);
+	}
+	else if (sv_antilag->value && !ent->cl_noAntiLag)
 		G_AdjustClientPositions(ent, 0, false, owner);
 }
 

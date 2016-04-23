@@ -173,6 +173,8 @@
 #define ITEMLIST_BOT				60
 #define ITEMLIST_PLAYER				61
 
+typedef struct gitem_s gitem_t;
+
 // Node structure
 typedef struct botnode_s
 {
@@ -198,6 +200,31 @@ typedef struct bot_skin_s
 	//qboolean customSkinsUsed;
 } bot_skin_t;
 
+typedef struct //bot->acebot->xxx
+{
+	qboolean	is_bot;
+	qboolean	is_jumping;
+
+	// For movement
+	vec3_t		move_vector;
+	float		next_move_time;
+	float		wander_timeout;
+	float		suicide_timeout;
+
+	int			current_node;		// current node
+	int			goal_node;			// current goal node
+	int			next_node;			// the node that will take us one step closer to our goal
+	int			node_timeout;
+	int			last_node;
+	int			tries;
+	int			state;
+
+	//hypo new bot skill func
+	int			new_target;			//if new target. dont shoot straight away
+	int			old_target;			//old player target. shoot if more than xx seconds
+	float		botNewTargetTime;	//timer to allow bot to start attacking
+	//cvar_t		*game_dir;			//add game dir to bot libary
+} acebot_t;
 
 
 extern int num_players;

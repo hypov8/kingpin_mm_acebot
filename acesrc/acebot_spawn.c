@@ -100,7 +100,7 @@ void ACESP_SaveBots()
 	{
 		bot = g_edicts + i + 1;
 
-		if (bot->inuse && bot->is_bot)
+		if (bot->inuse && bot->acebot.is_bot)
 			count++;
 	}
 	gi.dprintf("Saved %i Bots to Disk\n", count);
@@ -111,7 +111,7 @@ void ACESP_SaveBots()
 	{
 		bot = g_edicts + i + 1;
 
-		if (bot->inuse && bot->is_bot)
+		if (bot->inuse && bot->acebot.is_bot)
 			fwrite(bot->client->pers.userinfo,sizeof (char) * MAX_INFO_STRING,1,pOut); 
 	}
 		
@@ -127,6 +127,7 @@ void ACESP_SaveBots()
 ///////////////////////////////////////////////////////////////////////
 void ACESP_LoadBots()
 {
+
     FILE *pIn;
 	char userinfo[MAX_INFO_STRING];
 	char buffer[MAX_STRING_LENGTH];
@@ -139,6 +140,8 @@ void ACESP_LoadBots()
 
 	level.bots_spawned = true;
 	level.customSkinsUsed = false;
+//	return;//hypo
+
 
 	//hypo mod folder for bots dir
 	map_name = gi.cvar("mapname", "", 0);
@@ -365,7 +368,7 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 	bot->watertype = 0;
 	bot->flags &= ~FL_NO_KNOCKBACK;
 	bot->svflags &= ~(SVF_DEADMONSTER|SVF_NOCLIENT);
-	bot->is_jumping = false;
+	bot->acebot.is_jumping = false;
 	bot->acebot.old_target = -1; //hypo add
 
 #ifdef NOT_ZOID
@@ -591,14 +594,14 @@ client->pers.spectator = PLAYING; // CTF_STATE_START;
 
 	bot->enemy = NULL;
 	bot->movetarget = NULL; 
-	bot->state = BOTSTATE_MOVE;
+	bot->acebot.state = BOTSTATE_MOVE;
 
 	// Set the current node
-	bot->current_node = ACEND_FindClosestReachableNode(bot,BOTNODE_DENSITY, BOTNODE_ALL);
-	bot->goal_node = bot->current_node;
-	bot->next_node = bot->current_node;
-	bot->next_move_time = level.time;		
-	bot->suicide_timeout = level.time + 15.0;
+	bot->acebot.current_node = ACEND_FindClosestReachableNode(bot, BOTNODE_DENSITY, BOTNODE_ALL);
+	bot->acebot.goal_node = bot->acebot.current_node;
+	bot->acebot.next_node = bot->acebot.current_node;
+	bot->acebot.next_move_time = level.time;
+	bot->acebot.suicide_timeout = level.time + 15.0;
 
 	// If we are not respawning hold off for up to three seconds before releasing into game
     if(!respawn)
@@ -815,7 +818,7 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 
 	bot->yaw_speed = 100; // yaw speed
 	bot->inuse = true;
-	bot->is_bot = true;
+	bot->acebot.is_bot = true;
 
 	bot->client->pers.team = 0; //hypo set default
 
@@ -908,7 +911,7 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 //hypo
 	bot->client->resp.is_spawn = true;
 	bot->inuse = true;
-	bot->is_bot = true;
+	bot->acebot.is_bot = true;
 //end
 	// make sure all view stuff is valid
 	ClientEndServerFrame (bot);
@@ -933,7 +936,7 @@ void ACESP_RemoveBot(char *name)
 		bot = g_edicts + i + 1;
 		if(bot->inuse)
 		{
-			if(bot->is_bot && (strcmp(bot->client->pers.netname,name)==0 || strcmp(name,"all")==0))
+			if (bot->acebot.is_bot && (strcmp(bot->client->pers.netname, name) == 0 || strcmp(name, "all") == 0))
 			{
 				bot->health = 0;
 				player_die (bot, bot, bot, 100000, vec3_origin,0,0); //hypov8 add null

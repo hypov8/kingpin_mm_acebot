@@ -72,7 +72,7 @@ qboolean ACECM_Commands(edict_t *ent)
 	cmd = gi.argv(0);
 
 	if(Q_stricmp (cmd, "addnode") == 0 && debug_mode)
-		ent->last_node = ACEND_AddNode(ent,atoi(gi.argv(1))); 
+		ent->acebot.last_node = ACEND_AddNode(ent,atoi(gi.argv(1))); 
 	
 	else if(Q_stricmp (cmd, "removelink") == 0 && debug_mode)
 		ACEND_RemoveNodeEdge(ent,atoi(gi.argv(1)), atoi(gi.argv(2)));
@@ -149,7 +149,7 @@ void debug_printf(char *fmt, ...)
 	for (i=0 ; i<maxclients->value ; i++)
 	{
 		cl_ent = g_edicts + 1 + i;
-		if (!cl_ent->inuse || cl_ent->is_bot)
+		if (!cl_ent->inuse || cl_ent->acebot.is_bot)
 			continue;
 
 		gi.cprintf(cl_ent,  PRINT_MEDIUM, bigbuffer);
@@ -167,7 +167,7 @@ void safe_cprintf (edict_t *ent, int printlevel, char *fmt, ...)
 	va_list		argptr;
 	int len;
 
-	if (ent && (!ent->inuse || ent->is_bot))
+	if (ent && (!ent->inuse || ent->acebot.is_bot))
 		return;
 
 	va_start (argptr,fmt);
@@ -188,7 +188,7 @@ void safe_centerprintf (edict_t *ent, char *fmt, ...)
 	va_list		argptr;
 	int len;
 
-	if (!ent->inuse || ent->is_bot)
+	if (!ent->inuse || ent->acebot.is_bot)
 		return;
 	
 	va_start (argptr,fmt);
@@ -221,7 +221,7 @@ void safe_bprintf (int printlevel, char *fmt, ...)
 	for (i=0 ; i<maxclients->value ; i++)
 	{
 		cl_ent = g_edicts + 1 + i;
-		if (!cl_ent->inuse || cl_ent->is_bot)
+		if (!cl_ent->inuse || cl_ent->acebot.is_bot)
 			continue;
 
 		gi.cprintf(cl_ent, printlevel, bigbuffer);

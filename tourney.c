@@ -59,7 +59,7 @@ qboolean for_each_player(edict_t *JOE_BLOGGS)
 {
 	if (JOE_BLOGGS->inuse
 		&& JOE_BLOGGS->client
-		&& JOE_BLOGGS->client->pers.connected)
+		&& JOE_BLOGGS->client->pers.connected) //hypov8 and !bot?
 		return true;
 
 	return false;
@@ -220,41 +220,35 @@ void SpawnPlayer () // Here I spawn players - 1 per server frame in hopes of red
 {
 	edict_t		*self;
 	int			i;
-	int			team1=false;
+	int			ClientFound=false;
 
-//gi.dprintf("IN: SpawnPlayer\n");
-
-	for (i=0 ; i<maxclients->value; i++)
+	for (i = 1 ; i <= maxclients->value; i++)
 	{
-		self = g_edicts + 1 + i;
+		self = g_edicts + i;
 		if (!self->inuse)
 			continue;
 		if (!self->client->resp.is_spawn)
 		{
-//gi.dprintf("Spawn %d\n",i+1);
 			self->flags &= ~FL_GODMODE;
 			self->health = 0;
 			meansOfDeath = MOD_RESTART;
-			team1 = true;
+			ClientFound = true;
 			self->client->pers.spectator = PLAYING;
 //			player_die (self, self, self, 1, vec3_origin, 0, 0);
-//acebot add
-			if (!self->is_bot)
-			{
+
 // ACEBOT_ADD				
-				//ACEIT_PlayerAdded(self); //add real players to bot serch invitory
+			if (!self->acebot.is_bot)
 // ACEBOT_END				
 				ClientBeginDeathmatch(self);
-			}
 
 			self->client->resp.is_spawn = true;
 			break;
 		}
 	}
-	if (!team1)
-		level.is_spawn = true;
 
-//gi.dprintf("OUT: SpawnPlayer\n");
+	/* no more players to join match, so run game */
+	if (!ClientFound)
+		level.is_spawn = true;
 }
 
 
@@ -282,7 +276,7 @@ void SpawnPlayers ()  // Same idea but 1 player per team
 			self->client->pers.spectator = PLAYING;
 //			player_die (self, self, self, 1, vec3_origin, 0, 0);
 //acebot add
-			if (!self->is_bot)
+			if (!self->acebot.is_bot)
 			{
 // ACEBOT_ADD				
 				//ACEIT_PlayerAdded(self); //add real players to bot serch invitory
@@ -300,7 +294,7 @@ void SpawnPlayers ()  // Same idea but 1 player per team
 			self->client->pers.spectator = PLAYING;
 //			player_die (self, self, self, 1, vec3_origin, 0, 0);
 //acebot add
-			if (!self->is_bot)
+			if (!self->acebot.is_bot)
 			{
 // ACEBOT_ADD				
 				//ACEIT_PlayerAdded(self); //add real players to bot serch invitory
@@ -424,10 +418,19 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 
-		//hypov8 move player to intermision
-		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
-		if (intermision)
-		{			VectorCopy(intermision->s.origin, self->s.origin);			self->client->ps.pmove.origin[0] = intermision->s.origin[0] * 8;			self->client->ps.pmove.origin[1] = intermision->s.origin[1] * 8;			self->client->ps.pmove.origin[2] = intermision->s.origin[2] * 8;			VectorCopy(level.intermission_angle, self->client->ps.viewangles);		}
+		//hypov8 move player to intermision
+
+		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
+
+		if (intermision)
+
+		{
+			VectorCopy(intermision->s.origin, self->s.origin);
+			self->client->ps.pmove.origin[0] = intermision->s.origin[0] * 8;
+			self->client->ps.pmove.origin[1] = intermision->s.origin[1] * 8;
+			self->client->ps.pmove.origin[2] = intermision->s.origin[2] * 8;
+			VectorCopy(level.intermission_angle, self->client->ps.viewangles);
+		}
 //end
 	}
 
@@ -740,7 +743,7 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
 		{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
 // ACEBOT_ADD
-		if (player->is_bot) continue;
+	if (player->acebot.is_bot) continue;
 // ACEBOT_END
 			if (scoreboard_first)
 				player->client->showscores = SCOREBOARD;
@@ -756,7 +759,7 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
 	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
 // ACEBOT_ADD
-		if (player->is_bot) continue;
+	if (player->acebot.is_bot) continue;
 // ACEBOT_END
 			count[player->vote]++;
 		}

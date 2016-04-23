@@ -278,12 +278,12 @@ void ACEMV_ChangeBotAngle (edict_t *ent)
 	vec3_t  ideal_angle;
 			
 	// Normalize the move angle first
-	VectorNormalize(ent->move_vector);
+	VectorNormalize(ent->acebot.move_vector);
 
 	current_yaw = anglemod(ent->s.angles[YAW]);
 	current_pitch = anglemod(ent->s.angles[PITCH]);
 	
-	vectoangles (ent->move_vector, ideal_angle);
+	vectoangles(ent->acebot.move_vector, ideal_angle);
 
 	ideal_yaw = anglemod(ideal_angle[YAW]);
 	ideal_pitch = anglemod(ideal_angle[PITCH]);
@@ -354,7 +354,7 @@ qboolean ACEMV_MoveToGoal(edict_t *self, usercmd_t *ucmd)
 	// Simple, but effective (could be rewritten to be more accurate)
 	if(strcmp(self->movetarget->classname,"rocket")==0)
 	{
-		VectorSubtract (self->movetarget->s.origin, self->s.origin, self->move_vector);
+		VectorSubtract(self->movetarget->s.origin, self->s.origin, self->acebot.move_vector);
 		ACEMV_ChangeBotAngle(self);
 		if(debug_mode)
 			debug_printf("%s: Oh crap a rocket!\n",self->client->pers.netname);
@@ -370,7 +370,7 @@ qboolean ACEMV_MoveToGoal(edict_t *self, usercmd_t *ucmd)
 // acebot //hypo change grenade to move back. disable walk forward to?
 	else if (strcmp(self->movetarget->classname, "grenade") == 0)
 	{
-		VectorSubtract(self->movetarget->s.origin, self->s.origin, self->move_vector);
+		VectorSubtract(self->movetarget->s.origin, self->s.origin, self->acebot.move_vector);
 		ACEMV_ChangeBotAngle(self);
 		if (debug_mode)
 			debug_printf("%s: Oh crap a rocket!\n", self->client->pers.netname);
@@ -394,7 +394,7 @@ qboolean ACEMV_MoveToGoal(edict_t *self, usercmd_t *ucmd)
 	else
 	{
 		// Set bot's movement direction
-		VectorSubtract (self->movetarget->s.origin, self->s.origin, self->move_vector);
+		VectorSubtract(self->movetarget->s.origin, self->s.origin, self->acebot.move_vector);
 		ACEMV_ChangeBotAngle(self);
 		ucmd->forwardmove = 400;
 		return false;
@@ -415,13 +415,13 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	// Get current and next node back from nav code.
 	if(!ACEND_FollowPath(self))
 	{
-		self->state = BOTSTATE_WANDER;
-		self->wander_timeout = level.time + 1.0;
+		self->acebot.state = BOTSTATE_WANDER;
+		self->acebot.wander_timeout = level.time + 1.0;
 		return;
 	}
 
-	current_node_type = nodes[self->current_node].type;
-	next_node_type = nodes[self->next_node].type;
+	current_node_type = nodes[self->acebot.current_node].type;
+	next_node_type = nodes[self->acebot.next_node].type;
 		
 	///////////////////////////
 	// Move To Goal
@@ -455,15 +455,15 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	{
 		// check to see if lift is down?
 		for(i=0;i<num_items;i++)
-			if(item_table[i].node == self->next_node)
+			if (item_table[i].node == self->acebot.next_node)
 				if(item_table[i].ent->moveinfo.state != STATE_BOTTOM)
 				    return; // Wait for elevator
 	}
 	if(current_node_type == BOTNODE_PLATFORM && next_node_type == BOTNODE_PLATFORM)
 	{
 		// Move to the center
-		self->move_vector[2] = 0; // kill z movement	
-		if(VectorLength(self->move_vector) > 10)
+		self->acebot.move_vector[2] = 0; // kill z movement	
+		if (VectorLength(self->acebot.move_vector) > 10)
 			ucmd->forwardmove = 200; // walk to center
 				
 		ACEMV_ChangeBotAngle(self);
@@ -475,7 +475,7 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	// Jumpto Nodes
 	///////////////////////////////////////////////////////
 	if(next_node_type == BOTNODE_JUMP || 
-	  (current_node_type == BOTNODE_JUMP && next_node_type != BOTNODE_ITEM && nodes[self->next_node].origin[2] > self->s.origin[2]))
+		(current_node_type == BOTNODE_JUMP && next_node_type != BOTNODE_ITEM && nodes[self->acebot.next_node].origin[2] > self->s.origin[2]))
 	{
 		// Set up a jump move
 		ucmd->forwardmove = 400;
@@ -483,7 +483,7 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 
 		ACEMV_ChangeBotAngle(self);
 
-		VectorCopy(self->move_vector,dist);
+		VectorCopy(self->acebot.move_vector, dist);
 		VectorScale(dist,440,self->velocity);
 
 		return;
@@ -492,7 +492,7 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	////////////////////////////////////////////////////////
 	// Ladder Nodes
 	///////////////////////////////////////////////////////
-	if(next_node_type == BOTNODE_LADDER && nodes[self->next_node].origin[2] > self->s.origin[2])
+	if (next_node_type == BOTNODE_LADDER && nodes[self->acebot.next_node].origin[2] > self->s.origin[2])
 	{
 		// Otherwise move as fast as we can
 		ucmd->forwardmove = 400; 
@@ -505,7 +505,7 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	}
 	// If getting off the ladder
 	if(current_node_type == BOTNODE_LADDER && next_node_type != BOTNODE_LADDER &&
-	   nodes[self->next_node].origin[2] > self->s.origin[2])
+		nodes[self->acebot.next_node].origin[2] > self->s.origin[2])
 	{
 		ucmd->forwardmove = 400; 
 		ucmd->upmove = 200;
@@ -523,7 +523,7 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 		ACEMV_ChangeBotAngle(self);
 
 		// If the next node is not in the water, then move up to get out.
-		if(next_node_type != BOTNODE_WATER && !(gi.pointcontents(nodes[self->next_node].origin) & MASK_WATER)) // Exit water
+		if (next_node_type != BOTNODE_WATER && !(gi.pointcontents(nodes[self->acebot.next_node].origin) & MASK_WATER)) // Exit water
 			ucmd->upmove = 400;
 		
 		ucmd->forwardmove = 300;
@@ -536,8 +536,8 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	{
 		ACEMV_ChangeBotAngle(self);
 
-		self->velocity[0] = self->move_vector[0] * 360;
-		self->velocity[1] = self->move_vector[1] * 360;
+		self->velocity[0] = self->acebot.move_vector[0] * 360;
+		self->velocity[1] = self->acebot.move_vector[1] * 360;
 	
 		return;
 	}
@@ -574,7 +574,7 @@ void ACEMV_Wander(edict_t *self, usercmd_t *ucmd)
 	vec3_t  temp;
 	qboolean isExplosive = 0;
 	// Do not move
-	if(self->next_move_time > level.time)
+	if (self->acebot.next_move_time > level.time)
 		return;
 
 	// Special check for elevators, stand still until the ride comes to a complete stop.
@@ -585,7 +585,7 @@ void ACEMV_Wander(edict_t *self, usercmd_t *ucmd)
 			self->velocity[0] = 0;
 			self->velocity[1] = 0;
 			self->velocity[2] = 0;
-			self->next_move_time = level.time + 0.5;
+			self->acebot.next_move_time = level.time + 0.5;
 			return;
 		}
 	
@@ -693,8 +693,8 @@ void ACEMV_Attack (edict_t *self, usercmd_t *ucmd)
 	target[1] += (random() - 0.5) * sv_botskill->value * 10;
 	
 	// Set direction
-	VectorSubtract (target, self->s.origin, self->move_vector);
-	vectoangles (self->move_vector, angles);
+	VectorSubtract(target, self->s.origin, self->acebot.move_vector);
+	vectoangles(self->acebot.move_vector, angles);
 	VectorCopy(angles,self->s.angles);
 	
 //	if(debug_mode)

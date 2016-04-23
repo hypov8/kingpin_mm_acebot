@@ -21,34 +21,27 @@
 #include "g_ai.h"
 #include "voice.h"
 
+// ACEBOT_ADD
+#include "acesrc\acebot.h"
+// ACEBOT_END
+
 // Episode specific defines
 #include "ep_all.h"
 
 #include <ctype.h>
 
+
+
+
+//#define GAME_DIR_ (a->string) (a = gi.cvar("game", "", 0); )
 //hypo debug
-#if 0
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
 
-
-#ifdef _DEBUG
-#ifndef DBG_NEW
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#define new DBG_NEW
-#endif
-#endif  // _DEBUG
-#endif
-//end
-
-// ACEBOT_ADD
-//#include "acesrc\acebot.h"
-// ACEBOT_END
 
 // Papa 10.6.99 
 #if 0
-#define for_each_player(JOE_BLOGGS,INDEX) for(INDEX=1;INDEX<=maxclients->value;INDEX++)if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse && JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
+#define for_each_player(JOE_BLOGGS,INDEX) 
+for(INDEX=1;INDEX<=maxclients->value;INDEX++)
+	if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse && JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
 #else
 qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #endif //hypo for_each_player
@@ -535,6 +528,10 @@ typedef struct
 	qboolean customSkinsUsed; // will not save to bot temp file if per map was loaded
 //end
 
+// NET_ANTILAG	//et-xreal antilag
+	int RealTimeMSec; //hypov8 trying to capture every millisec for lag compensation
+// END_LAG
+
     // snap - team tags
 	int		manual_tagset;
 
@@ -604,32 +601,6 @@ typedef struct
 	void		(*endfunc)(edict_t *);
 } moveinfo_t;
 // END JOSEPH
-
-
-
-// ACEBOT_ADD
-#include "acesrc\acebot.h"
-
-#if 1
-typedef struct //bot->acebot.xxx
-{
-	int			new_target;		//if new target. dont shoot straight away
-	int			old_target;		//old player target. shoot if more than xx seconds
-	float			botNewTargetTime; //timer to allow bot to start attacking
-	//int			lastTeamSpawned; // will spawn bots on opisite team to last bot(when adding null values)
-	cvar_t		*game_dir;		//add game dir to bot libary
-	//vec3_t		rocketOwner;		//origin for boot to look at for strafe/dodge
-} acebot_t;
-#endif
-// ACEBOT_END
-
-
-
-
-
-
-
-
 
 
 typedef struct
@@ -1472,7 +1443,7 @@ typedef struct
 	int             time;
 } clientMarker_t;
 
-#define MAX_CLIENT_MARKERS 10 //for 500 ping and 20fps //or 1000 ping & 10fps
+#define MAX_CLIENT_MARKERS 6 //6 markers for 500 ping max
 							//kp seems like its at 10fps???
 // END_LAG
 
@@ -1784,31 +1755,9 @@ struct edict_s
 	moveinfo_t		moveinfo;
 	cast_info_t		cast_info;
 
-	// ACEBOT_ADD
-	qboolean is_bot;
-	qboolean is_jumping;
-
-	// For movement
-	vec3_t move_vector;
-	float next_move_time;
-	float wander_timeout;
-	float suicide_timeout;
-
-	// For node code
-	int current_node; // current node
-	int goal_node; // current goal node
-	int next_node; // the node that will take us one step closer to our goal
-	int node_timeout;
-	int last_node;
-	int tries;
-
-
-
-	int state;
-
+// ACEBOT_ADD
 	acebot_t acebot; //hypov8 messy. move this to a seperate group
-
-	// ACEBOT_END
+// ACEBOT_END
 
 
 // BEGIN:	Xatrix/Ridah/Navigator/17-mar-1998
