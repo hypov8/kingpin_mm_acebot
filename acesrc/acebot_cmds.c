@@ -60,6 +60,7 @@
 #include "acebot.h"
 
 qboolean debug_mode=false;
+qboolean debug_mode_origin_ents = false; //local node
 
 ///////////////////////////////////////////////////////////////////////
 // Special command processor
@@ -67,7 +68,8 @@ qboolean debug_mode=false;
 qboolean ACECM_Commands(edict_t *ent)
 {
 	char	*cmd;
-	int node;
+	//char *arg1;
+	short int node;
 
 	cmd = gi.argv(0);
 
@@ -78,27 +80,77 @@ qboolean ACECM_Commands(edict_t *ent)
 		ACEND_RemoveNodeEdge(ent,atoi(gi.argv(1)), atoi(gi.argv(2)));
 
 	else if(Q_stricmp (cmd, "addlink") == 0 && debug_mode)
-		ACEND_UpdateNodeEdge(atoi(gi.argv(1)), atoi(gi.argv(2)));
+		ACEND_UpdateNodeEdge(atoi(gi.argv(1)), atoi(gi.argv(2)),false);
 	
 	else if(Q_stricmp (cmd, "showpath") == 0 && debug_mode)
     	ACEND_ShowPath(ent,atoi(gi.argv(1)));
 
+	else if (Q_stricmp(cmd, "localnode") == 0 && debug_mode) //hypov8 add. show nodes close by
+	{
+		if (!dedicated->value)
+		{
+			//arg1 = gi.argv(1);
+			//if (Q_stricmp(arg1, "on") == 0)
+			if (debug_mode_origin_ents == 0)
+			{
+				safe_cprintf(ent, PRINT_MEDIUM, "findlocalnode ON\n");
+				debug_mode_origin_ents = 1;
+			}
+			else
+			{
+				safe_cprintf(ent, PRINT_MEDIUM, "findlocalnode OFF\n");
+				debug_mode_origin_ents = 0;
+			}
+		}
+	}
 	else if(Q_stricmp (cmd, "findnode") == 0 && debug_mode)
 	{
+		char strWrite[MAX_INFO_STRING];
+
 		node = ACEND_FindClosestReachableNode(ent,BOTNODE_DENSITY, BOTNODE_ALL);
-		gi.dprintf("node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
-		//safe_bprintf(PRINT_MEDIUM,"node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+		if (dedicated->value)
+			gi.dprintf(				  "node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+		safe_cprintf(ent,PRINT_MEDIUM,"node: %d type: %d x: %f y: %f z %f\n",node,nodes[node].type,nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+	
+		ACEND_ShowNode(node, 1); //hypov8 show closest node
+
+		sprintf(strWrite, "bind 9 movenode %d\n$Bound key 9 to %d", node, node);
+
+		gi.WriteByte(13);
+		gi.WriteString(strWrite);
+		gi.unicast(ent, true);
 	}
 
-	else if(Q_stricmp (cmd, "movenode") == 0 && debug_mode)
+	else if (Q_stricmp(cmd, "movenode") == 0 && debug_mode)
 	{
+		int cmd2, cmd3, cmd4;
 		node = atoi(gi.argv(1));
-		nodes[node].origin[0] = atof(gi.argv(2));
-		nodes[node].origin[1] = atof(gi.argv(3));
-		nodes[node].origin[2] = atof(gi.argv(4));
-		gi.dprintf("node: %d moved to x: %f y: %f z %f\n",node, nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
-		//safe_bprintf(PRINT_MEDIUM,"node: %d moved to x: %f y: %f z %f\n",node, nodes[node].origin[0],nodes[node].origin[1],nodes[node].origin[2]);
+
+		cmd2 = atof(gi.argv(2));
+		cmd3 = atof(gi.argv(3));
+		cmd4 = atof(gi.argv(4));
+
+		//hypov8 no node location specified, will use current player location
+		if (!cmd2 && !cmd3 && !cmd4)
+		{
+			VectorCopy(ent->s.origin, nodes[node].origin);
+			if (dedicated->value)
+				gi.dprintf("node: %d moved to x: %f y: %f z %f\n", node, nodes[node].origin[0], nodes[node].origin[1], nodes[node].origin[2]);
+			safe_cprintf(ent, PRINT_MEDIUM, "node: %d moved to x: %f y: %f z %f\n", node, nodes[node].origin[0], nodes[node].origin[1], nodes[node].origin[2]);
+		}
+		else
+		{
+			nodes[node].origin[0] = atof(gi.argv(2));
+			nodes[node].origin[1] = atof(gi.argv(3));
+			nodes[node].origin[2] = atof(gi.argv(4));
+			gi.dprintf("node: %d moved to x: %f y: %f z %f\n", node, nodes[node].origin[0], nodes[node].origin[1], nodes[node].origin[2]);
+			safe_cprintf(ent, PRINT_MEDIUM, "node: %d moved to x: %f y: %f z %f\n", node, nodes[node].origin[0], nodes[node].origin[1], nodes[node].origin[2]);
+		}
+
 	}
+
+	else if (Q_stricmp(cmd, "nodefinal") == 0 && debug_mode) //add hypov8 finalise node table
+		stopNodeUpdate = 1;
 
 	else
 		return false;
@@ -221,7 +273,9 @@ void safe_bprintf (int printlevel, char *fmt, ...)
 	for (i=0 ; i<maxclients->value ; i++)
 	{
 		cl_ent = g_edicts + 1 + i;
-		if (!cl_ent->inuse || cl_ent->acebot.is_bot)
+		if (!cl_ent->inuse) 
+			continue;
+		if (cl_ent->acebot.is_bot)
 			continue;
 
 		gi.cprintf(cl_ent, printlevel, bigbuffer);

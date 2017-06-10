@@ -60,6 +60,21 @@
 #ifndef _ACEBOT_H
 #define _ACEBOT_H
 
+//add hypov8
+#include "../voice_punk.h"
+#include "../voice_bitch.h"
+
+//hypov8 func to stop bot looking up/down when not needed
+#define ACE_Look_Straight(target,player,out) (out[0]=target[0],out[1]=target[1],out[2]=player[2])
+
+vec3_t ACE_look_out; //hypov8 global var
+#define BOT_JUMP_VEL (200*2) //340
+#define BOT_FORWARD_VEL (160*2) //340 //hypov8 kp default
+#define BOT_SIDE_VEL (160*2) //cl_anglespeedkey->value)	//hypov8 kp default 1.5
+
+//bot time. allow some errors in float. only run every 0.1 seconds anyway
+#define BOTFRAMETIME 0.09f
+
 // Only 100 allowed for now (probably never be enough edicts for 'em
 #define MAX_BOTS 100
 
@@ -82,12 +97,16 @@
 #define BOTNODE_TELEPORTER 3
 #define BOTNODE_ITEM 4
 #define BOTNODE_WATER 5
-#define BOTNODE_GRAPPLE 6
+//#define BOTNODE_GRAPPLE 6
 #define BOTNODE_JUMP 7
+#define BOTNODE_DRAGON_SAFE 8 //hypov8 todo:
+#define BOTNODE_NIKKISAFE 9 //hypov8 todo:
 #define BOTNODE_ALL 99 // For selecting all nodes
 
 // Density setting for nodes
 #define BOTNODE_DENSITY 128
+#define BOTNODE_DENSITY_LOCAL (BOTNODE_DENSITY*0.75) //add hypov8 allow only very close node to add a link. 
+													//needs to be shorter then 1/2 way betweeen BOTNODE_DENSITY
 
 // Bot state types
 #define BOTSTATE_STAND 0
@@ -101,6 +120,7 @@
 #define MOVE_FORWARD 2
 #define MOVE_BACK 3
 
+
 // KingPin Item defines 
 #define ITEMLIST_NULL				0
 	
@@ -111,7 +131,7 @@
 #define ITEMLIST_ARMORJACKETHEAVY	5
 #define ITEMLIST_ARMORLEGSHEAVY		6
 
-#define ITEMLIST_BLACKJACK          7
+//weapon_blackjack"
 #define ITEMLIST_CROWBAR			8
 #define ITEMLIST_PISTOL				9
 #define ITEMLIST_SPISTOL			10
@@ -121,57 +141,60 @@
 #define ITEMLIST_GRENADELAUNCHER	14
 #define ITEMLIST_BAZOOKA			15
 #define ITEMLIST_FLAMETHROWER		16
-#define ITEMLIST_SHOTGUN_E			17
-#define ITEMLIST_HEAVYMACHINEGUN_E	18
-#define ITEMLIST_BAZOOKA_E			19
-#define ITEMLIST_FLAMETHROWER_E		20
-#define ITEMLIST_GRENADELAUNCHER_E	21
-#define ITEMLIST_PISTOL_E			22
-#define ITEMLIST_TOMMYGUN_E			23
 
-#define ITEMLIST_GRENADES			24
+#define ITEMLIST_GRENADES			17
+#define ITEMLIST_SHELLS				18
+#define ITEMLIST_BULLETS			19
+#define ITEMLIST_ROCKETS			20
+#define ITEMLIST_AMMO308			21
+#define ITEMLIST_CYLINDER			22
+#define ITEMLIST_FLAMETANK			23
 
-#define ITEMLIST_SHELLS				25
-#define ITEMLIST_BULLETS			26
-#define ITEMLIST_ROCKETS			27
-#define ITEMLIST_AMMO308			28
-#define ITEMLIST_CYLINDER			29
-#define ITEMLIST_FLAMETANK			30
+//item_coil					24
+//item_lizzyhead			25
 
-#define ITEMLIST_COIL				31
-#define ITEMLIST_LIZZYHEAD			32
-#define ITEMLIST_CASHROLL			33
-#define ITEMLIST_CASHBAGLARGE		34
-#define ITEMLIST_CASHBAGSMALL		35
-#define ITEMLIST_BATTERY			36
-#define ITEMLIST_JETPACK			37
+#define ITEMLIST_CASHROLL			26
+#define ITEMLIST_CASHBAGLARGE		27
+#define ITEMLIST_CASHBAGSMALL		28
+//item_battery				29
+//item_jetpack				30
+//#define ITEMLIST_SAFEBAG			31 todo fix
 
-#define ITEMLIST_HEALTH_SMALL		38
-#define ITEMLIST_HEALTH_LARGE		39
-#define ITEMLIST_FLASHLIGHT			40
-#define ITEMLIST_WATCH				41
-#define ITEMLIST_WHISKEY			42
-#define ITEMLIST_PACK				43
-#define ITEMLIST_ADRENALINE			44
-#define ITEMLIST_KEYFUSE			45
-#define ITEMLIST_SAFEDOCS			46
-#define ITEMLIST_VALVE				47
-#define ITEMLIST_OILCAN				48
-#define ITEMLIST_KEY1				49
-#define ITEMLIST_KEY2				50
-#define ITEMLIST_KEY3				51
-#define ITEMLIST_KEY4				52
-#define ITEMLIST_KEY5				53
-#define ITEMLIST_KEY6				54
-#define ITEMLIST_KEY7				55
-#define ITEMLIST_KEY8				56
-#define ITEMLIST_KEY9				57
-#define ITEMLIST_KEY10				58
+#define ITEMLIST_HEALTH_SMALL		31
+#define ITEMLIST_HEALTH_LARGE		32
+//item_flashlight	33
+//item_watch		34
+//item_whiskey	35
 
-#define ITEMLIST_PISTOLMODS			59
+#define ITEMLIST_PACK				36
+#define ITEMLIST_ADRENALINE			37
+/*
+key_fuse	38
+item_safedocs	39
+item_valve	40
+item_oilcan		41
+key_key1 42
+key_key2	43
+key_key3	44
+key_key4	45
+key_key5	46
+key_key6	47
+key_key7	48
+key_key8	49
+key_key9	50
+key_key10	51
+*/
 
-#define ITEMLIST_BOT				60
-#define ITEMLIST_PLAYER				61
+#define ITEMLIST_PISTOLMOD_DAMAGE	52
+#define ITEMLIST_PISTOLMOD_RELOAD	53
+#define ITEMLIST_PISTOLMOD_ROF		54
+#define ITEMLIST_HMG_COOL_MOD		55
+#define ITEMLIST_SAFEBAG1			56
+#define ITEMLIST_SAFEBAG2			57
+
+
+#define ITEMLIST_BOT				58
+#define ITEMLIST_PLAYER				59
 
 typedef struct gitem_s gitem_t;
 
@@ -179,7 +202,7 @@ typedef struct gitem_s gitem_t;
 typedef struct botnode_s
 {
 	vec3_t origin; // Using Id's representation
-	int type;   // type of node
+	short type;   // type of node
 
 } botnode_t;
 
@@ -197,7 +220,6 @@ typedef struct bot_skin_s
 	char name[32];
 	char skin[64];
 	char team[32];
-	//qboolean customSkinsUsed;
 } bot_skin_t;
 
 typedef struct //bot->acebot->xxx
@@ -211,11 +233,11 @@ typedef struct //bot->acebot->xxx
 	float		wander_timeout;
 	float		suicide_timeout;
 
-	int			current_node;		// current node
-	int			goal_node;			// current goal node
-	int			next_node;			// the node that will take us one step closer to our goal
-	int			node_timeout;
-	int			last_node;
+	short	current_node;		// current node
+	short	goal_node;			// current goal node
+	short	next_node;			// the node that will take us one step closer to our goal
+	int		node_timeout;
+	short	last_node;
 	int			tries;
 	int			state;
 
@@ -224,18 +246,53 @@ typedef struct //bot->acebot->xxx
 	int			old_target;			//old player target. shoot if more than xx seconds
 	float		botNewTargetTime;	//timer to allow bot to start attacking
 	//cvar_t		*game_dir;			//add game dir to bot libary
+	qboolean is_crate; //hypov8 tryto get bot to jump upto item
+	int crate_time; 
+	int ladder_time; //server frame num bot was on a ladder
+	qboolean isOnLadder; //hypov8 add. stop bots aiming when on ladders
+	int dodge_time; // time bot last moved sideways from player
+
+	int uTurnCount; //hypov8 count times bot got stuck n turned
+	int uTurnTime; //hypov8 get last time bot turned
+
+	int	num_weps; //hypov8 added to compare bots invitory changed. select weapon?
+	int randomWeapon; //hypov8 select a random weapon to be there poirity, reset per level
+
+	vec3_t oldOrigin; //hypov8 store last position for calculating velocity
+
+	qboolean hunted; //bot will attack this persone with brute force:)
+
+	int tauntTime; //hypov8 random taunt timmer
+	qboolean aimHead; //hypo aim for head with rl. used when a low fence/rail is blocking player
+	vec3_t aimPlayerOrigin; //store origin for think while shooting, was out because of movement b4 shooting cause qwrong aim angles
+
+	int trigPushTimer; // bot will free move with trigger push
+	qboolean isMovingUpPushed; 
+
+	int spawnedTime; //store time just spawned, so they can collect better weps
+
+	int last_strafeTime; //frame since strafed. make strafe go for longer
+	int last_strafeDir;
 } acebot_t;
 
 
 extern int num_players;
+extern int botsRemoved;
+extern int num_bots;
 extern edict_t *players[MAX_CLIENTS];		// pointers to all players in the game
 
 // extern decs
 extern botnode_t nodes[MAX_BOTNODES]; 
 extern item_table_t item_table[MAX_EDICTS];
 extern qboolean debug_mode;
-extern int numnodes;
+extern qboolean debug_mode_origin_ents; //add hypov8
+extern short numnodes;
 extern int num_items;
+extern int stopNodeUpdate;		// add hypov8
+
+bot_skin_t randomBotSkins[64];
+char VoteBotRemoveName[8][32];
+float VoteBotSkill;
 
 void ClientDisconnect(edict_t *ent); //hypov8
 
@@ -253,9 +310,11 @@ void     Use_Plat (edict_t *ent, edict_t *other, edict_t *activator);
 // acebot_ai.c protos
 void     ACEAI_Think (edict_t *self);
 void     ACEAI_PickLongRangeGoal(edict_t *self);
-void     ACEAI_PickShortRangeGoal(edict_t *self);
-qboolean ACEAI_FindEnemy(edict_t *self);
-void     ACEAI_ChooseWeapon(edict_t *self);
+//void     ACEAI_PickShortRangeGoal(edict_t *self);
+//qboolean ACEAI_FindEnemy(edict_t *self);
+//void     ACEAI_ChooseWeapon(edict_t *self);
+//void     ACEAI_PreChooseWeapon(edict_t *self);//add hypov8
+//qboolean ACEAI_WeaponCount(edict_t *self); //add hypov8
 
 // acebot_cmds.c protos
 qboolean ACECM_Commands(edict_t *ent);
@@ -267,51 +326,64 @@ void     ACEIT_PlayerRemoved(edict_t *ent);
 qboolean ACEIT_IsVisible(edict_t *self, vec3_t goal);
 qboolean ACEIT_IsReachable(edict_t *self,vec3_t goal);
 qboolean ACEIT_ChangeWeapon (edict_t *ent, gitem_t *item);
-qboolean ACEIT_CanUseArmor (gitem_t *item, edict_t *other);
-float	 ACEIT_ItemNeed(edict_t *self, int item);
-int		 ACEIT_ClassnameToIndex(char *classname);
-void     ACEIT_BuildItemNodeTable (qboolean rebuild);
+//qboolean ACEIT_CanUseArmor (gitem_t *item, edict_t *other);
+float	 ACEIT_ItemNeed(edict_t *self, int item, float timestamp, int spawnflags); //hypo add spawnflags. for droped items
+int		 ACEIT_ClassnameToIndex(char *classname, int style);
+//void     ACEIT_BuildItemNodeTable (qboolean rebuild);
+//qboolean infrontBot(edict_t *self, edict_t *other); //add hypov8
+//qboolean infrontEnemy(edict_t *self, edict_t *other); //add hypov8
+float ACEIT_ItemNeedSpawned(edict_t *self, int item, float timestamp, int spawnflags); //add hypov8
+
 
 // acebot_movement.c protos
-qboolean ACEMV_SpecialMove(edict_t *self,usercmd_t *ucmd);
+//qboolean ACEMV_SpecialMove(edict_t *self,usercmd_t *ucmd);
 void     ACEMV_Move(edict_t *self, usercmd_t *ucmd);
 void     ACEMV_Attack (edict_t *self, usercmd_t *ucmd);
 void     ACEMV_Wander (edict_t *self, usercmd_t *ucmd);
 
 // acebot_nodes.c protos
-int      ACEND_FindCost(short int from, short int to);
-int      ACEND_FindCloseReachableNode(edict_t *self, int dist, int type);
-int      ACEND_FindClosestReachableNode(edict_t *self, int range, int type);
-void     ACEND_SetGoal(edict_t *self, int goal_node);
+int      ACEND_FindCost(short from, short to);
+short      ACEND_FindCloseReachableNode(edict_t *self, int dist, short type);
+short      ACEND_FindClosestReachableNode(edict_t *self, int range, short type);
+void     ACEND_SetGoal(edict_t *self, short goal_node);
 qboolean ACEND_FollowPath(edict_t *self);
-void     ACEND_GrapFired(edict_t *self);
-qboolean ACEND_CheckForLadder(edict_t *self);
+//void     ACEND_GrapFired(edict_t *self);
+//qboolean ACEND_CheckForLadder(edict_t *self);
 void     ACEND_PathMap(edict_t *self);
 void     ACEND_InitNodes(void);
-void     ACEND_ShowNode(int node);
+void     ACEND_ShowNode(short node, int isTmpNode);
 void     ACEND_DrawPath();
-void     ACEND_ShowPath(edict_t *self, int goal_node);
-int      ACEND_AddNode(edict_t *self, int type);
-void     ACEND_UpdateNodeEdge(int from, int to);
-void     ACEND_RemoveNodeEdge(edict_t *self, int from, int to);
-void     ACEND_ResolveAllPaths();
+void     ACEND_ShowPath(edict_t *self, short goal_node);
+short      ACEND_AddNode(edict_t *self, short type);
+void     ACEND_UpdateNodeEdge(short from, short to, qboolean check);
+void     ACEND_RemoveNodeEdge(edict_t *self, short from, short to);
+//void     ACEND_ResolveAllPaths();
 void     ACEND_SaveNodes();
 void     ACEND_LoadNodes();
+void	ACEND_JumpPadUpdate(edict_t *bot); //add hypov8
+void	ACEND_DebugNodesLocal(void); //add hypov8
+void ACEND_TeleporterUpdate(edict_t *bot); //add hypov8
+
 
 // acebot_spawn.c protos
-void	 ACESP_SaveBots();
+//void	 ACESP_SaveBots();
 void	 ACESP_LoadBots();
-void     ACESP_HoldSpawn(edict_t *self);
-void     ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team);
+// void     ACESP_HoldSpawn(edict_t *self);
+//void     ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team);
 void     ACESP_Respawn (edict_t *self);
-edict_t *ACESP_FindFreeClient (void);
+//edict_t *ACESP_FindFreeClient (void);
 void     ACESP_SetName(edict_t *bot, char *name, char *skin/*, char *team*/);
 void     ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo);
+void	ACESP_SpawnRandomBot(char *team, char *name, char *skin, char *userinfo); //add hypov8
 void     ACESP_ReAddBots();
 void     ACESP_RemoveBot(char *name);
 void	 safe_cprintf (edict_t *ent, int printlevel, char *fmt, ...);
 void     safe_centerprintf (edict_t *ent, char *fmt, ...);
 void     safe_bprintf (int printlevel, char *fmt, ...);
 void     debug_printf (char *fmt, ...);
+int ACESP_LoadRandomBotCFG(void);// load custom bot file
 
+//hypo
+//tace for pmove
+//trace_t	PM_trace(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
 #endif

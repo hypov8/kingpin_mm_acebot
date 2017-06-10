@@ -1331,7 +1331,7 @@ void gib_end_life (edict_t *self)
 	// END JOSEPH
 }
 
-void SpawnGib (edict_t *self, int mdx_part, int mdx_subobject, vec3_t dir)
+static void SpawnGib (edict_t *self, int mdx_part, int mdx_subobject, vec3_t dir)
 {
 	edict_t *gib;
 	int		i;
@@ -1340,6 +1340,9 @@ void SpawnGib (edict_t *self, int mdx_part, int mdx_subobject, vec3_t dir)
 	float	vel;
 	int		max_rnd;
 
+#ifdef HYPODEBUG
+	return; //hypov8 overflow test?
+#endif
 	gi.sound(self, CHAN_VOICE, gi.soundindex("actors/player/bodyfalls/jibs.wav"), 1, ATTN_NORM, 0);
 
 	if (mdx_part == PART_BODY && mdx_subobject == 0)	// Torso is big, so allow big chunks
@@ -2344,7 +2347,7 @@ void T_RadiusDamage_Fire (edict_t *inflictor, edict_t *attacker, float damage, e
 	edict_t	*ent = NULL;
 	vec3_t	v;
 	vec3_t	dir;
-	int     mod = MOD_FLAMETHROWER;
+	//int     mod = MOD_FLAMETHROWER;
 
 	while ((ent = findradius(ent, inflictor->s.origin, radius)) != NULL)
 	{

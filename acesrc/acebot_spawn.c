@@ -61,6 +61,8 @@
 #include "..\m_player.h"
 #include "acebot.h"
 
+//bot_skin_t randomBotSkins[64];
+
 ///////////////////////////////////////////////////////////////////////
 // Had to add this function in this version for some reason.
 // any globals are wiped out between level changes....so
@@ -69,17 +71,20 @@
 // NOTE: There is still a bug when the bots are saved for
 //       a dm game and then reloaded into a CTF game.
 ///////////////////////////////////////////////////////////////////////
-void ACESP_SaveBots()
+static void ACESP_SaveBots()
 {
     edict_t *bot;
     FILE *pOut;
 	int i,count = 0;
 	cvar_t	*game_dir;
 	char buf[32];
-	bot_skin_t player;
+	//bot_skin_t player;
 
 	if (level.customSkinsUsed)
 		return; //dont write to temp skins file if a custom player file is specified in map
+
+	if (sv_botcfg->value != 0)
+		return;
 
 #if 1
 	//hypo mod folder for bots dir
@@ -157,7 +162,7 @@ void ACESP_LoadBots()
 	{	
 		//use a custom config for every map thats not in the pre map.cfg
 		//will not use the bot.tmp
-		if (sv_botcfg->value == 1) //sv_botcfg "1"
+		if (sv_botcfg->value != 0) //sv_botcfg "1"
 		{
 			//check for individual bot config
 			sprintf(buf, "%s\\bots\\_default.cfg", game_dir->string); // comp\bots\mapname.cfg
@@ -233,11 +238,15 @@ customcfg:
 // Called by PutClient in Server to actually release the bot into the game
 // Keep from killin' each other when all spawned at once
 ///////////////////////////////////////////////////////////////////////
-void ACESP_HoldSpawn(edict_t *self)
+static void ACESP_HoldSpawn(edict_t *self)
 {
-	if (!KillBox (self))
-	{	// could't spawn in?
-	}
+
+	self->solid = SOLID_BBOX;
+	KillBox(self);
+
+// NET_ANTILAG	//et-xreal antilag
+/*6*/	G_ResetMarkers(self); //hypo new add
+// END_LAG
 
 	gi.linkentity (self);
 
@@ -263,7 +272,7 @@ void ACESP_HoldSpawn(edict_t *self)
 ///////////////////////////////////////////////////////////////////////
 // Modified version of id's code
 ///////////////////////////////////////////////////////////////////////
-void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
+static  void ACESP_PutClientInServer(edict_t *bot, qboolean respawn, int team)
 {
 	vec3_t	mins = {-16, -16, -24};
 	vec3_t	maxs = {16, 16, 48};
@@ -346,6 +355,7 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 		bot->svflags &= ~(SVF_DEADMONSTER | SVF_NOCLIENT);
 
 		//give 3 seconds of imortality on each spawn (anti-camp) 
+		client->invincible_framenum = level.framenum + 6; //hypov8 allow for antilag
 		if (anti_spawncamp->value)
 			client->invincible_framenum = level.framenum + 30;  //3 seconds 
 	}
@@ -355,9 +365,10 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 	bot->inuse = true;
 
 	//bot->classname = "player";
-	bot->classname = "bot"; //"player" ?
+	bot->classname = "player"; // "bot"; //"player" ?
 	bot->mass = 200;
-	bot->solid = SOLID_BBOX;
+	//bot->solid = SOLID_BBOX;
+	bot->solid = SOLID_NOT; //hypo
 	bot->deadflag = DEAD_NO;
 	bot->air_finished = level.time + 12;
 	bot->clipmask = MASK_PLAYERSOLID;
@@ -367,19 +378,15 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 	bot->waterlevel = 0;
 	bot->watertype = 0;
 	bot->flags &= ~FL_NO_KNOCKBACK;
-	bot->svflags &= ~(SVF_DEADMONSTER|SVF_NOCLIENT);
+	bot->svflags &= ~(SVF_DEADMONSTER | SVF_NOCLIENT);
 	bot->acebot.is_jumping = false;
-	bot->acebot.old_target = -1; //hypo add
 
-#ifdef NOT_ZOID
-	if(ctf->value)
-	{
-		client->resp.ctf_team = team;
-		client->resp.ctf_state = CTF_STATE_START;
-		s = Info_ValueForKey (client->pers.userinfo, "skin");
-		CTFAssignSkin(bot, s);
-	}
-#endif
+	bot->acebot.old_target = -1; //hypo add
+	bot->acebot.num_weps = 2;  //hypo add. 2= pistol+pipe
+	bot->hasSelectedPistol = false;
+	bot->acebot.tauntTime = level.framenum + (random() * 100);
+
+	bot->acebot.spawnedTime = level.framenum + 10 * 3; //hypo add 3 seconds?
 
 	if (teamplay->value)
 	{
@@ -389,7 +396,7 @@ void ACESP_PutClientInServer (edict_t *bot, qboolean respawn, int team)
 		//////CTFAssignSkin(bot, s);
 	}
 
-client->pers.spectator = PLAYING; // CTF_STATE_START;
+client->pers.spectator = PLAYING;
 
 
 	//KP_ADD
@@ -464,6 +471,9 @@ client->pers.spectator = PLAYING; // CTF_STATE_START;
 	bot->s.frame = 0;
 	VectorCopy (spawn_origin, bot->s.origin);
 	bot->s.origin[2] += 1;	// make sure off ground
+
+	//add hypov8. calculate bots movement
+	VectorCopy(spawn_origin, bot->acebot.oldOrigin);
 
 	//KP_ADD
 	VectorCopy (bot->s.origin, bot->s.old_origin);
@@ -606,26 +616,27 @@ client->pers.spectator = PLAYING; // CTF_STATE_START;
 	// If we are not respawning hold off for up to three seconds before releasing into game
     if(!respawn)
 	{
-		bot->think = ACESP_HoldSpawn;
-		bot->nextthink = level.time + 0.1;
-		bot->nextthink = level.time + random()*3.0; // up to three seconds
+		bot->think = ACESP_HoldSpawn; //hypov8 ToDo: causing telfrag of waiting at spawn?
+		//bot->nextthink = level.time + 0.1;
+		//bot->nextthink = level.time + random()*3.0; // up to three seconds
+		bot->nextthink = level.time +0.1 + (rand()%3); // up to three seconds
 	}
 	else
 	{
+		bot->solid = SOLID_BBOX; //add hypov8
 		if (!KillBox (bot))
 		{	// could't spawn in?
 		}
+
+// NET_ANTILAG	//et-xreal antilag
+/*7*/		G_ResetMarkers(bot); //hypo new add
+// END_LAG
 
 		gi.linkentity (bot);
 
 		bot->think = ACEAI_Think;
 		bot->nextthink = level.time + FRAMETIME;
 
-/*			// send effect
-		gi.WriteByte (svc_muzzleflash);
-		gi.WriteShort (bot-g_edicts);
-		gi.WriteByte (MZ_LOGIN);
-		gi.multicast (bot->s.origin, MULTICAST_PVS);*/
 	}
 	
 }
@@ -635,7 +646,7 @@ client->pers.spectator = PLAYING; // CTF_STATE_START;
 ///////////////////////////////////////////////////////////////////////
 void ACESP_Respawn (edict_t *self)
 {
-	if (!((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)))
+	if (!(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
 	{
 		self->deadflag = 0;
 		gi.dprintf("bot respawned after match\n");
@@ -667,7 +678,7 @@ void ACESP_Respawn (edict_t *self)
 ///////////////////////////////////////////////////////////////////////
 // Find a free client spot
 ///////////////////////////////////////////////////////////////////////
-edict_t *ACESP_FindFreeClient (void)
+static edict_t *ACESP_FindFreeClient (void)
 {
 	edict_t *bot = NULL;
 	int	i;
@@ -788,6 +799,8 @@ void ACESP_SetName(edict_t *bot, char *name, char *skin/*, char *team*/)
 	ACESP_SaveBots(); // make sure to save the bots
 }
 
+extern void Teamplay_AutoJoinTeam(edict_t *self);
+
 ///////////////////////////////////////////////////////////////////////
 // Spawn the bot
 ///////////////////////////////////////////////////////////////////////
@@ -829,26 +842,18 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 		//if (team == NULL)
 		//strcpy( team[0],'\0');
 
-		if (team[0] != '\0') // && team[0] != '0') //hypo console spits out '\0'
+		if (team != NULL && team[0] != '\0') // && team[0] != '0') //hypo console spits out '\0'
 		{
 		//if (team[0] == team_names[1][0]) // "d" //hypo 1st letter team_name[team_1][char_0]
 			if (team[0] == 'd' || team[0] == 'D' || team[0] == '1')
 				bot->client->pers.team = TEAM_1;
-			else
+			else if (team[0] == 'n' || team[0] == 'N' || team[0] == '2')
 				bot->client->pers.team = TEAM_2;
+			else Teamplay_AutoJoinTeam(bot); //add hypov8 auto team
 		}
 		else //null
 		{
-			if (level.lastTeamSpawned != TEAM_1)
-			{
-				level.lastTeamSpawned = TEAM_1;
-				bot->client->pers.team = TEAM_1;
-			}
-			else
-			{
-				level.lastTeamSpawned = TEAM_2;
-				bot->client->pers.team = TEAM_2;
-			}
+			Teamplay_AutoJoinTeam(bot); //add hypov8 auto team
 		}
 	}
 
@@ -867,47 +872,9 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 	InitClientRespClear(bot->client);
 	
 	// locate ent at a spawn point
-#ifdef NOT_ZOID
-	if(ctf->value)
-	{
-		if (team != NULL && strcmp(team,"red")==0)
-			ACESP_PutClientInServer (bot,false, CTF_TEAM1);
-		else
-			ACESP_PutClientInServer (bot,false, CTF_TEAM2);
-	}
-	else
+	ACESP_PutClientInServer(bot, false, bot->client->pers.team /*TEAM_NONE*/);
 
-#endif
-#if 0
-		if (teamplay->value)
-		{
-			if (team != NULL)
-			{
-				if (strcmp(team[0], "d") == 0) //hypo 1st letter
-					ACESP_PutClientInServer(bot, false, TEAM_1);
-				else
-					ACESP_PutClientInServer(bot, false, TEAM_2);
-			}
-			else //null
-			{
-				if (level.lastTeamSpawned != TEAM_1)
-				{
-					level.lastTeamSpawned = TEAM_1;
-					ACESP_PutClientInServer(bot, false, TEAM_1);
-				}
-				else
-				{
-					level.lastTeamSpawned = TEAM_2;
-					ACESP_PutClientInServer(bot, false, TEAM_2);
-				}
-			}
-		}
-		else //end teamplay
 
-#endif
-			ACESP_PutClientInServer(bot, false, bot->client->pers.team /*TEAM_NONE*/);
-
-	//safe_bprintf(PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 //hypo
 	bot->client->resp.is_spawn = true;
 	bot->inuse = true;
@@ -922,6 +889,163 @@ void ACESP_SpawnBot (char *team, char *name, char *skin, char *userinfo)
 
 }
 
+
+///////////////////////////////////////////////////////////////////////
+// Load a predefined bot cfg
+///////////////////////////////////////////////////////////////////////
+
+int ACESP_LoadRandomBotCFG(void)
+{
+
+	FILE *pIn;
+	//char userinfo[MAX_INFO_STRING];
+	char buffer[MAX_STRING_LENGTH];
+	int i, j;
+	cvar_t	*game_dir, *map_name;
+	char buf[32];
+
+	char *line, *token;
+
+
+	level.bots_spawned = true;
+	level.customSkinsUsed = false;
+
+
+	//hypo mod folder for bots dir
+	map_name = gi.cvar("mapname", "", 0);
+	game_dir = gi.cvar("game", "", 0);
+
+	//set file name. used to load specific addbot player file 
+	sprintf(buf, "%s\\bots\\_vote_bots.cfg", game_dir->string); // comp\bots\mapname.cfg
+
+	j = 0;
+	if ((pIn = fopen(buf, "r")) != NULL)
+	{
+		fgetline(pIn, buffer);
+		while (!feof(pIn))
+		{
+			line = buffer;
+			for (i = 1; i <= 3; i++)
+			{
+				token = COM_Parse(&line);
+				if (token[0] == '\0')
+					break;
+
+				switch (i)
+				{
+				case 1: strcpy(randomBotSkins[j].name, token);
+				case 2: strcpy(randomBotSkins[j].skin, token);
+				case 3: strcpy(randomBotSkins[j].team, token);
+					//case 4: skill = token; break;
+				}
+
+				if (i == 3) //cfg correct. all varables exist
+					j++;
+
+			}
+			fgetline(pIn, buffer);
+			continue;
+		}
+
+		fclose(pIn);
+		return j;
+	}
+
+	return 0;
+}
+
+
+
+
+void ACESP_SpawnRandomBot(char *team, char *name, char *skin, char *userinfo)
+{
+	edict_t	*bot;
+	int j, k, l;
+	int randm, numBotCFGs;
+	int countArray[64]; //64 max players
+
+	//FILE *pIn;
+	//char userinfo[MAX_INFO_STRING];
+	//char buffer[MAX_STRING_LENGTH];
+	int i, count;
+	cvar_t	*game_dir, *map_name;
+	char buf[32];
+
+	//char *line, *token;
+	//bot_skin_t player[64]; // name, skin, team;
+
+	level.bots_spawned = true;
+	level.customSkinsUsed = false;
+
+
+	//hypo mod folder for bots dir
+	map_name = gi.cvar("mapname", "", 0);
+	game_dir = gi.cvar("game", "", 0);
+
+	//set file name. used to load specific addbot player file 
+	sprintf(buf, "%s\\bots\\_vote_bots.cfg", game_dir->string); // comp\bots\mapname.cfg
+
+	numBotCFGs = ACESP_LoadRandomBotCFG();
+	if (numBotCFGs)
+	{
+		// run through all players/bots names. add a random bot
+		memset(&countArray, false, sizeof(countArray));
+		j = 0;
+		if (numBotCFGs)
+		{
+
+			//1024 should n more than enough times to test random
+			for (k = 0; k < 1024; k++) 
+			{
+				count = 0; 
+				randm = rand() % numBotCFGs;
+
+				for_each_player_inc_bot(bot, i)
+				{
+					//if (!bot->acebot.is_bot) continue; //hypo allow clients to use bot names?
+					if (_strcmpi(randomBotSkins[randm].name, bot->client->pers.netname) == 0)
+					{
+						count++;
+						break;
+					}
+				}
+
+				if (!count)
+				{
+					if (teamplay->value) // name, skin, team 
+						ACESP_SpawnBot(team, randomBotSkins[randm].name, randomBotSkins[randm].skin, NULL); //sv addbot thugBot "male_thug/009 031 031" dragon
+					else // name, skin			
+						ACESP_SpawnBot("\0", randomBotSkins[randm].name, randomBotSkins[randm].skin, NULL); //sv addbot thugBot "male_thug/009 031 031"
+					
+					return;
+				}
+
+				countArray[randm] = true;
+
+				//check if every cfg name has been compared( because of random)
+				for (l = 0; l < numBotCFGs; l++)
+				{
+					if (countArray[l] == false)
+						break;
+
+					if (l == numBotCFGs-1)
+					// break;
+					goto defaultBot; //all bot names in use
+				}
+			}
+		}
+
+	}
+
+defaultBot:
+	ACESP_SpawnBot(team, name, skin, userinfo);
+
+}
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////
 // Remove a bot by name or all bots
 ///////////////////////////////////////////////////////////////////////
@@ -931,12 +1055,15 @@ void ACESP_RemoveBot(char *name)
 	qboolean freed=false;
 	edict_t *bot;
 
+	if (!(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
+		return;
+
 	for(i=0;i<maxclients->value;i++)
 	{
 		bot = g_edicts + i + 1;
-		if(bot->inuse)
+		if(bot->inuse) 
 		{
-			if (bot->acebot.is_bot && (strcmp(bot->client->pers.netname, name) == 0 || strcmp(name, "all") == 0))
+			if (bot->acebot.is_bot && (_strcmpi(bot->client->pers.netname, name) == 0 || strcmp(name, "all") == 0))
 			{
 				bot->health = 0;
 				player_die (bot, bot, bot, 100000, vec3_origin,0,0); //hypov8 add null

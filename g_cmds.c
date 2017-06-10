@@ -4,13 +4,6 @@
 #include "voice_punk.h"
 #include "voice_bitch.h"
 
-#define CHECKFIXED(a)\
-if (fixed_gametype) cprintf(ent,PRINT_HIGH,"This server's game type may not be changed\n");\
-else {gi.cvar_set(a,value);cprintf(ent,PRINT_HIGH,"This setting will take effect with a map change\n");}
-
-extern int team_startcash[2];
-extern int memalloced[3];
-
 //tical - define taunts
 #define KINGPIN		1
 #define LEROY		2
@@ -30,6 +23,26 @@ extern int memalloced[3];
 #define BLUNT		15
 #define BETH		16
 
+
+#define CHECKFIXED(a)\
+if (fixed_gametype) cprintf(ent,PRINT_HIGH,"This server's game type may not be changed\n");\
+else {gi.cvar_set(a,value);cprintf(ent,PRINT_HIGH,"This setting will take effect with a map change\n");}
+
+extern int team_startcash[2];
+extern int memalloced[3];
+
+//acebot add
+char changeMapName[32]; // = '\0';
+
+char voteAddBot[32]; //team
+char voteRemoveBot[32]; //name
+float voteBotSkill; //skill 0.0 to 4.0
+void Cmd_VoteRemoveBot_f(edict_t *ent,qboolean isMenu, char botnames[32]);
+static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse);
+static void Cmd_VoteSkill_f(edict_t *ent, qboolean skill);
+void Cmd_Yes_f(edict_t *ent);
+void Cmd_No_f(edict_t *ent);
+//end ace
 
 
 // Papa - I just commented out the Kingpin's ban player code 
@@ -477,10 +490,25 @@ void Cmd_Spec_f (edict_t *self)
 	
 	self->flags &= ~FL_GODMODE;
 	self->health = 0;
+
+	if (self->flags & FL_CHASECAM)
+		self->flags &= ~FL_CHASECAM; //hypov8 togglecam
+
+
+
+
 // acebot 	
 	ACEIT_PlayerRemoved(self);
 //end
 	ClientBeginDeathmatch( self );
+
+	//hypov8 add esc/spec bug fix
+	self->client->showscores = SCORE_INITAL_SPEC;
+	self->client->showhelp = false;
+	self->client->showinventory = false;
+	self->vote = 0;
+	DeathmatchScoreboard(self);
+
 }
 
 // Papa - add plater to a team
@@ -535,7 +563,7 @@ void Cmd_Join_f (edict_t *self, char *teamcmd)
 					self->switch_teams_frame = level.framenum;
 
 					// kill us if currently in game
-					if ((self->client->pers.team) && (!(level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH)))
+					if (self->client->pers.team && (!level.modeset == MATCHSETUP || level.modeset == TEAM_PRE_MATCH || level.modeset == DM_PRE_MATCH))
 					{
                         Cmd_Spec_f (self);
 					}
@@ -1689,9 +1717,11 @@ void Cmd_Key_f (edict_t *ent, int who)
 {
 	char		*cmd;
 
-	if (disable_curse) return;
+	if (disable_curse) 
+		return;
 
-    if (ent->client->pers.spectator==SPECTATING) return;
+    if (ent->client->pers.spectator==SPECTATING) 
+		return;
 	
 	if (level.speaktime > level.time)
 		return;
@@ -1707,10 +1737,12 @@ void Cmd_Key_f (edict_t *ent, int who)
 
 		if (deathmatch->value)
 		{
-            if(unlimited_curse)key_ent=NULL;
+            if(unlimited_curse)
+				key_ent=NULL;
             else
             {
-                if(!key_ent)return;
+                if(!key_ent)
+					return;
             }
 			Cmd_Wave_f( ent, key_ent, who );
             if(unlimited_curse)
@@ -1790,12 +1822,15 @@ void Cmd_ToggleCam_f ( edict_t *ent )
 {
 	if (ent->flags & FL_CHASECAM)
 	{
-		ent->flags -= FL_CHASECAM;
+		ent->flags &= ~FL_CHASECAM;
 	}
 	else
 	{
-	//	ent->flags += FL_CHASECAM;
-
+#ifdef HYPODEBUG
+		if ((level.modeset == DM_MATCH_RUNNING || level.modeset == TEAM_MATCH_RUNNING) 
+			&& ent->client->pers.spectator == PLAYING)
+		ent->flags |= FL_CHASECAM; //hypov8. enabled togglecam again
+#endif
 		safe_centerprintf(ent, "Chasecam is incomplete, and therefore\nunsupported at this stage\n");
 	}
 }
@@ -1943,6 +1978,67 @@ void SelectNextItem (edict_t *ent, int itflags)
 		return;
 	}
 
+	if (ent->client->showscores == SCORE_BOT_VOTE)
+	{
+
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			num_vote_set = 8; //8 menu items
+			ent->vote++;
+			if (ent->vote == num_vote_set+1)
+				ent->vote = 1;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_ADD)
+	{
+
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			num_vote_set = 3; //8 menu items
+			ent->vote++;
+			if (ent->vote == num_vote_set+1)
+				ent->vote = 1;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_REMOVE)
+	{
+
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			num_vote_set = 8; //8 menu items
+			ent->vote++;
+			if (ent->vote == num_vote_set+1)
+				ent->vote = 1;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_SKILL)
+	{
+
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			num_vote_set = 8; //8 menu items
+			ent->vote++;
+			if (ent->vote == num_vote_set+1)
+				ent->vote = 1;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+
+
 	if (ent->client->showscores == SCORE_REJOIN)
 	{
 		if (level.framenum > (ent->switch_teams_frame + 4))
@@ -2012,6 +2108,62 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		}
 		return;
 	}
+
+	if (ent->client->showscores == SCORE_BOT_VOTE)
+	{
+		num_vote_set = 8;
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			ent->vote--;
+			if (ent->vote < 1)
+				ent->vote = num_vote_set;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_ADD)
+	{
+		num_vote_set = 8;
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			ent->vote--;
+			if (ent->vote < 1)
+				ent->vote = num_vote_set;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_REMOVE)
+	{
+		num_vote_set = 8;
+		if (level.framenum > (ent->switch_teams_frame + 4))
+		{
+			ent->vote--;
+			if (ent->vote < 1)
+				ent->vote = num_vote_set;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		}
+		return;
+	}
+	if (ent->client->showscores == SCORE_BOT_SKILL)
+	{
+		num_vote_set = 8;
+		if (level.framenum >(ent->switch_teams_frame + 4))
+		{
+			ent->vote--;
+			if (ent->vote < 1)
+				ent->vote = num_vote_set;
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard(ent);
+		}
+		return;
+	}
+
 
 	if (ent->client->showscores == SCORE_REJOIN)
 	{
@@ -2354,6 +2506,13 @@ void Cmd_Noclip_f (edict_t *ent)
 		return;
 	}
 
+	if (!(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
+		return;
+
+	//add hypov8 stop noclip working if allready a spectator
+	if 	(ent->client->pers.spectator == SPECTATING)
+		return;
+
 	if (ent->movetype == MOVETYPE_NOCLIP)
 	{
 		ent->movetype = MOVETYPE_WALK;
@@ -2363,11 +2522,39 @@ void Cmd_Noclip_f (edict_t *ent)
 	{
 		ent->movetype = MOVETYPE_NOCLIP;
 		msg = "noclip ON\n";
+
+// ACEBOT_ADD noclip fix
+		ent->acebot.last_node = INVALID;
+// ACEBOT_END
 	}
 
 	cprintf (ent, PRINT_HIGH, msg);
 }
 
+
+static void build_bot_list()
+{
+	int i,j,botCount,outCount;
+	edict_t	*bot;
+
+	botCount = ACESP_LoadRandomBotCFG();
+	if (botCount > 0)
+	{
+		outCount = 0;
+		for (i = 0; i <= botCount; i++)
+		{
+			for_each_player_inc_bot(bot, j)
+			{
+				//if (!bot->acebot.is_bot) continue; //hypo allow clients to use bot names?
+				if (Q_stricmp(randomBotSkins[i].name, bot->client->pers.netname) == 0)
+					continue;
+			}
+			outCount++;
+			strcpy(VoteBotRemoveName[0], randomBotSkins[i].name);
+		}
+		
+	}
+}
 
 /*
 ==================
@@ -2389,7 +2576,7 @@ void Cmd_Use_f (edict_t *ent)
 // Papa
 // Kingpin uses whatever key your weapon is bound to, to work its menus
 // So I kept with this format for the menus that I added
-
+// hypo individual key used
     if (ent->client->showscores == SCORE_MAP_VOTE)  // next map vote menu
 	{
 		if (level.framenum > (ent->switch_teams_frame + 4))
@@ -2411,16 +2598,159 @@ void Cmd_Use_f (edict_t *ent)
 					ent->vote = 7;
 				if (!strcmp(s, "flamethrower"))
 					ent->vote = 8;
+
 				ent->switch_teams_frame = level.framenum;
 				DeathmatchScoreboard (ent);
 			}
 		return;
 	}
-			
 
+	if (ent->client->showscores == SCORE_BOT_VOTE)
+	{
+			if (s)
+			{
+
+				if (!strcmp(s, "pipe"))
+					ent->client->showscores = SCORE_BOT_ADD;
+				else if (!strcmp(s, "pistol"))
+					ent->client->showscores = SCORE_BOT_REMOVE;
+				else if (!strcmp(s, "shotgun"))
+					ent->client->showscores = SCORE_BOT_SKILL;
+				else if (!strcmp(s, "tommygun"))
+					if (ent->cl_noAntiLag)	ent->cl_noAntiLag = 0;
+					else					ent->cl_noAntiLag = 1;
+				else if (!strcmp(s, "heavy machinegun"))
+						Cmd_Yes_f(ent);
+				else if (!strcmp(s, "grenade launcher"))
+						Cmd_No_f(ent);
+				else if (!strcmp(s, "bazooka"))
+					;
+				else if (!strcmp(s, "flamethrower"))
+					;
+
+			}
+			ent->vote = 0;
+
+			ent->switch_teams_frame = level.framenum;
+			DeathmatchScoreboard (ent);
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_ADD)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			if (s)
+			{
+				if (!strcmp(s, "pipe"))
+					Cmd_VoteAddBot_f(ent, 1);
+				else if (!strcmp(s, "pistol"))
+					Cmd_VoteAddBot_f(ent, 2);
+				else if (!strcmp(s, "shotgun"))
+					Cmd_VoteAddBot_f(ent, 3);
+				else if (!strcmp(s, "tommygun"))
+					Cmd_VoteAddBot_f(ent, 3);
+				else if (!strcmp(s, "heavy machinegun"))
+					Cmd_VoteAddBot_f(ent, 3);
+				else if (!strcmp(s, "grenade launcher"))
+					Cmd_VoteAddBot_f(ent, 3);
+				else if (!strcmp(s, "bazooka"))
+					Cmd_VoteAddBot_f(ent, 3);
+				else if (!strcmp(s, "flamethrower"))
+					Cmd_VoteAddBot_f(ent, 3);
+			}
+			ent->client->showscores = NO_SCOREBOARD;
+			ent->vote = 0;
+			DeathmatchScoreboard(ent);
+			return;
+		}
+	}
+
+
+	if (ent->client->showscores == SCORE_BOT_REMOVE)
+		{
+			if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+			{
+				if (s)
+				{
+					if (!strcmp(s, "pipe"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[0]);
+					else if (!strcmp(s, "pistol"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[1]);
+					else if (!strcmp(s, "shotgun"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[2]);
+					else if (!strcmp(s, "tommygun"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[3]);
+					else if (!strcmp(s, "heavy machinegun"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[4]);
+					else if (!strcmp(s, "grenade launcher"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[5]);
+					else if (!strcmp(s, "bazooka"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[6]);
+					else if (!strcmp(s, "flamethrower"))
+						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[7]);
+				}
+				ent->client->showscores = NO_SCOREBOARD;
+				ent->vote = 0;
+				DeathmatchScoreboard(ent);
+				return;
+			}
+		}
+
+
+
+	if (ent->client->showscores == SCORE_BOT_SKILL)
+		{
+			if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+			{
+				if (s)
+				{
+					if (!strcmp(s, "pipe")){
+						VoteBotSkill = 4.0;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "pistol")){
+						VoteBotSkill = 3.5;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "shotgun")){
+						VoteBotSkill = 3.0;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "tommygun")){
+						VoteBotSkill = 2.5;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "heavy machinegun")){
+						VoteBotSkill = 2.0;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "grenade launcher")){
+						VoteBotSkill = 1.5;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "bazooka")){
+						VoteBotSkill = 1.0;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+					else if (!strcmp(s, "flamethrower")){
+						VoteBotSkill = 0.5;
+						Cmd_VoteSkill_f(ent, 1);
+					}
+				}
+				ent->client->showscores = NO_SCOREBOARD;
+				ent->vote = 0;
+				DeathmatchScoreboard(ent);
+				return;
+			}
+		}
+
+
+	
 	if (ent->client->showscores == SCORE_REJOIN) // restores players frags, time, etc after they disconnect
 	{
-		if (s) {
+		if (s) 
+		{
 			index = -1;
 			for (i=0;i<level.player_num;i++)
 			{
@@ -2449,17 +2779,31 @@ void Cmd_Use_f (edict_t *ent)
 				ent->health = 0;
 				meansOfDeath = MOD_RESTART;
 				ent->solid = SOLID_NOT;
+// ACEBOT_ADD
+				if (ent->inuse)
+					ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
+				//also called in match begin
+// ACEBOT_END
+
 //				player_die (ent, ent, ent, 1, vec3_origin, 0, 0);
 				PutClientInServer( ent );	
-			} else {
+			} 
+			else 
+			{
 				if (teamplay->value)
 					ent->client->showscores = SCOREBOARD;
-				else {
+				else 
+				{
 					ent->client->pers.spectator = PLAYING;
 					ent->flags &= ~FL_GODMODE;
 					ent->health = 0;
 					meansOfDeath = MOD_RESTART;
 					ent->solid = SOLID_NOT;
+// ACEBOT_ADD
+					if (ent->inuse)
+						ACEIT_PlayerAdded(ent); //only add to bot list if player can enter game
+					//also called in match begin
+// ACEBOT_END
 //					player_die (ent, ent, ent, 1, vec3_origin, 0, 0);
 					PutClientInServer( ent );	
 				}
@@ -2472,7 +2816,8 @@ void Cmd_Use_f (edict_t *ent)
 		}
 		return;
 	}	
-	else if ((teamplay->value) && ((!ent->client->pers.team) || (level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH)))
+	else if (teamplay->value 
+		&& (ent->client->pers.team == 0 || level.modeset == MATCHSETUP || level.modeset == TEAM_PRE_MATCH || level.modeset == DM_PRE_MATCH))
 	{
 //		if (level.framenum > (ent->switch_teams_frame + 20)) // Kingpin's join team menu
 			if (s)
@@ -2699,7 +3044,9 @@ void Cmd_InvUse_f (edict_t *ent)
 			ent->solid = SOLID_NOT;
 //			player_die (ent, ent, ent, 1, vec3_origin, 0, 0);
 			PutClientInServer( ent );	
-		} else {
+		} 
+		else 
+		{
 			if (teamplay->value)
 				ent->client->showscores = SCOREBOARD;
 			else {
@@ -2832,13 +3179,108 @@ qboolean infront_angle_activate (vec3_t selfang, vec3_t selforg, vec3_t otherorg
 }
 // END JOSEPH
 
+
+
+
 // JOSEPH 21-SEP-98
-void Cmd_Activate_f (edict_t *ent)
+//hypo use the highlighted menu with the action key
+void Cmd_Activate_f (edict_t *ent) 
 {
 	edict_t		*trav, *best;
 	float		best_dist=9999, this_dist;
 
-	if (ent->movetype == MOVETYPE_NOCLIP) {
+	if (ent->client->showscores == SCORE_BOT_VOTE)
+	{
+		switch (ent->vote)
+		{
+		case 1:ent->client->showscores = SCORE_BOT_ADD; break;
+		case 2:ent->client->showscores = SCORE_BOT_REMOVE; break;
+		case 3:ent->client->showscores = SCORE_BOT_SKILL; break;
+		case 4:	if (ent->cl_noAntiLag)  ent->cl_noAntiLag = 0; 
+					else				ent->cl_noAntiLag = 1;
+				break;
+		case 5:Cmd_Yes_f(ent);	break;
+		case 6:Cmd_No_f(ent);	break;
+
+			//case 2:ent->client->showscores == SCORE_BOT_ADD; break;
+		default: break;
+			
+		}
+		ent->vote = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+	
+	if (ent->client->showscores == SCORE_BOT_ADD)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			switch (ent->vote)
+			{
+			case 1: Cmd_VoteAddBot_f(ent,1) ; break;
+			case 2: Cmd_VoteAddBot_f(ent, 2); break;
+			case 3:
+			default: Cmd_VoteAddBot_f(ent, 0); break;
+
+			}
+		}
+		ent->client->showscores = NO_SCOREBOARD;
+		ent->vote = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+
+
+	if (ent->client->showscores == SCORE_BOT_REMOVE)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			switch (ent->vote)
+			{
+			case 1: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[0]); break;
+			case 2: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[1]); break;
+			case 3: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[2]); break;
+			case 4: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[3]); break;
+			case 5: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[4]); break;
+			case 6: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[5]); break;
+			case 7: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[6]); break;
+			case 8: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[7]); break;
+			default:Cmd_VoteRemoveBot_f(ent, true, '\0'); break;
+
+			}
+		}
+		ent->client->showscores = NO_SCOREBOARD;
+		ent->vote = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_SKILL)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			switch (ent->vote)
+			{
+			case 1: VoteBotSkill = 4.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 2: VoteBotSkill = 3.5; Cmd_VoteSkill_f(ent, 1); break;
+			case 3: VoteBotSkill = 3.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 4: VoteBotSkill = 2.5; Cmd_VoteSkill_f(ent, 1); break;
+			case 5: VoteBotSkill = 2.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 6: VoteBotSkill = 1.5; Cmd_VoteSkill_f(ent, 1); break;
+			case 7: VoteBotSkill = 1.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 8: VoteBotSkill = 0.5; Cmd_VoteSkill_f(ent, 1); break;
+			//default:Cmd_VoteSkill_f(ent, 1); break;
+
+			}
+		}
+		ent->client->showscores = NO_SCOREBOARD;
+		ent->vote = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+
+	if (ent->movetype == MOVETYPE_NOCLIP) 
+	{
 		if (ent->client->pers.spectator == SPECTATING)
 		{
 			if (maxclients->value > 1)
@@ -2858,6 +3300,13 @@ void Cmd_Activate_f (edict_t *ent)
 					}
 					ent->client->chase_target = NULL;
 					ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+
+					//add hypov8 spec/esc bug fix
+					ent->client->showscores = SCORE_INITAL_SPEC;
+					ent->client->showhelp = false;
+					ent->client->showinventory = false;
+					ent->vote = 0;
+					DeathmatchScoreboard(ent);
 				}
 			}
 		}
@@ -3324,6 +3773,9 @@ void Cmd_Reload_f (edict_t *ent)
 	if (ent->client->weaponstate != WEAPON_READY)
 		return;
 
+	if (!ent->client->pers.inventory[ent->client->ammo_index])
+		return; //mm stop reloading if empty
+
 	ent->client->reload_weapon = true;
 }
 // END 01-11-99
@@ -3620,9 +4072,23 @@ Cmd_PutAway_f
 */
 void Cmd_PutAway_f (edict_t *ent)
 {
+	if (ent->client->showscores == SCORE_BOT_ADD
+		|| ent->client->showscores == SCORE_BOT_REMOVE
+		|| ent->client->showscores == SCORE_BOT_SKILL)
+	{
+		ent->client->showscores = SCORE_BOT_VOTE;
+		ent->client->showhelp = false;
+		ent->client->showinventory = false;
+		ent->vote = 0;
+		DeathmatchScoreboard(ent); //hypov8 add, update scoreboard straight away
+		return;
+	}
+
 	ent->client->showscores = NO_SCOREBOARD;
 	ent->client->showhelp = false;
 	ent->client->showinventory = false;
+	ent->vote = 0;
+	DeathmatchScoreboard(ent); //hypov8 add, update scoreboard straight away
 }
 
 int PlayerSort (void const *a, void const *b)
@@ -4092,24 +4558,42 @@ void Cmd_CommandList_f (edict_t *ent)
 	}
 	cprintf(ent, PRINT_HIGH,"\nCurrent Console Commands.\n");
 	cprintf(ent, PRINT_HIGH,"=========================\n");
-	if (admincode[0]) cprintf(ent, PRINT_HIGH,"admin, ");
-	if (!disable_admin_voting) cprintf(ent, PRINT_HIGH,"elect, ");
-	cprintf(ent, PRINT_HIGH,"resign, commands, settings, toggle_shadows\n");
-	if (teamplay->value) {
-		cprintf(ent, PRINT_HIGH,"matchsetup, matchscore, matchstart, matchend\n");
-		cprintf(ent, PRINT_HIGH,"publicsetup, resetserver, changemap, maplist\n");
-	} else
-		cprintf(ent, PRINT_HIGH, "resetserver, changemap, maplist, mute\n");
-	cprintf(ent, PRINT_HIGH,"settimelimit, setfraglimit, setcashlimit, setidletime\n");
-	cprintf(ent, PRINT_HIGH,"team1name, team2name, toggle_asc, curselist, toggle_spec\n");
-	if (enable_password) cprintf(ent, PRINT_HIGH,"setpassword removepassword\n");
-	if (!fixed_gametype) {
-		cprintf(ent, PRINT_HIGH,"setdmflags, setdm_realmode, setteamplay\n");
-		cprintf(ent, PRINT_HIGH,"   The teamplay settings are:\n");
-		cprintf(ent, PRINT_HIGH,"       0 : Free for all DM\n");
-		cprintf(ent, PRINT_HIGH,"       1 : Bagman\n");
-		cprintf(ent, PRINT_HIGH,"       4 : Team DM\n");
+	if (admincode[0]) cprintf(ent, PRINT_HIGH,"= admin\n");
+
+	if (!disable_admin_voting) cprintf(ent, PRINT_HIGH,"= elect\n");
+
+	cprintf(ent, PRINT_HIGH,"= menu\n= commands\n= settings\n= curselist\n= maplist\n= votemap\n= players\n");
+	cprintf(ent, PRINT_HIGH, "= VoteBotSkill   0 to 4\n= VoteBotRemove  BotName\n= VoteBotAdd     1=Dragons\n");
+	if (ent->client->pers.admin == ELECTED) //hypov8 add
+	{
+		cprintf(ent, PRINT_HIGH,"= resign\n= toggle_shadows\n= mute\n");
+
+		if (teamplay->value)
+		{
+			cprintf(ent, PRINT_HIGH, "= matchsetup\n=  matchscore\n= matchstart\n= matchend\n= endmap\n");
+			cprintf(ent, PRINT_HIGH, "= resetserver\n= changemap\n"); //publicsetup,
+		}
+		else
+			cprintf(ent, PRINT_HIGH, "= resetserver\n= changemap\n= endmap\n");
+
+		cprintf(ent, PRINT_HIGH, "= settimelimit\n= setfraglimit\n= setcashlimit\n= setidletime\n");
+		cprintf(ent, PRINT_HIGH, "= team1name\n= team2name\n= toggle_asc\n= toggle_spec\n");
+		if (enable_password) cprintf(ent, PRINT_HIGH, "= setpassword removepassword\n");
+		if (!fixed_gametype)
+		{
+			cprintf(ent, PRINT_HIGH, "= setdmflags, setdm_realmode\n");
+			//cprintf(ent, PRINT_HIGH, "= \n");
+			cprintf(ent, PRINT_HIGH, "= setteamplay   0=DM  1=BM  4=TeamDM\n");
+			//cprintf(ent, PRINT_HIGH, "  The teamplay settings are:\n");
+			//cprintf(ent, PRINT_HIGH, "  0 : Free for all DM\n");
+			//cprintf(ent, PRINT_HIGH, "  1 : Bagman\n");
+			//cprintf(ent, PRINT_HIGH, "  4 : Team DM\n");
+		}
 	}
+	else 
+		cprintf(ent, PRINT_HIGH, "=\n");
+
+	cprintf(ent, PRINT_HIGH, "=========================\n");
 }
 
 //===================================================================================
@@ -4120,26 +4604,28 @@ void Cmd_Yes_f (edict_t *ent)
 {
 	edict_t		*dude;
 	int			i,nop,novy;
+	char mapNameStr[32];
 
 	if ((level.voteset != NO_VOTES) && (ent->vote == HASNT_VOTED))
 	{
 		ent->vote = YES;
 		nop=0;
 		novy=0;
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
+		for_each_player_not_bot(dude, i)
+		{
 			if ((dude->vote == YES) || (dude->vote == CALLED_VOTE))
 				novy ++;
 			nop++;
 		}
+
 		safe_bprintf (PRINT_HIGH,"\n%d out of %d, have voted YES.\n\n",novy,nop);
 		if ((novy *2) > nop)
 		{
 			switch (level.voteset) // Papa - if you wanted to add different types of votes, you could do it here
 			{
 				case VOTE_ON_ADMIN :
-					for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-					{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
+					for_each_player_not_bot(dude, i)
+					{
 						if (dude->vote == CALLED_VOTE)
 						{
 							dude->client->pers.admin = ELECTED;
@@ -4148,9 +4634,60 @@ void Cmd_Yes_f (edict_t *ent)
 						}
 					}
 					break;
+
+				case VOTE_ON_MAP:
+					{
+						Com_sprintf(mapNameStr, sizeof(mapNameStr), "map \"%s\"\n", changeMapName);
+						if (dude)
+							safe_bprintf(PRINT_HIGH, "Map change accepted.\n", dude->client->pers.netname);
+						gi.AddCommandString(mapNameStr);
+					}
+					break;
+					
+// ACEBOT_ADD			
+				case	VOTE_ADDBOT:
+					{
+						if (dude)
+							safe_bprintf(PRINT_HIGH, "Add Bot accepted.\n", dude->client->pers.netname);
+
+						if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+						{
+							if (teamplay->value)
+								ACESP_SpawnRandomBot(voteAddBot, "\0", "\0", NULL);
+							else 		
+								ACESP_SpawnRandomBot("\0", "\0", "\0", NULL);
+						}
+
+					}
+					break;
+				case	VOTE_REMOVEBOT:
+					{
+						if (dude)
+							safe_bprintf(PRINT_HIGH, "Remove Bot accepted.\n", dude->client->pers.netname);
+
+						if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+						{
+							ACESP_RemoveBot(voteRemoveBot);
+						}
+					}
+					break;
+
+				case VOTE_BOTSKILL:
+				{
+					if (dude)
+						safe_bprintf(PRINT_HIGH, "Skill settings change accepted.\n", dude->client->pers.netname);
+
+					if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+					{
+						sv_botskill->value = voteBotSkill;
+					}
+				}
+				break;
+// ACEBOT_END
+
 			}
-			for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-			{ dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
+			for_each_player_not_bot(dude, i)
+			{
 				if (dude->vote == CALLED_VOTE)
 					dude->vote = HASNT_VOTED;
 			}
@@ -4172,12 +4709,13 @@ void Cmd_No_f (edict_t *ent)
 		ent->vote = NO;
 		nop=0;
 		novn=0;
-		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-		{ dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
+		for_each_player_not_bot(dude, i)
+		{
 			if (dude->vote == NO)
 				novn ++;
 			nop++;
 		}
+
 		if ((novn *2) >= nop)
 		{
 			switch (level.voteset) // Papa - if you wanted to add different types of votes, you could do it here
@@ -4185,9 +4723,27 @@ void Cmd_No_f (edict_t *ent)
 				case VOTE_ON_ADMIN:
 					safe_bprintf(PRINT_HIGH,"The request for admin has been voted down!\n");
 					break;
+
+				case VOTE_ON_MAP:
+					safe_bprintf(PRINT_HIGH,"The request for votemap has been voted down!\n");
+					break;
+
+// ACEBOT_ADD
+				case	VOTE_ADDBOT:
+					safe_bprintf(PRINT_HIGH, "The request for votaddbot has been voted down!\n");
+					break;
+				case	VOTE_REMOVEBOT:
+					safe_bprintf(PRINT_HIGH, "The request for voteremovebot has been voted down!\n");
+					break;
+				case	VOTE_BOTSKILL:
+					safe_bprintf(PRINT_HIGH, "The request for votebotskill has been voted down!\n");
+					break;
+// ACEBOT_END
+
+
 			}
-			for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-			{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
+			for_each_player_not_bot(dude, i)
+			{
 				if (dude->vote == CALLED_VOTE)
 					dude->vote = HASNT_VOTED;
 			}
@@ -4210,42 +4766,47 @@ void Cmd_Vote_f (edict_t *ent, char *vote)
 		cprintf(ent,PRINT_HIGH,"Vote YES or NO.  F00l.\n");
 }
 
+#ifndef KICKPLAYER
+void Cmd_Kick_f(edict_t *ent, char *vote)
+{
+	if (Q_stricmp(vote, "yes") == 0)
+		Cmd_Yes_f(ent);
+	else if (Q_stricmp(vote, "no") == 0)
+		Cmd_No_f(ent);
+	else
+		cprintf(ent, PRINT_HIGH, "Vote YES or NO.  F00l.\n");
+}
+#endif
 
 void Cmd_Elect_f (edict_t *ent)
 {
 	edict_t		*dude;
 	int			count=0;
-	int			i,j,found;
-	edict_t		*player;
+	int			i;
 
 
-	if (disable_admin_voting) {
+	if (disable_admin_voting) 
+	{
 		cprintf(ent,PRINT_HIGH,"Electable Admins has been disabled on this server.\n");
 		return;
 	}
-		
-	j = atoi (gi.argv(1));
-	found = FALSE;
 
-	for (i=0 ; i<maxclients->value ; i++)
-	{
-		player = g_edicts + 1 + i;
-		if (!player->inuse)
-			continue;
-		if (player->client->pers.admin > NOT_ADMIN)
-			found = TRUE;
-	}
 
-	if (found)
+	dude = GetAdmin();
+	if (dude)
 	{
-		cprintf(ent,PRINT_HIGH,"Someone already has admin\n");
+		if (dude == ent)
+			cprintf(ent, PRINT_HIGH, "You already have admin\n");
+		else
+			cprintf(ent, PRINT_HIGH, "%s already has admin\n", dude->client->pers.netname);
 		return;
 	}
 
+
 	if (level.voteset == NO_VOTES)  
 	{
-		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-		{	dude = &g_edicts[i];  if (!for_each_player(dude)) continue;
+		for_each_player_not_bot(dude, i)
+		{
 			dude->vote = 0;
 			count++;
 		}
@@ -4253,13 +4814,18 @@ void Cmd_Elect_f (edict_t *ent)
 		{
 			ent->client->pers.admin = ELECTED;
 			safe_bprintf (PRINT_HIGH,"%s has been elected Admin.\n",ent->client->pers.netname);
+		
 			Cmd_CommandList_f(ent);
 			return;
-		}
-		safe_bprintf(PRINT_HIGH,"%s has requested admin privilages.\n\nPLEASE VOTE\n\n",ent->client->pers.netname);
+		}						//¡¢£¤¥¦§¨©ª«¬­­
+		safe_bprintf(PRINT_HIGH,"¡%s has requested admin privilages.\n\nPLEASE VOTE\n\n",ent->client->pers.netname);
 		ent->vote = CALLED_VOTE;
 		level.voteframe = level.framenum;
 		level.voteset= VOTE_ON_ADMIN;
+
+		gi.WriteByte(svc_stufftext);
+		gi.WriteString("play misc/talk.wav");
+		gi.multicast(vec3_origin, MULTICAST_ALL);
 	}
 	else if (level.voteset != NO_VOTES)
 		cprintf(ent,PRINT_HIGH,"Someone else has requested admin.\n");
@@ -4301,7 +4867,6 @@ qboolean ValidMap (char *mapname)
 
 void Cmd_ChangeMap_f (edict_t *ent)
 {
-
 	char		*s;
 	char	command [256];
 
@@ -4338,6 +4903,358 @@ void Cmd_MatchSetup_f (edict_t *ent)
 		cprintf(ent,PRINT_HIGH,"You do not have admin.\n");
 
 }
+#include<sys/stat.h>
+
+void Cmd_VoteMap_f(edict_t *ent)
+{
+	int i,f, count;
+	edict_t *dude;
+	char		*s;
+	char	command[256];
+	struct stat st;
+
+
+	char mapInMod[60], mapInMain[60];
+	cvar_t	*game_dir;
+
+
+	s = gi.args();
+	kp_strlwr(s);
+
+	//hypo mod folder
+	game_dir = gi.cvar("game", "", 0);
+	sprintf(mapInMod, "%s\\maps\\%s.bsp", game_dir->string, s);
+
+	//hypov8 main folder
+	sprintf(mapInMain, "%s\\maps\\%s.bsp", "main", s);
+
+
+	if (!ValidMap(s)) // Always make sure the map is on the server before switching
+	{
+		f = stat(mapInMod, &st);
+		if (f == -1)
+		{
+			f = stat(mapInMain, &st);
+			if (f == -1)
+			{
+				cprintf(ent, PRINT_HIGH, "%s is not a valid map\n", s);
+				return;
+			}
+			else
+				cprintf(ent, PRINT_HIGH, "%s exists in 'main' dir but not in map cycle file\n", s);
+
+		}
+		else
+			cprintf(ent, PRINT_HIGH, "%s exists in %s dir but not in map cycle file\n", s, game_dir);
+	}
+
+	if (level.voteset == NO_VOTES)
+	{
+		count = 0;
+		for_each_player_not_bot(dude, i)
+		{
+			dude->vote = 0;
+			count++;
+		}
+		if (count == 1)
+		{
+			//safe_bprintf(PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
+			cprintf(ent, PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
+
+			Com_sprintf(command, sizeof(command), "map \"%s\"\n", s);
+			gi.AddCommandString(command);
+
+			return;
+		}						//¡¢£¤¥¦§¨©ª«¬­­
+		safe_bprintf(PRINT_HIGH, "¡%s has requested map change to %s.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, s);
+		ent->vote = CALLED_VOTE;
+		level.voteframe = level.framenum;
+		level.voteset = VOTE_ON_MAP;
+
+		strcpy(changeMapName, s);
+			
+		gi.WriteByte(svc_stufftext);
+		gi.WriteString("play misc/talk.wav");
+		gi.multicast(vec3_origin, MULTICAST_ALL);
+	}
+	else if (level.voteset != NO_VOTES)
+		cprintf(ent, PRINT_HIGH, "Vote is allready in progress.\n");
+
+}
+
+// ACEBOT_ADD
+static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse)
+{
+	int i, count;
+	edict_t *dude;
+	char	*s = '\0';
+	//char	command[256];
+	//struct stat st;
+
+
+	//char mapInMod[60], mapInMain[60];
+	//cvar_t	*game_dir;
+	char *team ='\0';
+
+
+	if (!sv_bot_allow_add->value)
+	{
+		cprintf(ent, PRINT_HIGH, "Clients NOT allowed to add bots\n");
+		return;
+	}
+
+	if (num_bots >= (int)sv_bot_max->value)
+	{
+		cprintf(ent, PRINT_HIGH, "Maximum Bots Reached\n");
+		return;
+	}
+
+
+	if (teamplay->value)
+	{
+		if (teamUse)
+		{
+			if (teamUse == 1){
+				team = "d";
+				s = "d";
+			}
+			else if (teamUse == 2){
+				team = "n";
+				s = "n";
+			}
+			else team = '\0';
+		}
+		else
+		{
+			s = gi.args();
+			if (s[0])
+				team = s;
+		}
+	}
+
+	if (level.voteset == NO_VOTES)
+	{
+		count = 0;
+		for_each_player_not_bot(dude, i)
+		{
+			dude->vote = 0;
+			count++;
+		}
+
+		if (count == 1)
+		{
+			//safe_bprintf(PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
+			cprintf(ent, PRINT_HIGH, "%s alowed to add bot.\n", ent->client->pers.netname);
+			//ACESP_SpawnBot(team, "\0", "\0", NULL);
+			ACESP_SpawnRandomBot(team, "\0", "\0", NULL);
+			return;
+		}						//¡¢£¤¥¦§¨©ª«¬­­
+		safe_bprintf(PRINT_HIGH, "¡%s has requested to add a bot.\n\nPLEASE VOTE\n\n", ent->client->pers.netname);
+		ent->vote = CALLED_VOTE;
+		level.voteframe = level.framenum;
+		level.voteset = VOTE_ADDBOT;
+
+		if (teamplay->value)
+			strcpy(voteAddBot, s);
+
+		gi.WriteByte(svc_stufftext);
+		gi.WriteString("play misc/talk.wav");
+		gi.multicast(vec3_origin, MULTICAST_ALL);
+	}
+	else if (level.voteset != NO_VOTES)
+		cprintf(ent, PRINT_HIGH, "Vote is allready in progress.\n");
+
+}
+
+
+//hypo vote remove bot
+void Cmd_VoteRemoveBot_f(edict_t *ent, qboolean isMenu, char botnames[32]) //VOTE_REMOVEBOT;
+
+{
+	int i, count;
+	edict_t *dude;
+	char		*s;
+	char *name = '\0';
+
+	if (!sv_bot_allow_add->value)
+		return;
+
+	if (!isMenu)
+	{
+		s = gi.args();
+		if (s[0])
+			name = s;
+		else if (s[0] == '\0')
+		{
+			cprintf(ent, PRINT_HIGH, "INVALID BOT NAME.\n", ent->client->pers.netname);
+			return;
+		}
+	}
+	else
+	{
+		s = botnames;
+		name = botnames;
+
+		if (botnames[0]== '\0')
+		{
+			cprintf(ent, PRINT_HIGH, "INVALID BOT NAME.\n", ent->client->pers.netname);
+			return;
+		}
+	}
+
+
+	if (level.voteset == NO_VOTES)
+	{
+		count = 0;
+		for_each_player_inc_bot(dude, i)
+		{
+			if (!dude->acebot.is_bot) 
+				continue;
+			if (_strcmpi(dude->client->pers.netname, s) == 0)
+				count++;
+		}
+
+		if (count == 0)
+		{
+			cprintf(ent, PRINT_HIGH, "INVALID BOT NAME.\n", ent->client->pers.netname);
+			return;
+		}
+	}
+
+
+
+	if (level.voteset == NO_VOTES)
+	{
+		count = 0;
+		for_each_player_not_bot(dude, i)
+		{
+			dude->vote = 0;
+			count++;
+		}
+
+		if (count == 1)
+		{
+			//safe_bprintf(PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
+			cprintf(ent, PRINT_HIGH, "%s alowed to remove bot.\n", ent->client->pers.netname);
+			ACESP_RemoveBot(s);
+			return;
+		}						//¡¢£¤¥¦§¨©ª«¬­­
+		safe_bprintf(PRINT_HIGH, "¡%s has requested to remove bot %s.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, name);
+		ent->vote = CALLED_VOTE;
+		level.voteframe = level.framenum;
+		level.voteset = VOTE_REMOVEBOT;
+
+		strcpy(voteRemoveBot, s);
+
+		gi.WriteByte(svc_stufftext);
+		gi.WriteString("play misc/talk.wav");
+		gi.multicast(vec3_origin, MULTICAST_ALL);
+	}
+	else if (level.voteset != NO_VOTES)
+		cprintf(ent, PRINT_HIGH, "Vote is allready in progress.\n");
+
+}
+
+
+//hypo vote skill
+void Cmd_VoteSkill_f(edict_t *ent, qboolean skill) //VOTE_BOTSKILL;
+
+{
+	int i, count;
+	edict_t *dude;
+	char		*s;
+	float string;
+
+	if (!sv_bot_allow_skill->value)
+		return;
+
+	if (!skill)
+	{
+		s = gi.args();
+		string = (float)atof(s);
+		//sainity checks
+		if (s[0] == '\0' || string <0.0f || string >4.0f 
+			|| (s[0] != '0' &&  s[0] != '1' &&s[0] != '2' &&s[0] != '3' && s[0] != '4'))
+		{
+			cprintf(ent, PRINT_HIGH, "INVALID BOT SKILL. VALUE= 0.0 to 4.0.\n", ent->client->pers.netname);
+			return;
+		}
+	}
+	else
+		string = VoteBotSkill;
+
+
+
+	if (level.voteset == NO_VOTES)
+	{
+		count = 0;
+		for_each_player_not_bot(dude, i)
+		{
+			dude->vote = 0;
+			count++;
+		}
+
+		if (count == 1)
+		{
+			cprintf(ent, PRINT_HIGH, "%s alowed to set bot skill.\n", ent->client->pers.netname);
+			sv_botskill->value = string;
+			return;
+		}						//¡¢£¤¥¦§¨©ª«¬­­
+		safe_bprintf(PRINT_HIGH, "¡%s has requested to change bot skill to %1.1f.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, string);
+		ent->vote = CALLED_VOTE;
+		level.voteframe = level.framenum;
+		level.voteset = VOTE_BOTSKILL;
+
+		voteBotSkill = string;
+
+
+		gi.WriteByte(svc_stufftext);
+		gi.WriteString("play misc/talk.wav");
+		gi.multicast(vec3_origin, MULTICAST_ALL);
+	}
+	else if (level.voteset != NO_VOTES)
+		cprintf(ent, PRINT_HIGH, "Vote is allready in progress.\n");
+
+}
+
+
+
+void Cmd_Menu_f(edict_t *ent)
+{
+
+	ent->client->showinventory = false;
+	ent->client->showhelp = false;
+
+	if (ent->client->showscores == SCORE_BOT_VOTE 
+		|| ent->client->showscores == SCORE_BOT_ADD 
+		|| ent->client->showscores ==  SCORE_BOT_REMOVE
+		||ent->client->showscores ==  SCORE_BOT_SKILL)
+		ent->client->showscores = NO_SCOREBOARD;
+	else
+		ent->client->showscores = SCORE_BOT_VOTE;
+
+	DeathmatchScoreboard(ent);
+}
+// ACEBOT_END
+
+
+void Cmd_EndMap_f(edict_t *ent)
+{
+	if (ent->client->pers.admin > NOT_ADMIN)
+	{
+		if (level.modeset != ENDMATCHVOTING)
+		{
+			safe_bprintf(PRINT_HIGH, "Admin ended map.\n");
+
+			if (!allow_map_voting)
+				EndDMLevel();
+			else
+				SetupMapVote();
+		}
+	}
+	else
+		cprintf(ent, PRINT_HIGH, "You do not have admin.\n");
+}
 
 /*
 ================
@@ -4373,23 +5290,6 @@ void Cmd_MatchEnd_f (edict_t *ent)
 
 }
 
-/*void Cmd_PauseMatch_f(edict_t *ent)
-{
-    edict_t		*dude;
-    int		    i;
-    
-    if (ent->client->pers.admin > ELECTED)
-    {
-        for_each_player(dude,i)
-        {
-            dude->client->ps.pmove.pm_type = PM_FREEZE;
-            dude->movetype = MOVETYPE_NONE;
-            cprintf(dude,PRINT_HIGH,"You are phrozen.\n");
-        }
-    }
-    else
-		cprintf(ent,PRINT_HIGH,"You do not have admin password.\n");
-}*/
 
 void Cmd_MatchScore_f (edict_t *ent)
 {
@@ -4687,7 +5587,8 @@ void Cmd_ToggleShadows_f(edict_t *ent)
 void Cmd_SetTeamName_f (edict_t *ent, int team, char *name) 
 { 
 	if (!name || !*name) return; 
-	if (ent->client->pers.admin > NOT_ADMIN ) { 
+	if (ent->client->pers.admin > NOT_ADMIN ) 
+	{ 
 		if (strlen(name)<16 && name[0]!=' ') 
 		{
 			if(memalloced[team])
@@ -4766,6 +5667,7 @@ void Cmd_Resign_f (edict_t *ent)
 		cprintf(ent,PRINT_HIGH,"You are no longer admin.\n");
 
 	}
+	cprintf(ent, PRINT_HIGH, "You are not admin\n");
 }
 
 
@@ -5150,7 +6052,8 @@ void ClientCommand (edict_t *ent)
 		cmd=gi.argv(1);
 
 
-		if (cmd3 && atof(cmd3) == 1.0f) ent->client->pers.polyblender = 0;
+		if (cmd3 && atof(cmd3) == 1.0f) 
+			ent->client->pers.polyblender = 0;
 
 		if (!cmd || atof(cmd)!=0.0f || !cmd2 || atof(cmd2)<16.0f || !cmd3 || atof(cmd3)!=1.0f) {
 #ifdef DOUBLECHECK
@@ -5158,13 +6061,13 @@ void ClientCommand (edict_t *ent)
 #endif
 				if(!cmd3 || atof(cmd3)==0.0f)
 				{
-					if (kick_flamehack->value || (ent->client->pers.spectator == SPECTATING && no_spec->value
-						&& ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING) || (level.modeset == DM_PRE_MATCH))))
+					if (kick_flamehack->value || (ent->client->pers.spectator == SPECTATING && no_spec->value)
+						&& (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
 					{
 						KICKENT(ent, "%s is being kicked for having a flame hack!\n");
 					}
 				}
-				else if (atof(cmd3) == 2.0f)
+				else if (atof(cmd3) == 2.0f) //gl_polyblend 2
 				{
 					ent->client->pers.polyblender = 1;
 				}
@@ -5480,6 +6383,10 @@ void ClientCommand (edict_t *ent)
 		Cmd_No_f (ent);
 	else if (Q_stricmp (cmd, "vote") == 0)
 		Cmd_Vote_f (ent, gi.argv(1));
+#ifndef KICKPLAYER
+	else if (Q_stricmp(cmd, "kick") == 0)
+		Cmd_Kick_f(ent, gi.argv(1));
+#endif
 	else if (Q_stricmp (cmd, "elect") == 0)
 		Cmd_Elect_f (ent);
 
@@ -5553,16 +6460,37 @@ void ClientCommand (edict_t *ent)
 
 	//end -taunts tical
 
-	//else if (teamplay->value)
-	else if  ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING)) //hypo was only in teamplay?
+	//hypov8 votemap
+	else if (Q_stricmp(cmd, "votemap") == 0)	//allow map voting early map vote
+		Cmd_VoteMap_f(ent);
+
+	else if (Q_stricmp(cmd, "endmap") == 0)		//call early map end, goto level select?
+		Cmd_EndMap_f(ent);
+
+// ACEBOT_ADD
+	else if (Q_stricmp(cmd, "votebotadd") == 0)		//hypo add bot
+		Cmd_VoteAddBot_f(ent, 0);
+	else if (Q_stricmp(cmd, "votebotremove") == 0)		//hypo add bot
+		Cmd_VoteRemoveBot_f(ent,false, NULL);
+	else if (Q_stricmp(cmd, "votebotskill") == 0)		//hypo add bot
+		Cmd_VoteSkill_f(ent, 0);
+	//else if (Q_stricmp(cmd, "votebotcount") == 0)		//hypo todo:
+	//	Cmd_VoteBotCount_f(ent);  
+	else if (Q_stricmp(cmd, "menu") == 0)		//hypo add bot
+		Cmd_Menu_f(ent);
+
+
+// ACEBOT_END
+
+	else if (teamplay->value)
 	{
-		if (Q_stricmp (cmd, "matchsetup") == 0)
+		if (Q_stricmp (cmd, "matchsetup") == 0)		//wait for even team then start a match?//crash bots
 			Cmd_MatchSetup_f (ent);
-		else if (Q_stricmp (cmd, "publicsetup") == 0)
-			Cmd_PublicSetup_f (ent);
-		else if (Q_stricmp (cmd, "matchstart") == 0)
+		//else if (Q_stricmp (cmd, "publicsetup") == 0) //working reloads dm mode and bots //hypo what???
+			//Cmd_PublicSetup_f (ent);
+		else if (Q_stricmp (cmd, "matchstart") == 0)	//working. reloads bots
 			Cmd_MatchStart_f (ent);
-		else if (Q_stricmp (cmd, "matchend") == 0)
+		else if (Q_stricmp (cmd, "matchend") == 0) //done. toggle between scoreboard or endgame
 			Cmd_MatchEnd_f (ent);
 		else if (Q_stricmp (cmd, "matchscore") == 0)
 			Cmd_MatchScore_f (ent);

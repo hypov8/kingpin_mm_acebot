@@ -134,7 +134,7 @@ int proccess_line(char*	buffer)
 int proccess_ini_file()
 {
 	FILE*	infile;		// Config file to be opened
-	int	status = OK;
+//	int	status = OK;
 	int	mode = -1;
 	char	buffer[MAX_STRING_LENGTH];
 	char	map[32], dummy[32];
@@ -297,6 +297,7 @@ int proccess_ini_file()
         case UNLIMITED_CURSE_KEYWORD:
 			unlimited_curse = true;
 			break;
+			/* hypo disabled with bots. alow longer grace time because bots dont care :)*/
         case DISABLE_ASC_KEYWORD:
 		//	enable_asc = true;
             gi.cvar_set("anti_spawncamp", "1");
@@ -429,41 +430,49 @@ int read_map_file()
 	else
 		strcpy(dir, game_dir->string);
 
-	if (custom_map_filename[0]) {
-	Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, custom_map_filename);
-	infile = fopen(filename, "r");
-	if (infile == NULL)	return FILE_OPEN_ERROR;
-
-	num_custom_maps = 0;
-
-	// Read first line of the file
-	fgetline(infile, buffer);
-	while (!feof(infile))	// while there's still stuff
+	if (custom_map_filename[0]) 
 	{
-		if (strlen(buffer) == 0 || buffer[0] == '\n')
-		{
-			fgetline(infile, buffer);
-			continue;
-		}
-	// Check to see if this is a comment line
-		if (buffer[0] == '/' && buffer[1] == '/')
-		{
-			fgetline(infile, buffer);
-			continue;
-		}
+		Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, custom_map_filename);
+		infile = fopen(filename, "r");
+		if (infile == NULL)	return FILE_OPEN_ERROR;
 
-		sscanf(buffer, "%s %s", rank, map);	
-		//hypov8 renames list to lowercase.
-		//when called at map vote. causing ram to sky rocket untill max_gltextures reached
-		strlwr(map);
+		num_custom_maps = 0;
 
-		strncpy(custom_list[num_custom_maps].custom_map, map, 32);
-		custom_list[num_custom_maps].rank = atoi(rank);
-		total_rank += custom_list[num_custom_maps].rank;
-		num_custom_maps++;
+		// Read first line of the file
 		fgetline(infile, buffer);
+		while (!feof(infile))	// while there's still stuff
+			{
+				if (strlen(buffer) == 0 || buffer[0] == '\n')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+			// Check to see if this is a comment line
+				if (buffer[0] == '/' && buffer[1] == '/')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+
+				sscanf(buffer, "%s %s", rank, map);	
+				
+				if (rank[0] == '0' || rank[0]== '\0') //hypov8 fix map rank set to 0 or null
+					rank[0] = '1';
+
+				//hypov8 renames list to lowercase.
+				//when called at map vote. causing ram to sky rocket untill max_gltextures reached
+				// strlwr(map); hypov8 now placed in client view
+
+				strncpy(custom_list[num_custom_maps].custom_map, map, 32);
+				custom_list[num_custom_maps].rank = atoi(rank);
+				total_rank += custom_list[num_custom_maps].rank;
+				num_custom_maps++;
+				fgetline(infile, buffer);
+			}
 	}
-	}
+	// MH: fix for leak
+	if (infile)
+		fclose(infile);
 
 	return OK;
 }

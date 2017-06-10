@@ -251,6 +251,67 @@ void SVCmd_WriteIP_f (void)
 	fclose (f);
 }
 
+// ACEBOT_ADD
+void SVCmd_BotDebug(void)
+{
+	int		i;
+	edict_t	*doot;
+
+	if (debug_mode == false)
+	{
+		safe_bprintf(PRINT_MEDIUM, "ACE: Debug Mode On\n");
+		debug_mode = true;
+
+		for_each_player_not_bot(doot, i)
+		{
+			//if (doot->acebot.is_bot)
+				//continue;
+			//sv botdebug on
+			//safe_cprintf(doot, PRINT_MEDIUM, "0=MOVE 1=LADDER 2=PLATFORM 3=TELEPORTER 4=ITEM 5=WATER 7=JUMP\n");
+			//=======================================================
+			safe_cprintf(doot, PRINT_MEDIUM, " \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†††††††††††††††††††††ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†===================†ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†  *KEYS REBOUND*   †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ† KEY 5 = WATER     †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ† KEY 6 = LADDER    †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ† KEY 7 = JUMP      †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ† KEY 8 = findnode  †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ† KEY 9 = movenode  †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ† KEY 0 = MOVE      †ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†===================†ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†††††††††††††††††††††ƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, "ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ \n");
+			safe_cprintf(doot, PRINT_MEDIUM, " \n");
+			//=======================================================	
+
+			gi.WriteByte(13);
+			gi.WriteString("bind 0 addnode 0;bind 5 addnode 5;bind 6 addnode 1; bind 7 addnode 7; bind 8 findnode; bind 9 movenode 999");
+			gi.unicast(doot, true);
+		}
+	}
+	else
+	{
+		safe_bprintf(PRINT_MEDIUM, "ACE: Debug Mode Off\n");
+		debug_mode = false;
+	}
+}
+
+void SVCmd_BotAdd(char *cmd2, char *cmd3, char *cmd4)
+
+{
+	/* bots need to be added between game start and end. less issues and for bot saves */
+	if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+	{
+		if (teamplay->value) // name, skin, team 
+			ACESP_SpawnBot(cmd4, cmd2, cmd3, NULL); //sv addbot thugBot "male_thug/009 031 031" dragon
+		else // name, skin			
+			ACESP_SpawnBot("\0", cmd2, cmd3, NULL); //sv addbot thugBot "male_thug/009 031 031"
+	}
+}
+
+// ACEBOT_END
 
 /*
 =================
@@ -261,57 +322,36 @@ The game can issue gi.argc() / gi.argv() commands to get the rest
 of the parameters
 =================
 */
-void	ServerCommand (void)
+void	ServerCommand(void)
 {
-	char	*cmd;
+	char	*cmd, *cmd2, *cmd3, *cmd4;
 
 	cmd = gi.argv(1);
-	if (Q_stricmp (cmd, "test") == 0)
-		Svcmd_Test_f ();
-	else if (Q_stricmp (cmd, "addip") == 0)
-		SVCmd_AddIP_f ();
-	else if (Q_stricmp (cmd, "removeip") == 0)
-		SVCmd_RemoveIP_f ();
-	else if (Q_stricmp (cmd, "listip") == 0)
-		SVCmd_ListIP_f ();
-	else if (Q_stricmp (cmd, "writeip") == 0)
-		SVCmd_WriteIP_f ();
 
+	cmd2 = gi.argv(2);
+	cmd3 = gi.argv(3);
+	cmd4 = gi.argv(4);
 
-// ACEBOT_ADD //hypov8 ctf? bagman?
+	if (Q_stricmp(cmd, "test") == 0)
+		Svcmd_Test_f();
+	else if (Q_stricmp(cmd, "addip") == 0)
+		SVCmd_AddIP_f();
+	else if (Q_stricmp(cmd, "removeip") == 0)
+		SVCmd_RemoveIP_f();
+	else if (Q_stricmp(cmd, "listip") == 0)
+		SVCmd_ListIP_f();
+	else if (Q_stricmp(cmd, "writeip") == 0)
+		SVCmd_WriteIP_f();
 
-	else if (Q_stricmp(cmd, "acedebug") == 0)
-		if (strcmp(gi.argv(2), "on") == 0)
-		{
-			safe_bprintf(PRINT_MEDIUM, "ACE: Debug Mode On\n");
-			debug_mode = true;
-		}
-		else
-		{
-			safe_bprintf(PRINT_MEDIUM, "ACE: Debug Mode Off\n");
-			debug_mode = false;
-		}
-
+// ACEBOT_ADD
+	else if (Q_stricmp(cmd, "acedebug") == 0 || Q_stricmp(cmd, "botdebug") == 0 || Q_stricmp(cmd, "debugbot") == 0)
+		SVCmd_BotDebug();
 	else if (Q_stricmp(cmd, "addbot") == 0)
-	{
-		/* bots need to be added between game start and end. less issues and for bot saves */
-		if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
-		{
-			if ( teamplay->value) // name, skin, team 
-				ACESP_SpawnBot(gi.argv(4), gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031" dragon
-			else // name, skin			
-				ACESP_SpawnBot("\0", gi.argv(2), gi.argv(3), NULL); //sv addbot thugBot "male_thug/009 031 031"
-		}
-	}
-
-	// removebot
-	else if (Q_stricmp(cmd, "removebot") == 0)
-		ACESP_RemoveBot(gi.argv(2));
-
-	// Node saving
-	else if (Q_stricmp(cmd, "savenodes") == 0)
+		SVCmd_BotAdd(cmd2, cmd3, cmd4);
+	else if (Q_stricmp(cmd, "removebot") == 0 || Q_stricmp(cmd, "removebots") == 0)
+			ACESP_RemoveBot(cmd2);
+	else if (Q_stricmp(cmd, "savenodes") == 0 || Q_stricmp(cmd, "savenode") == 0)
 		ACEND_SaveNodes();
-
 // ACEBOT_END
 
 	else if (!Q_stricmp(cmd, "banip"))

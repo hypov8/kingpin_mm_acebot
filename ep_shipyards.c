@@ -495,7 +495,7 @@ qboolean ProcessSYMomo (edict_t *self, edict_t *other)
 				
 		if (other->last_response == resp_yes)
 		{	
-			edict_t	*door = NULL;
+			//edict_t	*door = NULL;
 			int	cost;
 
 			if ( mem->flags	& MEMORY_ASSHOLE)

@@ -109,6 +109,7 @@ void DeleteNode(int p)  /* deletes node p from tree */
 	dad[p] = NIL;
 }
 
+#if 0
 int Encode(char *filename, unsigned char *buffer, int bufsize, int version)
 {
 	int  i,/* c,*/ len, r, s, last_match_length, code_buf_ptr;
@@ -206,8 +207,9 @@ int Encode(char *filename, unsigned char *buffer, int bufsize, int version)
 
 	return codesize;
 }
-
+#endif
 // Be careful with your buffersize, will return an exit of -1 if failure
+#if 0
 int Decode(char *filename, unsigned char *buffer, int bufsize)	/* Just the reverse of Encode(). */
 {
 	int  i, j, k, r/*, c*/;
@@ -228,23 +230,29 @@ int Decode(char *filename, unsigned char *buffer, int bufsize)	/* Just the rever
 	
 	for (i = 0; i < N - F; i++) text_buf[i] = ' ';
 	r = N - F;  flags = 0;
-	for ( ; ; ) {
-		if (((flags >>= 1) & 256) == 0) {
+	for ( ; ; ) 
+	{
+		if (((flags >>= 1) & 256) == 0) 
+		{
 			if ((c = getc(pIn)) == EOF) break;
 			flags = c | 0xff00;		/* uses higher byte cleverly */
 		}							/* to count eight */
-		if (flags & 1) {
+		if (flags & 1) 
+		{
 			if ((c = getc(pIn)) == EOF) break;
 			buffer[bufptr++] = c;	
 			if(bufptr > bufsize)
 				return -1; // check for overflow
 			text_buf[r++] = c;  
 			r &= (N - 1);
-		} else {
+		} 
+		else 
+		{
 			if ((i = getc(pIn)) == EOF) break;
 			if ((j = getc(pIn)) == EOF) break;
 			i |= ((j & 0xf0) << 4);  j = (j & 0x0f) + THRESHOLD;
-			for (k = 0; k <= j; k++) {
+			for (k = 0; k <= j; k++) 
+			{
 				c = text_buf[(i + k) & (N - 1)];
 				buffer[bufptr++] = c;
 				if(bufptr > bufsize)
@@ -258,6 +266,7 @@ int Decode(char *filename, unsigned char *buffer, int bufsize)	/* Just the rever
 	fclose(pIn);
 	return bufptr; // return uncompressed size
 }
+#endif
 /*
 // tester
 int main(int argc, char *argv[])

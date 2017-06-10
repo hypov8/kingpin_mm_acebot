@@ -98,11 +98,35 @@ void AutoLoadWeapon( gclient_t *client, gitem_t *weapon, gitem_t *ammo )
 	}
 }
 
+qboolean HasBigWeps(int inventory[MAX_ITEMS])
+{
+	int i;
+	int weps[6];
+
+	//weps[0] = ITEM_INDEX(FindItem("Pistol"));
+	//weps[1] = ITEM_INDEX(FindItem("Pipe"));
+	weps[0] = ITEM_INDEX(FindItem("Shotgun"));
+	weps[1] = ITEM_INDEX(FindItem("Tommygun"));	
+	weps[2] = ITEM_INDEX(FindItem("Heavy machinegun"));
+	weps[3] = ITEM_INDEX(FindItem("Grenade Launcher"));	
+	weps[4] = ITEM_INDEX(FindItem("Bazooka"));
+	weps[5] = ITEM_INDEX(FindItem("FlameThrower"));
+
+	for (i = 0; i < 6; i++)
+	{
+		if ( inventory[weps[i]])
+			return true;
+	}
+	return false;
+
+}
+
 qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 {
 	int			index;
 	gitem_t		*ammo;
 	int			auto_reload=false;
+	qboolean	hasBigWeps=false;
 
 	index = ITEM_INDEX(ent->item);
 
@@ -116,12 +140,19 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 	// Ridah, start with gun loaded
 	if (!(other->client->pers.inventory[index]))
 		auto_reload = true;
+	
+	//hypov8 stop us changing guns if we selected pistol
+	if (sv_keeppistol->value)
+	{
+		if (other->hasSelectedPistol == true && HasBigWeps(other->client->pers.inventory))
+			hasBigWeps = true;
+	}
 
 	//other->client->pers.inventory[index]++;
 	other->client->pers.inventory[index] = 1;
 
     //if they pick weapon up make them mortal
-    other->client->invincible_framenum = 0;
+    /*other->client->invincible_framenum = 0;*/  //hypov8 ToDo: disable this. allow players grace
 
 	if (ent->item->ammo && !(ent->spawnflags & DROPPED_ITEM) )
 	{
@@ -176,7 +207,11 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 	
 	if (deathmatch->value)
 	{
-		if (other->client->pers.weapon != ent->item && auto_reload && (other->client->pers.weapon == FindItem ("Pistol") || other->client->pers.weapon == FindItem ("Pipe") ))
+		if (other->client->pers.weapon != ent->item 
+			&& auto_reload 
+			&& strcmp(ent->item->classname, "weapon_crowbar") != 0 //hypov8 stop player auto switch to crowbar
+			&& (other->client->pers.weapon == FindItem ("Pistol") || other->client->pers.weapon == FindItem ("Pipe"))
+			&& !hasBigWeps)
 			other->client->newweapon = ent->item;
 	}
 	else
@@ -833,6 +868,12 @@ void Use_Weapon2 (edict_t *ent, gitem_t *item)
 		}
 	}
 
+	//hypov8 everything ok, if the user selected pistol manualy. store it in client
+	if (strcmp(item->pickup_name, "Pistol") == 0 || strcmp(item->pickup_name, "SPistol") == 0)
+		ent->hasSelectedPistol = true;
+	else
+		ent->hasSelectedPistol = false;
+
 	// change to this weapon when down
 	ent->client->newweapon = item;
 	
@@ -872,13 +913,17 @@ A generic function to handle the basics of weapon thinking
 ================
 */
 #define FRAME_FIRE_FIRST		(FRAME_ACTIVATE_LAST + 1)
-#define FRAME_IDLE_FIRST		(FRAME_FIRE_LAST + 1)
+#define FRAME_IDLE_FIRST		(FRAME_RELOAD_LAST + 1)
 #define FRAME_DEACTIVATE_FIRST	(FRAME_IDLE_LAST + 1)
 
 #define FRAME_OFFSET_FOR_SPISTOL	43
 #define FRAME_OFFSET_FOR_SPISTOL_WITH_SILENCER 70
 
-void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_FIRE_LAST, int FRAME_IDLE_LAST, int FRAME_DEACTIVATE_LAST, int *pause_frames, int *fire_frames, void (*fire)(edict_t *ent))
+
+
+//Weapon_Generic(ent, 3, 29, 40, 46, pause_frames, fire_frames, Tommygun_Fire);
+
+void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_RELOAD_LAST, int FRAME_IDLE_LAST, int FRAME_DEACTIVATE_LAST, int *pause_frames, int *fire_frames, void (*fire)(edict_t *ent))
 {
 	int		n;
 // RAFAEL 01-11-99
@@ -898,7 +943,7 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_FIRE_LAST,
 
 	if (ent->client->weaponstate ==	WEAPON_RELOADING)
 	{
-		if (ent->client->ps.gunframe == FRAME_FIRE_LAST)
+		if (ent->client->ps.gunframe == FRAME_RELOAD_LAST)
 		{
 			ent->client->weaponstate = WEAPON_READY;
 			ent->client->ps.gunframe = FRAME_IDLE_FIRST;
@@ -919,6 +964,12 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_FIRE_LAST,
 		}
 		else
 		*/
+		if ((!coop->value))
+		{
+			ent->client->ps.gunframe += 2; //hypov8 add //FREDZ fast shotgun reload
+			return;
+		}
+		else
 		{
 			ent->client->ps.gunframe++;
 			return;
@@ -2582,7 +2633,7 @@ void Weapon_Shotgun (edict_t *ent)
 		}
 		else
 		{
-			if (ent->client->ps.gunframe == 29)
+			if (ent->client->ps.gunframe == 27) //hypov8 was 29. Weapon_Generic controls faster animation
 			{
 				if (ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
 				{
@@ -2590,7 +2641,20 @@ void Weapon_Shotgun (edict_t *ent)
 					{
 						ent->client->pers.inventory[ent->client->ammo_index]--;
 						ent->client->pers.weapon_clip[ent->client->clip_index]++;
+						/*
+						//hypov8 shotgun reload 3 bullets
+						if (ent->client->pers.inventory[ent->client->ammo_index] && ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
+						{
+							ent->client->pers.inventory[ent->client->ammo_index]--;
+							ent->client->pers.weapon_clip[ent->client->clip_index]++;
+						}
+						if (ent->client->pers.inventory[ent->client->ammo_index] && ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
+						{
+							ent->client->pers.inventory[ent->client->ammo_index]--;
+							ent->client->pers.weapon_clip[ent->client->clip_index]++;
+						}
 
+*/
 						if (ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
 							ent->client->ps.gunframe = 21; 
 						else
@@ -2702,7 +2766,10 @@ void weapon_barmachinegun_fire (edict_t *ent)
 	VectorScale (forward, -3, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -3;
 	VectorSet(offset, 0, 0,  ent->viewheight-1);
-	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	//if (ent->acebot.is_bot)
+	//	P_ProjectSource(ent->client, ent->acebot.oldOrigin, offset, forward, right, start); //hypo use old origin b4 move
+	//else
+		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	fire_bullet (ent, start, forward, damage, kick, 0, 0, MOD_BARMACHINEGUN);
 

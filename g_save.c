@@ -3,6 +3,12 @@
 //#include "stdlog.h"	//	Standard Logging
 //#include "gslog.h"	//	Standard Logging
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
 #define Function(f) {#f, f}
 
 mmove_t mmove_reloc;
@@ -341,16 +347,25 @@ void InitGame (void)
 	sv_gravity = gi.cvar ("sv_gravity", "800", 0);
 
 // NET_ANTILAG	//et-xreal antilag
-	sv_antilag_noexp = gi.cvar("sv_antilag_noexp", "0", CVAR_SERVERINFO);
-	sv_antilag_botdelay = gi.cvar("sv_antilag_botdelay", "0", CVAR_SERVERINFO);
-	sv_antilag = gi.cvar("sv_antilag", "1", CVAR_SERVERINFO);
+	sv_antilag_noexp = gi.cvar("sv_antilag_noexp", "0", 0/*CVAR_SERVERINFO*/);
+	sv_antilag_botdelay = gi.cvar("sv_antilag_botdelay", "0", 0/*CVAR_SERVERINFO*/);
+	sv_antilag = gi.cvar("sv_antilag", "1", 0/*CVAR_SERVERINFO*/);
 // END_LAG
 
-	// ACEBOT_ADD
-	sv_botcfg = gi.cvar("sv_botcfg", "0", 0);
-	sv_botskill = gi.cvar("sv_botskill", "2", CVAR_SERVERINFO);
-	// ACEBOT_END
+// ACEBOT_ADD
+	sv_botcfg			= gi.cvar("sv_botcfg", "1", CVAR_NOSET);
+	sv_botskill			= gi.cvar("sv_botskill", "2", CVAR_SERVERINFO);
+	sv_botpath			= gi.cvar("sv_botpath", "1", 0);
+	sv_botjump			= gi.cvar("sv_botjump", "0", 0);
 
+	sv_bot_allow_add	= gi.cvar("sv_bot_allow_add", "0", 0); //stops players voting 
+	sv_bot_allow_skill	= gi.cvar("sv_bot_allow_skill", "0", 0); //stops players voting 
+
+	sv_bot_max			= gi.cvar("sv_bot_max", "8", 0);
+	sv_bot_max_players	= gi.cvar("sv_bot_max_players", "0", 0);
+// ACEBOT_END
+
+	sv_keeppistol = gi.cvar("sv_keeppistol", "1", 0);
 
 	// noset vars
 	dedicated = gi.cvar ("dedicated", "0", CVAR_NOSET);
@@ -361,8 +376,8 @@ void InitGame (void)
 	gi.cvar ("gamedate", __DATE__ , CVAR_SERVERINFO | CVAR_LATCH);
 
 
-    no_spec = gi.cvar ("no_spec", "0", CVAR_SERVERINFO);
-    no_shadows = gi.cvar ("no_shadows", "0", CVAR_SERVERINFO);
+	no_spec = gi.cvar("no_spec", "0", 0/*CVAR_SERVERINFO*/); //hypov8
+    no_shadows = gi.cvar ("no_shadows", "0", 0/*CVAR_SERVERINFO*/); //hypov8
 
 	maxclients = gi.cvar ("maxclients", "4", CVAR_SERVERINFO | CVAR_LATCH);
 	deathmatch = gi.cvar ("deathmatch", "0", CVAR_LATCH);
@@ -395,7 +410,7 @@ void InitGame (void)
 	gi.cvar("modadmin","", 0);
 
     // snap - team tags
-	gi.cvar(TEAMNAME, "", CVAR_SERVERINFO);
+	gi.cvar(TEAMNAME, "", 0 /*CVAR_SERVERINFO*/); //hypov8
 	gi.cvar_set(TEAMNAME,"");
 
 	gi.cvar(SCORENAME, "", CVAR_SERVERINFO);
@@ -416,9 +431,9 @@ void InitGame (void)
 	flood_persecond = gi.cvar ("flood_persecond", "4", 0);
 	flood_waitdelay = gi.cvar ("flood_waitdelay", "10", 0);
 
-    kick_flamehack = gi.cvar ("kick_flamehack","0",CVAR_SERVERINFO);
-    anti_spawncamp = gi.cvar ("anti_spawncamp","0",CVAR_SERVERINFO);
-    idle_client	= gi.cvar("idle_client", "120", 0);
+    kick_flamehack = gi.cvar ("kick_flamehack","1",0/*CVAR_SERVERINFO*/); //hypov8
+    anti_spawncamp = gi.cvar ("anti_spawncamp","1", 0/*CVAR_SERVERINFO*/); //hypov8
+    idle_client	= gi.cvar("idle_client", "240", 0); //hypo was 120
 
 // Ridah, new cvar's
 	developer = gi.cvar ("developer", "0", 0);
@@ -530,6 +545,42 @@ void InitGame (void)
     lockfoot[i]=0;
 	for (i = 0; i<7; i++) lockmouse[i] = 'a' + (rand() % 26);
 	lockmouse[i] = 0;
+
+	{ // load & initialize GeoIP library
+#ifdef _WIN32
+		HINSTANCE libgeoip = LoadLibrary("GeoIP");
+#else
+		void *libgeoip = dlopen("libGeoIP.so.1", RTLD_LAZY | RTLD_LOCAL);
+#endif
+		if (libgeoip)
+		{
+			void* (*_GeoIP_new)(int flags);
+#ifdef _WIN32
+			*(void**)&_GeoIP_new = GetProcAddress(libgeoip, "GeoIP_new");
+			*(void**)&_GeoIP_delete = GetProcAddress(libgeoip, "GeoIP_delete");
+			*(void**)&_GeoIP_country_name_by_addr = GetProcAddress(libgeoip, "GeoIP_country_name_by_addr");
+#else
+			_GeoIP_new = dlsym(libgeoip, "GeoIP_new");
+			_GeoIP_delete = dlsym(libgeoip, "GeoIP_delete");
+			_GeoIP_country_name_by_addr = dlsym(libgeoip, "GeoIP_country_name_by_addr");
+#endif
+			geoip = _GeoIP_new(0);
+			if (!geoip)
+			{
+#ifdef _WIN32
+				FreeLibrary(libgeoip);
+#else
+				dlclose(libgeoip);
+#endif
+				gi.dprintf("Failed to load GeoIP database\n");
+			}
+			else
+				gi.dprintf("Loaded GeoIP database\n");
+		}
+	}
+
+
+
 }
 
 //=========================================================

@@ -695,7 +695,7 @@ void AddPointToBounds (vec3_t v, vec3_t mins, vec3_t maxs)
 	}
 }
 
-
+//returns 1 if they are the same
 int VectorCompare (vec3_t v1, vec3_t v2)
 {
 	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2])
@@ -1481,7 +1481,7 @@ can mess up the server's parsing
 qboolean Info_Validate (char *s)
 {
 	char	*skin;
-	qboolean validstr = true;
+//	qboolean validstr = true;
 	char	*pskin;
 
 	if (strstr (s, "\""))
@@ -1567,11 +1567,12 @@ void Info_SetValueForKey (char *s, char *key, char *value)
 
 
 
-//hypo antilag
+// NET_ANTILAG	//et-xreal antilag
 
 /*
 ================
 Sys_Milliseconds
+winmm.lib
 ================
 */
 #ifdef WIN32
@@ -1593,7 +1594,7 @@ int Sys_Milliseconds(void)
 	return curtime;
 }
 
-
+// END_LAG
 
 
 

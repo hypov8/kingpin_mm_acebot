@@ -12,6 +12,8 @@ void UpdateChaseCam(edict_t *ent)
 	trace_t trace;
 	int i;
 	vec3_t angles;
+	short		delta_anglesOld[3];
+	short		originOld[3];
 
 	if(ent->client->update_cam==0)
 	{
@@ -23,23 +25,39 @@ void UpdateChaseCam(edict_t *ent)
 
 	// is our chase target gone?
 	if (!ent->client->chase_target->inuse
-		|| ent->client->chase_target->client->pers.spectator == SPECTATING)
+		|| ent->client->chase_target->client->pers.spectator == SPECTATING) //add hypov8
 	{
 		if(ent->client->update_cam > 0)
 		{
-			//	ent->client->ps = ent->client->temp_ps;
+			//hypo copy old player delta
+			delta_anglesOld[0] = ent->client->ps.pmove.delta_angles[0];
+			delta_anglesOld[1] = ent->client->ps.pmove.delta_angles[1];
+			delta_anglesOld[2] = ent->client->ps.pmove.delta_angles[2];
+			memcpy(ent->client->ps.pmove.origin, originOld, sizeof(originOld));
+
 			memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
 
+			//hypo paste old player delta
+			ent->client->ps.pmove.delta_angles[0] = delta_anglesOld[0];
+			ent->client->ps.pmove.delta_angles[1] = delta_anglesOld[1];
+			ent->client->ps.pmove.delta_angles[2] = delta_anglesOld[2];
+			memcpy(originOld, ent->client->ps.pmove.origin, sizeof(ent->client->ps.pmove.origin));
 		}
 		ent->client->chase_target = NULL;
 		ent->client->ps.pmove.pm_flags &= ~PMF_NO_PREDICTION;
+
 	//hypo copy from tourney
-		if (ent->client->flashlight) ent->client->flashlight = false;
+		if (ent->client->flashlight) 
+			ent->client->flashlight = false;
 		HideWeapon(ent);
 		ent->solid = SOLID_NOT;
 		ent->svflags |= SVF_NOCLIENT;
 		ent->client->pers.spectator = SPECTATING;
 		ent->movetype = MOVETYPE_NOCLIP;
+
+		ent->client->newweapon = NULL;
+		ChangeWeapon(ent);
+
 	//end
 		return;
 	}
@@ -206,6 +224,14 @@ void ChaseNext(edict_t *ent)
 
 	ent->client->chase_target = e;
 	ent->client->update_chase = true;
+
+	if (ent->client->showscores == NO_SCOREBOARD)
+	{
+		ent->client->showscores = SCORE_INITAL_SPEC;
+		ent->client->showhelp = false;
+		ent->client->showinventory = false;
+		ent->vote = 0;
+	}
 	
 	DeathmatchScoreboard(ent);
 }
@@ -250,6 +276,14 @@ void ChasePrev(edict_t *ent)
 
 	ent->client->chase_target = e;
 	ent->client->update_chase = true;
+
+	if (ent->client->showscores == NO_SCOREBOARD)
+	{
+		ent->client->showscores = SCORE_INITAL_SPEC;
+		ent->client->showhelp = false;
+		ent->client->showinventory = false;
+		ent->vote = 0;
+	}
 	
 	DeathmatchScoreboard(ent);
 }

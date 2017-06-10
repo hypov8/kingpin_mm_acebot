@@ -38,12 +38,19 @@
 
 
 // Papa 10.6.99 
-#if 0
-#define for_each_player(JOE_BLOGGS,INDEX) 
-for(INDEX=1;INDEX<=maxclients->value;INDEX++)
-	if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse && JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
-#else
-qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
+#if 1
+#define for_each_player_inc_bot(JOE_BLOGGS,INDEX)\
+for(INDEX=1;INDEX<=maxclients->value;INDEX++)\
+	if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse &&\
+	JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
+
+#define for_each_player_not_bot(JOE_BLOGGS,INDEX)\
+for(INDEX=1;INDEX<=maxclients->value;INDEX++)\
+	if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse &&\
+	JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected && !JOE_BLOGGS->acebot.is_bot)
+
+//#else
+//qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #endif //hypo for_each_player
 // Theses are the various mode a server can be in
 
@@ -56,6 +63,12 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define DM_MATCH_RUNNING	6 //game is active and DM
 #define DM_MATCH_SPAWNING	7 //spawn players right b4 dm starts
 #define	ENDMATCHVOTING		8 // load scoreboard
+
+#ifdef HYPODEBUG
+#define PRE_MATCH_TIME 20
+#else
+#define PRE_MATCH_TIME 250 //hypov8 global match count down timmer 250. 5 sec cache and 20 sec prematch
+#endif
 
 // admin types
 
@@ -74,6 +87,12 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define VOTE_ON_MAP			23
 #define	VOTE_ON_ADMIN		24
 
+// ACEBOT_ADD
+#define	VOTE_ADDBOT			25
+#define	VOTE_REMOVEBOT		26
+#define	VOTE_BOTSKILL		27
+// ACEBOT_END
+
 // vote types
 
 #define HASNT_VOTED			0
@@ -90,6 +109,12 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define	SPECTATORS			4
 #define SCORE_REJOIN		5
 #define SCORE_MAP_VOTE		6
+#define SCORE_BOT_VOTE		7
+#define SCORE_BOT_ADD		8
+#define SCORE_BOT_REMOVE	9
+#define SCORE_BOT_SKILL		10
+#define SCORE_INITAL_SPEC	11
+
 
 // spectating types
 #define LOCKED_CHASE		0
@@ -101,7 +126,7 @@ qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"MM1.52 +lagless +acebot v09"
+#define	GAMEVERSION	"Botmatch.v29" //	"MM1.52 +lagless +acebot v09" //hypov8 gamename
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -524,8 +549,7 @@ typedef struct
 
 // acebot
 	qboolean bots_spawned; //hypov8 load bots once only while loading players
-	int lastTeamSpawned; //will asigne bots 1 for each team in sequence
-	qboolean customSkinsUsed; // will not save to bot temp file if per map was loaded
+	qboolean customSkinsUsed; // will not save to bot temp file if per map was loaded//hypo todo: add option to keep bots between levels while players??
 //end
 
 // NET_ANTILAG	//et-xreal antilag
@@ -784,6 +808,7 @@ extern	int	body_armor_index;
 #define MOD_BARMACHINEGUN		47
 #define MOD_SAFECAMPER			48
 #define MOD_RESTART				49
+#define MOD_BOT_SUICIDE			50 //added hypov8
 
 
 #define MOD_FRIENDLY_FIRE	0x8000000
@@ -834,7 +859,17 @@ extern	cvar_t	*sv_antilag;
 // ACEBOT_ADD
 extern cvar_t *sv_botcfg;
 extern cvar_t *sv_botskill;
+extern cvar_t *sv_botpath; //hypov8 disable auto path routing
+extern cvar_t *sv_botjump; //stop players creating jump nodes for bots 0=disabled
+extern cvar_t *sv_bot_allow_add; //stops players voting 
+extern cvar_t *sv_bot_allow_skill; //stops players voting 
+
+//extern cvar_t *sv_bot_min; //minimum bots that can be aded
+extern cvar_t *sv_bot_max; //maximum bots that can be aded
+extern cvar_t *sv_bot_max_players; //maximum bots+clients allowed. remove bots if player enters, can add bots above value
+
 // ACEBOT_END
+extern cvar_t *sv_keeppistol; //hypov8 add keeps pistol if manualy selected
 
 extern	cvar_t	*gun_x, *gun_y, *gun_z;
 extern	cvar_t	*sv_rollspeed;
@@ -899,6 +934,11 @@ extern	int		uptime_days,uptime_hours,uptime_minutes,uptime_seconds;
 extern	cvar_t	*days,*hours,*minutes,*seconds;
 
 extern  cvar_t	*cl_captions;
+
+
+extern void(*_GeoIP_delete)(void* gi); //hypov8 add MH:
+extern const char *(*_GeoIP_country_name_by_addr)(void* gi, const char *addr); //hypov8 add MH:
+extern void *geoip; //hypov8 add MH:
 
 #define world	(&g_edicts[0])
 
@@ -986,7 +1026,7 @@ qboolean	KillBox (edict_t *ent);
 void	G_ProjectSource (vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result);
 edict_t *G_Find (edict_t *from, int fieldofs, char *match);
 void G_ClearUp (edict_t *from, int fieldofs);
-edict_t *findradius (edict_t *from, vec3_t org, float rad);
+edict_t *findradius(edict_t *from, vec3_t org, float rad);
 edict_t *G_PickTarget (char *targetname);
 void	G_UseTargets (edict_t *ent, edict_t *activator);
 void	G_SetMovedir (vec3_t angles, vec3_t movedir);
@@ -1302,7 +1342,7 @@ int	CheckPlayerBan (char *userinfo);
 
 void TestScoreboardMessage (edict_t *ent);
 
-
+edict_t *GetAdmin();
 
 //============================================================================
 
@@ -1338,14 +1378,14 @@ typedef struct
 	int			inventory[MAX_ITEMS];
 
 	// ammo capacities
-	int			max_bullets;
-	int			max_shells;
-	int			max_rockets;
-	int			max_grenades;
-	int			max_cells;
-	int			max_slugs;
+	int			max_bullets; //tommy pistol
+	int			max_shells; //shotgun
+	int			max_rockets; //boozooka
+	int			max_grenades; //gl luncher
+	int			max_cells;		//flamer
+	int			max_slugs;		//308cal
 	// RAFAEL
-	int			max_magslug;
+	int			max_magslug;	//Mag Slug ??
 	int			max_trap;
 
 	gitem_t		*weapon;
@@ -1389,10 +1429,13 @@ typedef struct
 
 	char		ip[32];
 	char		rconx[32];
+	const char*	country; //add hypov8, MH:
 
 	int         polyblender;
 	int         fakeThief;
 	int         mute;
+
+	int			lastpacket;	// MH: time last packet was received
 
 #define TEXTBUFSIZE 2048
 	char		textbuf[TEXTBUFSIZE];
@@ -1443,7 +1486,7 @@ typedef struct
 	int             time;
 } clientMarker_t;
 
-#define MAX_CLIENT_MARKERS 6 //6 markers for 500 ping max
+#define MAX_CLIENT_MARKERS 7 //7 markers for 500 ping. including 100 predict forward
 							//kp seems like its at 10fps???
 // END_LAG
 
@@ -1627,7 +1670,7 @@ struct edict_s
 
 	//================================
 
-	int			svflags;
+	int			svflags;			// SVF_NOCLIENT, SVF_DEADMONSTER, SVF_MONSTER, etc
 	vec3_t		mins, maxs;
 	vec3_t		absmin, absmax, size;
 	solid_t		solid;
@@ -1755,16 +1798,17 @@ struct edict_s
 	moveinfo_t		moveinfo;
 	cast_info_t		cast_info;
 
-// ACEBOT_ADD
-	acebot_t acebot; //hypov8 messy. move this to a seperate group
-// ACEBOT_END
-
-
 // BEGIN:	Xatrix/Ridah/Navigator/17-mar-1998
 	nav_data_t			nav_data;			// CNS-specific data, present for all entities
 	nav_build_data_t	*nav_build_data;	// used only by entities that create nodes (clients)
 	active_node_data_t	*active_node_data;	// points to the active node data of the current unit
 // END:		Xatrix/Ridah/Navigator/17-mar-1998
+
+// ACEBOT_ADD
+	acebot_t acebot; //hypov8 messy. move this to a seperate group
+// ACEBOT_END
+	//hypov8
+	qboolean hasSelectedPistol;//hypo stop auto switch
 
 // JOSEPH 19-MAR-99
 	vec3_t  rotate;
@@ -1949,8 +1993,10 @@ struct edict_s
 	int			kickdelay;
 	char		*kickmess;
 
+
+
     //client idleing
-    vec3_t      last_origin;
+    vec3_t      check_moved_origin;
     int         check_idle;
     int         check_talk;
     int         check_shoot;
@@ -1962,6 +2008,8 @@ struct edict_s
 	int			land_framenum;
 	int			strafejump_count;
 	int			firstjump_frame;
+	//hypov8 check last command
+	//usercmd_t *last_cmd_num;
 };
 
 // RAFAEL

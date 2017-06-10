@@ -2,8 +2,20 @@
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DDebug2|Win32'">
     <LocalDebuggerCommand>$(OutDir)..\kingpin.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments> +set game comp +exec server.cfg +set dedicated 1 +set teamplay 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>+set game comp +set dedicated 1 +exec dm.cfg +exec bot_setup.cfg +map dm_fis_b1</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(OutDir)..\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug lan game|Win32'">
+    <LocalDebuggerCommand>$(OutDir)..\kingpin.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments> +set game comp +exec dm.cfg</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(OutDir)..\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments> +set game comp +set dedicated 1 +exec server.cfg +set teamplay 0 +map bot_jump1</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommand>$(OutDir)..\kpded2.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(OutDir)..\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
 </Project>

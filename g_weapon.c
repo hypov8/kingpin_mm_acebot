@@ -234,11 +234,17 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 
 			VectorSubtract(start, tr.endpos, newvec);
 
+#if 1
 // NET_ANTILAG	//et-xreal antilag
-			if (VectorLength(newvec) > 32){ G_HistoricalTraceEnd(self, NULL);	return; }
-
-			//if (VectorLength(newvec) > 32) return;
+			if (VectorLength(newvec) > 32)
+			{ 
+				G_HistoricalTraceEnd(self, NULL);	
+				return; 
+			}
+#else
 // END_LAG
+			if (VectorLength(newvec) > 32) return;
+#endif
 
 			conweap = 1; 
 		}
@@ -693,7 +699,8 @@ bolt:
 		gi.WritePosition (tr.endpos);
 		gi.multicast (pos, MULTICAST_PVS);
 	}
-	if (hit && (int)teamplay->value!=1) self->client->resp.acchit++;
+	if (hit && (int)teamplay->value!=1) 
+		self->client->resp.acchit++;
 
 // NET_ANTILAG	//et-xreal antilag
 	G_HistoricalTraceEnd(self, NULL);
@@ -711,6 +718,10 @@ pistols, rifles, etc....
 */
 void fire_bullet (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int mod)
 {
+#if 0// HYPODEBUG
+	hspread = 0;
+	vspread = 0;
+#endif
 	fire_lead (self, start, aimdir, damage, kick, TE_GUNSHOT, hspread, vspread, mod);
 }
 

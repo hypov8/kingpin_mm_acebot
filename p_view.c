@@ -65,8 +65,10 @@ void P_DamageFeedback (edict_t *player)
 	client->ps.stats[STAT_FLASHES] = 0;
 	if (client->damage_blood || client->damage_flame)
 		client->ps.stats[STAT_FLASHES] |= 1;
+
 	if (client->damage_armor && !(player->flags & FL_GODMODE) && (client->invincible_framenum <= level.framenum))
 		client->ps.stats[STAT_FLASHES] |= 2;
+
 	// total points of damage shot at the player this frame
 	count = (client->damage_blood + client->damage_flame + client->damage_armor + client->damage_parmor);
 	if (count == 0)
@@ -210,7 +212,20 @@ void SV_CalcViewOffset (edict_t *ent)
 	float		bob;
 	float		ratio;
 	float		delta;
-	vec3_t		v;
+	vec3_t		v; 
+
+	//add hypov8 stop vie bob when spectating
+	if (ent->client->pers.spectator == SPECTATING && ent->client->chase_target == NULL)
+	{
+		//if (ent->client->chase_target == NULL)
+		VectorSet(v, 0, 0, 36);
+		//else
+			//ent->client->chase_target->
+		//	VectorSet(v, 0, 0, 0);
+
+		VectorCopy(v , ent->client->ps.viewoffset);
+		return;
+	}
 
 
 //===================================
@@ -942,13 +957,19 @@ void G_SetClientEffects (edict_t *ent)
 	}
 
 	
-	if (ent->client->invincible_framenum > level.framenum)
+	if (ent->client->invincible_framenum > level.framenum - 10)
 	{
 		remaining = ent->client->invincible_framenum - level.framenum;
-		if (remaining > 30 || (remaining & 4) ) {
+		if (remaining < 2 /*|| (remaining & 4)*/ ) 
+		{
 //			ent->s.effects |= EF_PENT;
 			ent->s.effects |= EF_COLOR_SHELL;
-			ent->s.renderfx |= RF_SHELL_GREEN;
+			ent->s.renderfx |= RF_SHELL_GREEN; //hypov8 green immortal gun highlight
+		}
+		else
+		{
+			ent->s.effects |= EF_COLOR_SHELL;
+			ent->s.renderfx |= RF_SHELL_RED;
 		}
 	}
 
@@ -1863,13 +1884,18 @@ if (ent->flags & (FL_HOVERCAR | FL_HOVERCAR_GROUND | FL_BIKE))
 		VectorClear (ent->client->kick_angles);
 	}
 
+
+// ACEBOT_ADD
+	if (ent->acebot.is_bot) return;
+// ACEBOT_END
+
 	// if the scoreboard is up, update it
 	// Papa - Here is where I time MOTD  (phear the magic numbers)
 	if (ent->client->showscores && !(level.framenum & 31) )
 	{
-		if ((ent->client->showscores == SCORE_MOTD) && (level.framenum > 150 + ent->client->resp.enterframe))
+		if ((ent->client->showscores == SCORE_MOTD) && (level.framenum > 150 + ent->client->resp.enterframe)) //hypov8 PRE_MATCH_TIME
 			if (teamplay->value)
-				ent->client->showscores = SCOREBOARD;
+				ent->client->showscores = SCOREBOARD; 
 			else
 				ent->client->showscores = NO_SCOREBOARD;
 		DeathmatchScoreboard (ent);

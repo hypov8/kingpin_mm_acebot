@@ -2393,6 +2393,12 @@ void teleporter_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_
 	VectorCopy (dest->s.origin, other->s.origin);
 	VectorCopy (dest->s.origin, other->s.old_origin);
 	other->s.origin[2] += 10;
+// ACEBOT_ADD
+
+	ACEND_JumpPadUpdate(other);
+	ACEND_TeleporterUpdate(other);
+	VectorCopy(other->s.origin,other->acebot.oldOrigin);
+// ACEBOT_END
 
 	// clear the velocity and hold them in place briefly
 	VectorClear (other->velocity);

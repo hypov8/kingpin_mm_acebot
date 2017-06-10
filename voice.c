@@ -353,7 +353,7 @@ void Voice_Random_rc( edict_t *self, edict_t *other, voice_table_t *voice_table,
 			voice_table = voice_table;
 		else if (self->gender == GENDER_MALE)
 		{
-			qboolean is_rc = true;
+			//qboolean is_rc = true;
 			
 			if (voice_table >= rc_joker && voice_table <= &rc_joker[9])
 				voice_table = voice_table;

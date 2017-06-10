@@ -8,13 +8,22 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DDebug2|Win32 = DDebug2|Win32
+		DDebug2|x64 = DDebug2|x64
+		debug lan game|Win32 = debug lan game|Win32
+		debug lan game|x64 = debug lan game|x64
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.DDebug2|Win32.ActiveCfg = DDebug2|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.DDebug2|Win32.Build.0 = DDebug2|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.DDebug2|x64.ActiveCfg = DDebug2|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.debug lan game|Win32.ActiveCfg = debug lan game|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.debug lan game|Win32.Build.0 = debug lan game|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.debug lan game|x64.ActiveCfg = debug lan game|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release|Win32.ActiveCfg = Release|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release|Win32.Build.0 = Release|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

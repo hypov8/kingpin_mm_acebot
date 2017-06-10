@@ -226,9 +226,9 @@ realcheck:
 	{
 		vec3_t	move, forward, right, up, newvec;
 		int speed = 140;
-		int movesize = 1;
-		float randmove2 = 0; //(random()-0.5)/2;
-		float randmove =  0; //(random()-0.5);
+//		int movesize = 1;
+//		float randmove2 = 0; //(random()-0.5)/2;
+//		float randmove =  0; //(random()-0.5);
 		int	  nocorner[4] = {0, 0, 0, 0};
 		
 		// Stop any drag sound

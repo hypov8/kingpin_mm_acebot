@@ -482,6 +482,10 @@ void trigger_push_touch (edict_t *self, edict_t *other, cplane_t *plane, csurfac
 
 		if (other->client)
 		{
+// ACEBOT_ADD
+			ACEND_JumpPadUpdate(other);
+// ACEBOT_END
+
 			// don't take falling damage immediately from this
 			VectorCopy (other->velocity, other->client->oldvelocity);
 			if (other->fly_sound_debounce_time < level.time)

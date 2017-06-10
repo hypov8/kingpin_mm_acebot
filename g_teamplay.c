@@ -18,7 +18,7 @@ int		num_cash_items;
 char *team_names[] = {
 	"(spectator)",
 	"Dragons",
-	"Nikki's Boyz",
+	"Nikki's Boyz", //hypov8 "Nikki's Boyz"
 	NULL
 };
 
@@ -133,7 +133,7 @@ void cashspawn_think( edict_t *self )
 {
 	edict_t	*cash;
 
-	if ((num_cash_items > MAX_CASH_ITEMS) || (level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
+	if (num_cash_items > MAX_CASH_ITEMS || level.modeset == MATCHSETUP || level.modeset == TEAM_PRE_MATCH || level.modeset == DM_PRE_MATCH)
 	{
 		self->nextthink = level.time + self->delay;
 		return;
@@ -156,7 +156,7 @@ void cashspawn_think( edict_t *self )
 
 	// FIXME: doh this doesn't work, need to spawn actual item's, so the HUD is updated automatically when picking up
 
-	if (!strcmp(self->type, "cashroll"))
+	if (self->type && !strcmp(self->type, "cashroll")) //hypov8 null crash fix
 	{	// small dollar notes
 		cash->s.modelindex = gi.modelindex( "models/pu_icon/cash/tris.md2" );
 		cash->gravity = 0.1 + random()*0.5;
@@ -170,6 +170,8 @@ void cashspawn_think( edict_t *self )
 		VectorSet( cash->maxs,  4,  4, -13 );
 
 		cash->item = FindItem("Cash");
+
+		cash->classname = "item_cashroll";//hypov8 add to make bots search for item
 
 		cash->currentcash = CASH_ROLL;
 		cash->touch = cash_touch;
@@ -189,8 +191,13 @@ void cashspawn_think( edict_t *self )
 
 		cash->item = FindItem("Small Cash Bag");
 
+		cash->classname = "item_cashbagsmall"; //hypov8 add to make bots search for item
+
+
 		cash->currentcash = CASH_BAG;
 		cash->touch = cash_touch;
+
+		cash->timestamp = level.time + 60; //added hypov8?? stop bots collecting falling cash
 
 		cash->think = cash_kill;
 		cash->nextthink = level.time + 60;
@@ -218,7 +225,7 @@ void SP_dm_cashspawn( edict_t *self )
 	teamplay_mode = TM_GRABDALOOT;
 	num_cash_items = 0;
 
-	if (!strcmp(self->type, "cashroll"))
+	if (self->type && !strcmp(self->type, "cashroll")) //hypov8 add null crash fix
 	{
 		self->delay = (float)g_cashspawndelay->value;
 	}
@@ -637,13 +644,14 @@ qboolean Teamplay_ValidateJoinTeam( edict_t *self, int teamindex )
 
 	self->client->pers.team = teamindex;
 	self->client->pers.spectator = PLAYING;
-	if ((level.modeset != TEAM_MATCH_SPAWNING) && (level.modeset != DM_MATCH_SPAWNING))
+	if (level.modeset != TEAM_MATCH_SPAWNING && level.modeset != DM_MATCH_SPAWNING)
 	{
 		safe_bprintf(PRINT_HIGH, "%s joined %s\n", self->client->pers.netname, team_names[teamindex]);
 //		sl_WriteStdLogPlayerEntered( &gi, level, self );	// Standard Logging
 	}
 
-	if ((level.modeset == DM_MATCH_RUNNING) || (level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING))
+	if (level.modeset == DM_MATCH_RUNNING || level.modeset == TEAM_MATCH_RUNNING 
+		|| level.modeset == TEAM_MATCH_SPAWNING || level.modeset == DM_MATCH_SPAWNING)
 	{
 		self->movetype = MOVETYPE_WALK;
 		self->solid = SOLID_BBOX;
@@ -688,9 +696,9 @@ void Teamplay_AutoJoinTeam( edict_t *self )
 	team_count[0] = 0;
 	team_count[1] = 0;
 
-	for (i=1; i<maxclients->value; i++)
+	for (i=1; i<=maxclients->value; i++)
 	{
-		if (g_edicts[i].client && g_edicts[i].client->pers.team)
+		if (g_edicts[i].client && g_edicts[i].client->pers.team && g_edicts[i].inuse) //add hypov8 check for players that have left
 			team_count[g_edicts[i].client->pers.team - 1]++;
 	}
 
@@ -700,7 +708,10 @@ void Teamplay_AutoJoinTeam( edict_t *self )
 		self->client->pers.team = 1;
 	self->client->pers.spectator = PLAYING;
 
-	Teamplay_ValidateJoinTeam( self, self->client->pers.team );
+// ACEBOT_ADD
+	if (!self->acebot.is_bot)//add hypov8
+// ACEBOT_END
+		Teamplay_ValidateJoinTeam( self, self->client->pers.team );
 }
 
 

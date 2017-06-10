@@ -341,7 +341,7 @@ void Generic_Pawn_Think (edict_t *self)
 				{
 					if ( pawn_menu[i].item->s.frame == ones * 4)
 					{
-						qboolean animate_ones = false;
+						/*qboolean*/ animate_ones = false;
 						continue;
 					}
 					else

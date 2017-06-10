@@ -461,7 +461,7 @@ qboolean ProcessRCMomo (edict_t *self, edict_t *other)
 				
 		if (other->last_response == resp_yes)
 		{	
-			edict_t	*door = NULL;
+			//edict_t	*door = NULL;
 			int	cost;
 
 			if ( mem->flags	& MEMORY_ASSHOLE)
@@ -966,8 +966,8 @@ void EP_RC_ReachedDoKey (edict_t *self)
 
 void EP_RC_EndDoKey (edict_t *self)
 {
-	edict_t		*dest = NULL;
-	edict_t		*ent = NULL;
+//	edict_t		*dest = NULL;
+//	edict_t		*ent = NULL;
 	edict_t		*player;
 
 	player = &g_edicts[1];

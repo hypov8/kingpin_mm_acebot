@@ -4,6 +4,7 @@
 
 #define HEADERMESSAGE\
 	"This server is running the "GAMEVERSION,\
+	"Type Commands or Menu in console",\
 	"http://kingpin.info",
 
 #define GAMEMODEMESSAGE\
@@ -100,6 +101,8 @@ void MoveClientToIntermission (edict_t *ent)
 	ent->s.effects = 0;
 	ent->s.sound = 0;
 	ent->solid = SOLID_NOT;
+
+	ent->flags &= ~FL_CHASECAM; //hypov8 turn off togglecam
 
 	// add the layout
 
@@ -309,8 +312,10 @@ void SpectatorScoreboardMessage (edict_t *ent)
 		}
 	}
 
-	if ((level.modeset != MATCHSETUP) && (level.modeset != TEAM_PRE_MATCH) && (level.modeset != DM_PRE_MATCH)
-		&& ent->client->pers.spectator == SPECTATING) {
+	if (level.modeset != MATCHSETUP && level.modeset != TEAM_PRE_MATCH 
+		&& level.modeset != DM_PRE_MATCH && ent->client->pers.spectator == SPECTATING
+		&& ent->client->showscores != NO_SCOREBOARD) //add hypov8 esc bug fix
+	{
 		SHOWCHASENAME
 		CHASEMESSAGE
 	}
@@ -324,7 +329,7 @@ void SpectatorScoreboardMessage (edict_t *ent)
 //===================================================================
 //===================================================================
 
-void VoteMapScoreboardMessage (edict_t *ent)
+static void VoteMapScoreboardMessage (edict_t *ent) //SCORE_MAP_VOTE
 {
 	char	entry[1024];
 	char	temp[32];
@@ -332,6 +337,7 @@ void VoteMapScoreboardMessage (edict_t *ent)
 	int		stringlength;
 	int		i, j;
 	int		yofs;
+	char* mapLowerCase; //hypov8 add
 	int		count[9];
 	int		num_vote_set;
 	edict_t *player;
@@ -346,14 +352,14 @@ void VoteMapScoreboardMessage (edict_t *ent)
 		};
 	char	*basechoice[] =
 		{
-			"1 (Pipe)     ",
-			"2 (Pistol)   ",
-			"3 (Shotgun)  ",
-			"4 (Tommygun) ",
-			"5 (HMG)      ",
-			"6 (GL)       ",
-			"7 (Bazooka)  ",
-			"8 (FlameThr) ",
+			"1 (Pipe)   ",
+			"2 (Pistol) ",
+			"3 (Shoty)  ",
+			"4 (Tommy)  ",
+			"5 (HMG)    ",
+			"6 (GL)     ",
+			"7 (Rocket) ",
+			"8 (Flamer) ",
 			NULL
 		};
 
@@ -379,9 +385,8 @@ void VoteMapScoreboardMessage (edict_t *ent)
 		num_vote_set = 8;
 
 	memset (&count, 0, sizeof(count));
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
-	if (!player->acebot.is_bot)
+	for_each_player_not_bot(player, i)
+	{
 		count[player->vote]++;
 	}
 
@@ -421,11 +426,17 @@ void VoteMapScoreboardMessage (edict_t *ent)
 
 
 		if (ent->vote == i)
-			Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 999 \"--> %s %s %s\" ",
-					-5*40, yofs + (int)(-60.0+-3.5*14), basechoice[i-1],temp,custom_list[vote_set[i]].custom_map);
+		{
+			mapLowerCase = kp_strlwr(custom_list[vote_set[i]].custom_map); //hypov8 lowercase bug
+			Com_sprintf(entry, sizeof(entry), "xm %i yv %i dmstr 999 \"--> %s %s %s\" ",
+				-5 * 40, yofs + (int)(-60.0 + -3.5 * 14), basechoice[i - 1], temp, mapLowerCase);
+		}
 		else
-			Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 777 \"    %s %s %s\" ",
-					-5*40, yofs + (int)(-60.0+-3.5*14), basechoice[i-1],temp,custom_list[vote_set[i]].custom_map);
+		{
+			mapLowerCase = kp_strlwr(custom_list[vote_set[i]].custom_map); //hypov8 lowercase bug
+			Com_sprintf(entry, sizeof(entry), "xm %i yv %i dmstr 777 \"    %s %s %s\" ",
+				-5 * 40, yofs + (int)(-60.0 + -3.5 * 14), basechoice[i - 1], temp, mapLowerCase);
+		}
 
 		j = strlen(entry);
 		if (stringlength + j < 1024)
@@ -455,9 +466,11 @@ void VoteMapScoreboardMessage (edict_t *ent)
 		yofs += 20;
 		//print the pcx levelshot on screen
 		//name of pcx must be same as bsp -- pcx files must be in pics dir
+		mapLowerCase = kp_strlwr(custom_list[vote_set[ent->vote]].custom_map); //hypov8 lowercase bug
+
 		Com_sprintf (entry, sizeof(entry),
 			"xm %i yv %i picn %s ",
-			-5*20, yofs + (int)(-60.0+-3.5*14), custom_list[vote_set[ent->vote]].custom_map);
+			-5 * 20, yofs + (int)(-60.0 + -3.5 * 14), mapLowerCase);
 		
 		if (stringlength + j < 1024)
 		{
@@ -474,7 +487,358 @@ void VoteMapScoreboardMessage (edict_t *ent)
 //===================================================================
 //===================================================================
 
+//hypo add voting options
+#if 1 // HYPODEBUG
+// ACEBOT_ADD
+static void BotScoreboardVote(edict_t *ent) //SCORE_BOT_VOTE
+{
+	char	string[1024];
+	char	skill[5], color[8][4], *antilag;
+	int yofs[10], i, j;
 
+
+
+	char	*choice1[] =
+	{
+		"1 (Pipe)   ",
+		"2 (Pistol) ",
+		"3 (Shoty)  ",
+		"4 (Tommy)  ",
+		"5 (HMG)    ",
+		"6 (GL)     ",
+		"7 (Rocket) ",
+		"8 (Flamer) ",
+		NULL
+	};
+	char	*choice2[] =
+	{
+		"Add Bot    ",
+		"Remove Bot ",
+		"Bot Skill  ",
+		"Antilag    ",
+		"Vote Yes   ",
+		"Vote No    ",
+		"blah       ",
+		"blah       ",
+		NULL
+	};
+
+	j = 80;
+	for (i = 0; i < 10; i++)
+	{
+		yofs[i] = j;
+		j += 20;
+	}
+
+	for (i = 1; i <= 8; i++)
+	{
+		if (ent->vote == i)
+			strcpy(color[i-1], "999");
+		else
+			strcpy(color[i-1], "777");
+	}
+
+
+	if (sv_bot_allow_skill->value != 0)
+		//skill = sv_botskill->value;
+		sprintf(skill, "%1.1f", sv_botskill->value);
+	else
+		sprintf(skill,"Fixed");
+
+
+	if (ent->cl_noAntiLag == 1)
+		antilag = "Off";
+	else
+		antilag = "On";
+
+
+	//bacground pic
+	//pics/note.tga
+
+	// send the layout
+	Com_sprintf(string, sizeof(string),
+		//"xm 0 yv 0 picnote \"  \" "			// background
+/*help*/"xl 30 yv %i dmstr 773 \"Navigate with [ & ]\" "
+/*help*/"xl 30 yv %i dmstr 773 \"Accept with WepNum & Use Key's\" "
+/*1*/	"xl 30 yv %i dmstr %s \"%s %s->\" "		// addbot
+/*2*/	"xl 30 yv %i dmstr %s \"%s %s->\" "		// removebot
+/*3*/	"xl 30 yv %i dmstr %s \"%s %s= %s\" "		// botskill
+/*4*/	"xl 30 yv %i dmstr %s \"%s %s= %s\" "		// antilag
+/*5*/	"xl 30 yv %i dmstr %s \"%s %s\" "		//
+/*6*/	"xl 30 yv %i dmstr %s \"%s %s\" "	//
+/*7*/	"xl 30 yv %i dmstr %s \"%s %s\" "	//
+/*8*/	"xl 30 yv %i dmstr %s \"%s %s\" ",	//
+
+/*help*/yofs[0],
+/*help*/yofs[1],
+/*1*/	yofs[2], color[0], choice1[0], choice2[0],
+/*2*/	yofs[3], color[1], choice1[1], choice2[1],
+/*3*/	yofs[4], color[2], choice1[2], choice2[2], skill,
+/*4*/	yofs[5], color[3], choice1[3], choice2[3], antilag,
+/*5*/	yofs[6], color[4], choice1[4], choice2[4],
+/*6*/	yofs[7], color[5], choice1[5], choice2[5],
+/*7*/	yofs[8], color[6], choice1[6], choice2[6],
+/*8*/	yofs[9], color[7], choice1[7], choice2[7]);
+
+
+	gi.WriteByte(svc_layout);
+	gi.WriteString(string);
+	//gi.unicast(ent, true);
+}
+
+static void BotScoreboardAdd(edict_t *ent) // SCORE_BOT_ADD
+{
+	char	string[1024];
+	int yofs[10], i, j;
+	char color[8][4];
+	char	*choice1[] =
+	{
+		"1 (Pipe)   ",
+		"2 (Pistol) ",
+		"3 (Shoty)  ",
+		NULL
+	};
+	char	*choice2[] =
+	{
+		"Dragons ",
+		"Nikki's ",
+		"Random  ",
+		NULL
+	};
+
+
+	j = 80;
+	for (i = 0; i < 10; i++)
+	{
+		yofs[i] = j;
+		j += 20;
+	}
+
+	for (i = 1; i <= 8; i++)
+	{
+		if (ent->vote == i)
+			strcpy(color[i - 1], "999");
+		else
+			strcpy(color[i - 1], "777");
+	}
+
+
+	// send the layout
+	Com_sprintf(string, sizeof(string),
+		//"xm 0 yv 0 picnote \"  \" "			// background
+		/*help*/"xl 30 yv %i dmstr 773 \"Navigate with [ & ]\" "
+		/*help*/"xl 30 yv %i dmstr 773 \"Accept with WepNum & Use Key's\" "
+		/*1*/	"xl 30 yv %i dmstr %s \"%s %s\" "		// Dragons
+		/*2*/	"xl 30 yv %i dmstr %s \"%s %s\" "		// Nikki's
+		/*3*/	"xl 30 yv %i dmstr %s \"%s %s\" ",		// Nikki's
+
+		/*help*/yofs[0],
+		/*help*/yofs[1],
+		/*1*/	yofs[2], color[0], choice1[0], choice2[0],
+		/*2*/	yofs[3], color[1], choice1[1], choice2[1],
+		/*2*/	yofs[4], color[2], choice1[2], choice2[2]);
+
+
+	gi.WriteByte(svc_layout);
+	gi.WriteString(string);
+	//gi.unicast(ent, true);
+}
+
+static void BotScoreboardRemove(edict_t *ent) //SCORE_BOT_REMOVE
+{
+	int outCount;
+	edict_t	*bot;
+	//char VoteBotRemoveName[8][32];
+	char color[8][4];
+
+	char	string[1024];
+	int yofs[10], i, j;
+	char	*choice1[] =
+	{
+		"1 (Pipe)   ",
+		"2 (Pistol) ",
+		"3 (Shoty)  ",
+		"4 (Tommy)  ",
+		"5 (HMG)    ",
+		"6 (GL)     ",
+		"7 (Rocket) ",
+		"8 (Flamer) ",
+		NULL
+	};
+	char	*choice2[] =
+	{
+		" N/A    ",
+		" N/A    ",
+		" N/A    ",
+		" N/A    ",
+		" N/A    ",
+		" N/A    ",
+		" N/A    ",
+		" N/A    ",
+		NULL
+	};
+
+	//reset
+	memset(VoteBotRemoveName, 0, sizeof(VoteBotRemoveName));
+	//for (i = 0; i < 8; i++)
+//	{
+	//	strcpy(VoteBotRemoveName[i], "\0");
+	//}
+
+	outCount = 0;
+	for_each_player_inc_bot(bot, i)
+	{
+		if (bot->acebot.is_bot) 
+		{	
+			strcpy(VoteBotRemoveName[outCount], bot->client->pers.netname);
+			choice2[outCount] = bot->client->pers.netname;
+			outCount++;	
+			continue;
+		}
+		if (outCount > 8)
+			break;
+
+	}
+
+	//no bot, return to menu
+	if (outCount < 1)
+	{
+		ent->client->showscores = SCORE_BOT_VOTE;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+
+	for (i = 1; i <= 8; i++)
+	{
+		if (ent->vote == i)
+			strcpy(color[i - 1], "999");
+		else
+			strcpy(color[i - 1], "777");
+	}
+
+
+	j = 80;
+	for (i = 0; i < 10; i++)
+	{
+		yofs[i] = j;
+		j += 20;
+	}
+
+
+	// send the layout
+	Com_sprintf(string, sizeof(string),
+		//"xm 0 yv 0 picnote \"  \" "			// background
+		/*help*/"xl 30 yv %i dmstr 773 \"Navigate with [ & ]\" "
+		/*help*/"xl 30 yv %i dmstr 773 \"Accept with WepNum & Use Key's\" "
+		/*1*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*2*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*3*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*4*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*5*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*6*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*7*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*8*/	"xl 30 yv %i dmstr %s \"%s %s\" ",
+
+		/*help*/yofs[0],
+		/*help*/yofs[1],
+		/*1*/	yofs[2], color[0], choice1[0], choice2[0],
+		/*2*/	yofs[3], color[1], choice1[1], choice2[1],
+		/*3*/	yofs[4], color[2], choice1[2], choice2[2],
+		/*4*/	yofs[5], color[3], choice1[3], choice2[3],
+		/*5*/	yofs[6], color[4], choice1[4], choice2[4],
+		/*6*/	yofs[7], color[5], choice1[5], choice2[5],
+		/*7*/	yofs[8], color[6], choice1[6], choice2[6],
+		/*8*/	yofs[9], color[7], choice1[7], choice2[7]);
+
+
+	gi.WriteByte(svc_layout);
+	gi.WriteString(string);
+	//gi.unicast(ent, true);
+}
+
+
+static void BotScoreboardSkill(edict_t *ent) //SCORE_BOT_SKIL
+{
+	//char VoteBotRemoveName[8][32];
+	char color[8][4];
+
+	char	string[1024];
+	int yofs[10], i, j;
+	char	*choice1[] =
+	{
+		"1 (Pipe)   ",
+		"2 (Pistol) ",
+		"3 (Shoty)  ",
+		"4 (Tommy)  ",
+		"5 (HMG)    ",
+		"6 (GL)     ",
+		"7 (Rocket) ",
+		"8 (Flamer) ",
+		NULL
+	};
+	char	*choice2[] =
+	{
+		" 4.0    ",
+		" 3.5    ",
+		" 3.0    ",
+		" 2.5    ",
+		" 2.0    ",
+		" 1.5    ",
+		" 1.0    ",
+		" 0.5    ",
+		NULL
+	};
+
+
+	for (i = 1; i <= 8; i++)
+	{
+		if (ent->vote == i)
+			strcpy(color[i - 1], "999");
+		else
+			strcpy(color[i - 1], "777");
+	}
+
+
+	j = 80;
+	for (i = 0; i < 10; i++)
+	{
+		yofs[i] = j;
+		j += 20;
+	}
+
+
+	// send the layout
+	Com_sprintf(string, sizeof(string),
+		//"xm 0 yv 0 picnote \"  \" "			// background
+		/*help*/"xl 30 yv %i dmstr 773 \"Navigate with [ & ]\" "
+		/*help*/"xl 30 yv %i dmstr 773 \"Accept with WepNum & Use Key's\" "
+		/*1*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*2*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*3*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*4*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*5*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*6*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*7*/	"xl 30 yv %i dmstr %s \"%s %s\" "
+		/*8*/	"xl 30 yv %i dmstr %s \"%s %s\" ",
+
+		/*help*/yofs[0],
+		/*help*/yofs[1],
+		/*1*/	yofs[2], color[0], choice1[0], choice2[0],
+		/*2*/	yofs[3], color[1], choice1[1], choice2[1],
+		/*3*/	yofs[4], color[2], choice1[2], choice2[2],
+		/*4*/	yofs[5], color[3], choice1[3], choice2[3],
+		/*5*/	yofs[6], color[4], choice1[4], choice2[4],
+		/*6*/	yofs[7], color[5], choice1[5], choice2[5],
+		/*7*/	yofs[8], color[6], choice1[6], choice2[6],
+		/*8*/	yofs[9], color[7], choice1[7], choice2[7]);
+
+
+	gi.WriteByte(svc_layout);
+	gi.WriteString(string);
+	//gi.unicast(ent, true);
+}
+// ACEBOT_END
+#endif
 
 void MOTDScoreboardMessage (edict_t *ent)
 {
@@ -797,6 +1161,7 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 		stringlength += j;
 	}
 
+	if (ent->client->showscores != NO_SCOREBOARD) //add hypov8. fix for esc bug
 	SHOWCHASENAME
 
 	if (!ent->client->showscores)
@@ -862,6 +1227,7 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 		}
 		yofs += 15;
 
+		if (ent->client->showscores != NO_SCOREBOARD)
 		CHASEMESSAGE
 
 	}
@@ -1080,110 +1446,111 @@ void MatchSetupScoreboardMessage (edict_t *ent)
 	if (!ent->client->showscores)
 		goto skipscores;
 		
-	if (ent->client->showscores==SCOREBOARD) {
-	GAMEMODEMESSAGE
-
-	Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
-		-5*strlen(temp), yofs + (int)(-60.0+-3.5*14), temp );
-	yofs += 20;
-	j = strlen(entry);
-	strcpy (string + stringlength, entry);
-	stringlength += j;
-		
-	if (level.modeset == MATCHSETUP)
-		Com_sprintf (temp, sizeof(temp), "in Match Setup Mode.");
-	else if (level.modeset == TEAM_PRE_MATCH)
-		Com_sprintf (temp, sizeof(temp), "and is in the Final Countdown before a Match.");
-	else if (level.modeset == DM_PRE_MATCH)
-		Com_sprintf (temp, sizeof(temp), "The Game will start soon.");
-
-	Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
-		-5*strlen(temp), yofs + (int)(-60.0+-3.5*14), temp );
-	yofs += 20;
-	j = strlen(entry);
-	strcpy (string + stringlength, entry);
-	stringlength += j;
-
-
-	i=0;
-	found = FALSE;
-	while ((!found) && (i<maxclients->value)) 
+	if (ent->client->showscores==SCOREBOARD) 
 	{
-		player = g_edicts + 1 + i;
-		i++;
-		if (!player->inuse)
-			continue;
-		if (player->client->pers.admin > NOT_ADMIN)
-			found = TRUE;
-	}
+		GAMEMODEMESSAGE
 
-	if (found)
-		Com_sprintf (temp, sizeof(temp), "Your admin is %s",player->client->pers.netname);
-	else
-		Com_sprintf (temp, sizeof(temp), "No one currently has admin");
-
-	Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
-		-5*strlen(temp), yofs + (int)(-60.0+-3.5*14), temp );
-	yofs += 30;
-	j = strlen(entry);
-	strcpy (string + stringlength, entry);
-	stringlength += j;
-
-	// count players per team
-	memset( teamcount, 0, sizeof(int) * 3 );
-
-	for (team=1; team<=2; team++)
-	{
-		for (i=0 ; i<game.maxclients ; i++)
-		{
-			cl_ent = g_edicts + 1 + i;
-			if (!cl_ent->inuse)
-				continue;
-
-			if (game.clients[i].pers.team != team)
-				continue;
-
-			teamcount[team]++;
-		}
-	}
-
-	// print the team selection header
-	for (i=0; selectheader[i]; i++)
-	{
-		Com_sprintf (entry, sizeof(entry),
-			"xm %i yv %i dmstr 999 \"%s\" ",
-			-5*strlen(selectheader[i]), yofs + (int)(-60.0+-3.5*14), selectheader[i] );
-
-		j = strlen(entry);
-		strcpy (string + stringlength, entry);
-		stringlength += j;
-
-		yofs += 30;
-	}
-
-	// show team counts
-	for (team=1; team<=2; team++)
-	{
-		strcpy( nfill, team_names[team] );
-		if (strlen(nfill) > 14)
-			nfill[14] = '\0';
-
-		if (strlen(team_names[team]) < 14)
-		{
-			for (k=0; k<14-strlen(team_names[team]); k++)
-				strcat( nfill, " " );
-		}
-
-		Com_sprintf (entry, sizeof(entry),
-			"xm %i yv %i dmstr 999 \"%i - %s (%i plyrs)\" ",
-			-15*10, yofs + (int)(-60.0+-3.5*14), team, nfill, teamcount[team] );
-
-		j = strlen(entry);
-		strcpy (string + stringlength, entry);
-		stringlength += j;
-
+		Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
+			-5*strlen(temp), yofs + (int)(-60.0+-3.5*14), temp );
 		yofs += 20;
-	}
+		j = strlen(entry);
+		strcpy (string + stringlength, entry);
+		stringlength += j;
+		
+		if (level.modeset == MATCHSETUP)
+			Com_sprintf (temp, sizeof(temp), "in Match Setup Mode.");
+		else if (level.modeset == TEAM_PRE_MATCH)
+			Com_sprintf (temp, sizeof(temp), "and is in the Final Countdown before a Match.");
+		else if (level.modeset == DM_PRE_MATCH)
+			Com_sprintf (temp, sizeof(temp), "The Game will start soon.");
+
+		Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
+			-5*strlen(temp), yofs + (int)(-60.0+-3.5*14), temp );
+		yofs += 20;
+		j = strlen(entry);
+		strcpy (string + stringlength, entry);
+		stringlength += j;
+
+
+		i=0;
+		found = FALSE;
+		while ((!found) && (i<maxclients->value)) 
+		{
+			player = g_edicts + 1 + i;
+			i++;
+			if (!player->inuse)
+				continue;
+			if (player->client->pers.admin > NOT_ADMIN)
+				found = TRUE;
+		}
+
+		if (found)
+			Com_sprintf (temp, sizeof(temp), "Your admin is %s",player->client->pers.netname);
+		else
+			Com_sprintf (temp, sizeof(temp), "No one currently has admin");
+
+		Com_sprintf (entry, sizeof(entry), "xm %i yv %i dmstr 874 \"%s\" ",
+			-5*strlen(temp), yofs + (int)(-60.0+-3.5*14), temp );
+		yofs += 30;
+		j = strlen(entry);
+		strcpy (string + stringlength, entry);
+		stringlength += j;
+
+		// count players per team
+		memset( teamcount, 0, sizeof(int) * 3 );
+
+		for (team=1; team<=2; team++)
+		{
+			for (i=0 ; i<game.maxclients ; i++)
+			{
+				cl_ent = g_edicts + 1 + i;
+				if (!cl_ent->inuse)
+					continue;
+
+				if (game.clients[i].pers.team != team)
+					continue;
+
+				teamcount[team]++;
+			}
+		}
+
+		// print the team selection header
+		for (i=0; selectheader[i]; i++)
+		{
+			Com_sprintf (entry, sizeof(entry),
+				"xm %i yv %i dmstr 999 \"%s\" ",
+				-5*strlen(selectheader[i]), yofs + (int)(-60.0+-3.5*14), selectheader[i] );
+
+			j = strlen(entry);
+			strcpy (string + stringlength, entry);
+			stringlength += j;
+
+			yofs += 30;
+		}
+
+		// show team counts
+		for (team=1; team<=2; team++)
+		{
+			strcpy( nfill, team_names[team] );
+			if (strlen(nfill) > 14)
+				nfill[14] = '\0';
+
+			if (strlen(team_names[team]) < 14)
+			{
+				for (k=0; k<14-strlen(team_names[team]); k++)
+					strcat( nfill, " " );
+			}
+
+			Com_sprintf (entry, sizeof(entry),
+				"xm %i yv %i dmstr 999 \"%i - %s (%i plyrs)\" ",
+				-15*10, yofs + (int)(-60.0+-3.5*14), team, nfill, teamcount[team] );
+
+			j = strlen(entry);
+			strcpy (string + stringlength, entry);
+			stringlength += j;
+
+			yofs += 20;
+		}
 	}
 
 	yofs += 15;
@@ -1346,6 +1713,44 @@ skipscores:
 	gi.WriteString (string);
 }
 
+#if 1 //esc fix
+
+/*
+==================
+SpecInitalScoreboard
+fix for spec bug with esc
+==================
+*/
+void SpecInitalScoreboard(edict_t *ent)
+{
+
+	char	entry[1024];
+	char	string[1400] = "";
+	int		stringlength = 0;
+	int		j;
+
+
+	entry[0] = '\0';
+
+	//string[0] = 0;
+	//stringlength = 0;
+
+// ACEBOT_ADD
+	if (ent->acebot.is_bot)
+		return;
+// ACEBOT_END
+
+	SHOWCHASENAME
+	CHASEMESSAGE
+
+	gi.WriteByte(svc_layout);
+	gi.WriteString(string);
+}
+
+
+
+#endif
+
 
 /*
 ==================
@@ -1356,7 +1761,7 @@ DeathmatchScoreboardMessage
 void DeathmatchScoreboardMessage (edict_t *ent)
 {
 	char	temp[64];
-	char	entry[1024];
+	char	entry[1024]="";
 	char	string[1400]="";
 	int		stringlength=0;
 	int		i, j, k;
@@ -1375,12 +1780,12 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 		return;
 // ACEBOT_END
 
-	SHOWCHASENAME
-
 	if (!ent->client->showscores)
 		goto skipscores;
+
+	SHOWCHASENAME //moved hypov8, fix for esc bug != NO_SCOREBOARD
 		
-	if (ent->client->pers.spectator == SPECTATING)
+	if (ent->client->pers.spectator == SPECTATING) //add hypov8, fix for esc bug
 		CHASEMESSAGE
 
 	// sort the clients by score
@@ -1449,33 +1854,35 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 //#if ENABLE_INDEX_NAMES && false
 	if (ent->client->pers.version >= 114)
 	{
-		if (ent->client->showscores==SCOREBOARD) {
-		if (dm_realmode->value && !teamplay->value)
-		{		// show deaths
-			if (fph_scoreboard)
-				Com_sprintf (entry, sizeof(entry),
-					"xr %i yv %i dmstr 442 \"NAME         ping hits  fph\" ",
-					-36*10 - 10, -60+-2*14 );
-			else
-			/*	Com_sprintf (entry, sizeof(entry),
-					"xr %i yv %i dmstr 442 \"NAME         ping hits score\" ",
-					-36*10 - 10, -60+-2*14 );*/
-                Com_sprintf (entry, sizeof(entry),
-					"xr %i yv %i dmstr 442 \"NAME         ping time  hits\" ",
-					-36*10 - 10, -60+-2*14 );
-		}
-		else	// normal
+		if (ent->client->showscores==SCOREBOARD) 
 		{
-			if (fph_scoreboard)
-				Com_sprintf (entry, sizeof(entry),
-					"xr %i yv %i dmstr 442 \"NAME         ping hits   fph\" ",
-					-36*10 - 10, -60+-2*14 );
-			else
-				Com_sprintf (entry, sizeof(entry),
-					"xr %i yv %i dmstr 442 \"NAME         ping time  hits\" ",
-					-36*10 - 10, -60+-2*14 );
-		}
-		} else
+			if (dm_realmode->value && !teamplay->value)
+			{		// show deaths
+				if (fph_scoreboard)
+					Com_sprintf (entry, sizeof(entry),
+						"xr %i yv %i dmstr 442 \"NAME         ping hits  fph\" ",
+						-36*10 - 10, -60+-2*14 );
+				else
+				/*	Com_sprintf (entry, sizeof(entry),
+						"xr %i yv %i dmstr 442 \"NAME         ping hits score\" ",
+						-36*10 - 10, -60+-2*14 );*/
+					Com_sprintf (entry, sizeof(entry),
+						"xr %i yv %i dmstr 442 \"NAME         ping time  hits\" ",
+						-36*10 - 10, -60+-2*14 );
+			}
+			else	// normal
+			{
+				if (fph_scoreboard)
+					Com_sprintf (entry, sizeof(entry),
+						"xr %i yv %i dmstr 442 \"NAME         ping hits   fph\" ",
+						-36*10 - 10, -60+-2*14 );
+				else
+					Com_sprintf (entry, sizeof(entry),
+						"xr %i yv %i dmstr 442 \"NAME         ping time  hits\" ",
+						-36*10 - 10, -60+-2*14 );
+			}
+		} 
+		else
 			Com_sprintf (entry, sizeof(entry),
 		//		"xr %i yv %i dmstr 442 \"NAME         ping  acc   fav\"",
 				"xr %i yv %i dmstr 442 \"NAME       deaths  acc   fav\"",
@@ -1649,25 +2056,37 @@ Note that it isn't that hard to overflow the 1400 byte message limit!
 
 void DeathmatchScoreboard (edict_t *ent)
 {
+
+// ACEBOT_ADD
+	if (ent->acebot.is_bot)
+		ent->client->showscores = NO_SCOREBOARD;
+// ACEBOT_END
+
 	if (ent->client->showscores == SCORE_MOTD)
 		MOTDScoreboardMessage (ent);
 	else if (ent->client->showscores == SCORE_REJOIN)
 		RejoinScoreboardMessage (ent);
-/*	else if (ent->client->showscores == SCOREBOARD)
-		if (teamplay->value)
-			if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
-				MatchSetupScoreboardMessage (ent, ent->enemy);
-			else
-				GrabDaLootScoreboardMessage (ent, ent->enemy);
-		else	
-			DeathmatchScoreboardMessage (ent, ent->enemy);	
-*/	else if (ent->client->showscores == SPECTATORS)
+	else if (ent->client->showscores == SPECTATORS)
 		SpectatorScoreboardMessage (ent);
 	else if (ent->client->showscores == SCORE_MAP_VOTE)
 		VoteMapScoreboardMessage(ent);
-	else {
+#ifdef HYPODEBUG
+	else if (ent->client->showscores == SCORE_BOT_VOTE)
+		BotScoreboardVote(ent);
+	else if (ent->client->showscores == SCORE_BOT_ADD)
+		BotScoreboardAdd(ent);
+	else if (ent->client->showscores == SCORE_BOT_REMOVE)
+		BotScoreboardRemove(ent);
+	else if (ent->client->showscores == SCORE_BOT_SKILL)
+		BotScoreboardSkill(ent);
+	else if (ent->client->showscores == SCORE_INITAL_SPEC)
+		SpecInitalScoreboard(ent); //hyopv8 spec/esc fix
+
+#endif
+	else //(ent->client->showscores == SCOREBOARD ||ent->client->showscores == NO_SCOREBOARD )
+	{
 		if (teamplay->value)
-			if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
+			if (level.modeset == MATCHSETUP || level.modeset == TEAM_PRE_MATCH || level.modeset == DM_PRE_MATCH)
 				MatchSetupScoreboardMessage (ent);
 			else
 				GrabDaLootScoreboardMessage (ent);
@@ -1677,26 +2096,31 @@ void DeathmatchScoreboard (edict_t *ent)
 
 
 	if (level.intermissiontime)
-		gi.unicast (ent, true);
+		gi.unicast (ent, true); //true stops client using menu?
 	else
 		gi.unicast (ent, false);//true);
 }
+
+#if 0 //not used
 
 void NoScoreboardMessage (edict_t *ent)
 {
 	char	entry[1024];
 	char	string[1400];
 	int		stringlength;
-	int		j;
+
 
 	string[0] = 0;
 	stringlength = 0;
 
-	if ((level.modeset != MATCHSETUP) && (level.modeset != TEAM_PRE_MATCH)//SNAP
-		&& ent->client->pers.spectator == SPECTATING) {
-		SHOWCHASENAME
-		CHASEMESSAGE
-	}
+	//hypov8 stop esc working when "string" exists
+
+	//if (level.modeset != MATCHSETUP && level.modeset != TEAM_PRE_MATCH//SNAP
+	//	&& ent->client->pers.spectator == SPECTATING) 
+	//{
+	//	SHOWCHASENAME
+	//	CHASEMESSAGE
+	//}
 
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
@@ -1724,12 +2148,12 @@ void DeathmatchScoreboardNew (edict_t *ent)
 	default:
         {
             if (teamplay->value)
-                if ((level.modeset == MATCHSETUP) || (level.modeset == TEAM_PRE_MATCH) || (level.modeset == DM_PRE_MATCH))
+                if (level.modeset == MATCHSETUP || level.modeset == TEAM_PRE_MATCH || level.modeset == DM_PRE_MATCH)
                     MatchSetupScoreboardMessage (ent);
                 else
                     GrabDaLootScoreboardMessage (ent);
-                else	
-                    DeathmatchScoreboardMessage (ent);	
+			else	
+				DeathmatchScoreboardMessage (ent);	
         }    
         break;
     }
@@ -1740,7 +2164,7 @@ void DeathmatchScoreboardNew (edict_t *ent)
 	else
 		gi.unicast (ent, false);//true);
 }
-
+#endif // not used
 
 
 /*
@@ -1763,12 +2187,14 @@ void Cmd_Score_f (edict_t *ent)
 
 	if (!deathmatch->value && !coop->value)
 		return;
-
-
-	if (ent->client->showscores == SCOREBOARD)
-		ent->client->showscores = SCOREBOARD2;
+#if 1 // add hypo esc bug
+	if (ent->client->showscores == SCORE_INITAL_SPEC)
+		ent->client->showscores = SCOREBOARD;
 	else
-	if (level.modeset == ENDMATCHVOTING)
+#endif
+	     if (ent->client->showscores == SCOREBOARD)
+		ent->client->showscores = SCOREBOARD2;
+	else if (level.modeset == ENDMATCHVOTING)
 		if (ent->client->showscores == SCORE_MAP_VOTE)
 			ent->client->showscores = SCOREBOARD;
 		else
@@ -1779,24 +2205,44 @@ void Cmd_Score_f (edict_t *ent)
 	else if (ent->client->showscores == SCOREBOARD2)
 	{
 		found = false;
-		for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-		{	dood = &g_edicts[i];  if (!for_each_player(dood)) continue;
-			if (dood->client->pers.spectator == SPECTATING)
+		for_each_player_inc_bot(dood, i)
+		{
+		if (dood->client->pers.spectator == SPECTATING)
+			{
 				found = true;
+				break;
+			}
 		}
 		if (found)
 			ent->client->showscores = SPECTATORS;
 		else
-			ent->client->showscores = NO_SCOREBOARD;
+			if (ent->client->pers.spectator == SPECTATING /*&& ent->client->chase_target != NULL*/)
+				ent->client->showscores = SCORE_INITAL_SPEC;
+			else
+				ent->client->showscores = NO_SCOREBOARD;
 	}
 	else if (ent->client->showscores == SPECTATORS)
 	{
 		if (level.intermissiontime)
 			ent->client->showscores = SCOREBOARD;
 		else
-			ent->client->showscores = NO_SCOREBOARD;
+			if (ent->client->pers.spectator == SPECTATING /*&& ent->client->chase_target != NULL*/)
+				ent->client->showscores = SCORE_INITAL_SPEC;
+			else
+				ent->client->showscores = NO_SCOREBOARD;
 	}
+#ifdef HYPODEBUG
+	else if (ent->client->showscores == SCORE_BOT_VOTE)
+		ent->client->showscores = NO_SCOREBOARD;
+	else if (ent->client->showscores == SCORE_BOT_ADD)
+		ent->client->showscores = NO_SCOREBOARD;
+	else if (ent->client->showscores == SCORE_BOT_REMOVE)
+		ent->client->showscores = NO_SCOREBOARD;
+	else if (ent->client->showscores == SCORE_BOT_SKILL)
+		ent->client->showscores = NO_SCOREBOARD;
+#endif
 	else
+
 		ent->client->showscores = SCOREBOARD;
 		
 	DeathmatchScoreboard (ent);
@@ -1856,7 +2302,7 @@ void HelpComputer (edict_t *ent, int page)
 
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
-	gi.unicast (ent, true);
+	//gi.unicast (ent, true);
 }
 
 #if 0
@@ -1903,7 +2349,7 @@ void HelpComputer (edict_t *ent)
 
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
-	gi.unicast (ent, true);
+	//gi.unicast (ent, true);
 }
 #endif
 
@@ -1916,9 +2362,14 @@ Display the current help message
 */
 void Cmd_Help_f (edict_t *ent, int page)
 {
+// ACEBOT_ADD //new kpded.exe
+	if (ent->acebot.is_bot) return;
+// ACEBOT_END
+
 	// this is for backwards compatability
 	if (deathmatch->value)
 	{
+		///help
 		Cmd_Score_f (ent);
 		return;
 	}
@@ -1956,13 +2407,32 @@ void G_SetStats (edict_t *ent)
 	if (ent->client->chase_target && ent->client->chase_target->client)
 	{
 		memcpy( ent->client->ps.stats, ent->client->chase_target->client->ps.stats, sizeof( ent->client->ps.stats ) );
-		ent->client->ps.stats[STAT_LAYOUTS] = true;
-//	ent->client->ps.stats[STAT_LAYOUTS] = 0;
+		//ent->client->ps.stats[STAT_LAYOUTS] = true; //hypo commented out
 
-		if (deathmatch->value) {
-			if (level.intermissiontime || ent->client->showscores)
-				ent->client->ps.stats[STAT_LAYOUTS] |= 1;
-		} else {
+		//add hypov8 esc/spec bug fix. staus should only show when scores are up. 
+		ent->client->ps.stats[STAT_LAYOUTS] = 0; //hypo was commented out
+
+		if (deathmatch->value) 
+		{
+// ACEBOT_ADD
+			if (!ent->acebot.is_bot)
+			{
+// ACEBOT_END
+				//if (level.intermissiontime || ent->client->showscores)
+				//	ent->client->ps.stats[STAT_LAYOUTS] |= 1;
+
+				if (ent->client->showscores || ent->client->showhelp)
+					ent->client->ps.stats[STAT_LAYOUTS] |= 1;
+				if (ent->client->showinventory && ent->client->pers.health > 0)
+					ent->client->ps.stats[STAT_LAYOUTS] |= 2;
+
+
+
+
+			}
+		} 
+		else 
+		{
 			if (ent->client->showscores || ent->client->showhelp)
 				ent->client->ps.stats[STAT_LAYOUTS] |= 1;
 		}
@@ -2366,7 +2836,7 @@ void G_SetStats (edict_t *ent)
 	if ((int)timelimit->value)
 	{
 		if (level.modeset == DM_PRE_MATCH)
-			ent->client->ps.stats[STAT_TIMER] = ((150 -  level.framenum ) / 10); //hypov8 begin dm spawn timmer. was 350
+			ent->client->ps.stats[STAT_TIMER] = ((PRE_MATCH_TIME - level.framenum) / 10); //hypov8 begin dm spawn timmer. was 350
 
 //	else if ((level.modeset == DM_PRE_MATCH) && (timelimit->value))
 //		if (level.framenum > ((timelimit->value * 600) - 605))  
@@ -2380,12 +2850,12 @@ void G_SetStats (edict_t *ent)
 //			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
 
 		else if (level.modeset == TEAM_PRE_MATCH)
-			ent->client->ps.stats[STAT_TIMER] = ((150 - (level.framenum - level.startframe)) / 10); //hypov8 begin team spawn timmer. was 150
+			ent->client->ps.stats[STAT_TIMER] = ((PRE_MATCH_TIME - (level.framenum - level.startframe)) / 10); //hypov8 begin team spawn timmer. was 150
 
 		else if (level.modeset == ENDMATCHVOTING)
 			ent->client->ps.stats[STAT_TIMER] =	((300 - (level.framenum - level.startframe)) / 10);
 
-		else if ((level.modeset == TEAM_MATCH_RUNNING) || (level.modeset == DM_MATCH_RUNNING))
+		else if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 			if (level.framenum > (level.startframe + (((int)timelimit->value  * 600) - 605)))  
 				ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
 			else
@@ -2420,11 +2890,15 @@ void G_SetStats (edict_t *ent)
 
 	if (deathmatch->value)
 	{
-		if (ent->client->pers.health <= 0 || level.intermissiontime
-			|| ent->client->showscores)
-			ent->client->ps.stats[STAT_LAYOUTS] |= 1;
-		if (ent->client->showinventory && ent->client->pers.health > 0)
-			ent->client->ps.stats[STAT_LAYOUTS] |= 2;
+// ACEBOT_ADD
+		if (!ent->acebot.is_bot)
+		{
+// ACEBOT_END
+			if (ent->client->pers.health <= 0 || level.intermissiontime || ent->client->showscores)
+					ent->client->ps.stats[STAT_LAYOUTS] |= 1;
+			if (ent->client->showinventory && ent->client->pers.health > 0)
+					ent->client->ps.stats[STAT_LAYOUTS] |= 2;
+		}
 	}
 	else
 	{

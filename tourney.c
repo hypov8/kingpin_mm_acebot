@@ -46,6 +46,20 @@ ban_t	ip[100];
 ban_t	rconx_pass[100];
 
 
+edict_t *GetAdmin()
+{
+	int		i;
+	edict_t	*doot;
+
+	for_each_player_not_bot(doot, i)
+	{
+		if (doot->client->pers.admin > NOT_ADMIN)
+			return doot;
+	}
+	return NULL;
+}
+
+
 //==============================================================
 //
 // Papa - This file contains all the functions that control the 
@@ -75,21 +89,34 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 {
 	edict_t		*self;
 	int			i;
-//hypov8 this shoul be set by team
-	if (default_teamplay)
-		level.modeset = TEAM_MATCH_SPAWNING;
-	else
-		level.modeset = DM_PRE_MATCH; 
+
+// ACEBOT_ADD
+	//ACEND_SaveNodes(); //save file nodes
+	num_players = 0;
+	botsRemoved = 0;
+	num_bots = 0;
+	level.bots_spawned = false;
+// ACEBOT_END
+
+	level.modeset = DM_PRE_MATCH; 
 	gi.cvar_set("dmflags",default_dmflags);
-	gi.cvar_set("teamplay",default_teamplay);
+	//gi.cvar_set("teamplay",default_teamplay);
+	gi.cvar_set("teamplay", "0"); //hypo
 	gi.cvar_set("password",default_password);
 	gi.cvar_set("timelimit",default_timelimit);
 	gi.cvar_set("fraglimit",default_fraglimit);
 	gi.cvar_set("cashlimit",default_cashlimit);
 	gi.cvar_set("dm_realmode",default_dm_realmode);
 	level.startframe = level.framenum;
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
+	for_each_player_inc_bot(self, i)
+	{
+// ACEBOT_ADD
+		if (self->acebot.is_bot){
+			ACESP_RemoveBot(self->client->pers.netname); //disco
+			continue;
+		}
+// ACEBOT_END
+
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 		meansOfDeath = MOD_RESTART;
@@ -98,7 +125,7 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 		ClientBeginDeathmatch( self );	
 	}
 	
-	safe_bprintf(PRINT_HIGH, "The server is once again public.\n");
+	safe_bprintf(PRINT_HIGH, "The server is once again public.\n Load a new map for effect.\n");
 }
 
 /*
@@ -115,26 +142,34 @@ void MatchSetup ()
 	edict_t		*self;
 	int			i;
 
+// ACEBOT_ADD
+	//ACEND_SaveNodes(); //save file nodes
+	num_players = 0;
+	botsRemoved = 0;
+	num_bots = 0;
+	ACESP_RemoveBot("all");
+	level.bots_spawned = false;
+
+	//if (self->acebot.is_bot)
+	//{
+	//	ACESP_RemoveBot(self->client->pers.netname); //disco
+	//	continue;
+	//} 
+// ACEBOT_END
+
 	level.modeset = MATCHSETUP;
 	level.startframe = level.framenum;
 
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{		self = &g_edicts[i];  if (!for_each_player(self)) continue;
-/*		self->movetype = MOVETYPE_NOCLIP;
-		self->solid = SOLID_NOT;
-		self->svflags |= SVF_NOCLIENT;
-		self->client->pers.weapon = NULL;*/
+	for_each_player_inc_bot(self, i)
+	{
 		if (self->client->pers.spectator == SPECTATING)
 			continue;
 		meansOfDeath = MOD_RESTART;
-		self->client->pers.spectator = SPECTATING;
+		// self->client->pers.spectator = SPECTATING;
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 //		player_die (self, self, self, 1, vec3_origin, 0, 0);
-// acebot ??
-		//teamplay
-		//could cause conflict?
-//end
+
 		ClientBeginDeathmatch( self );	
 	}
 
@@ -180,7 +215,15 @@ void MatchStart()
 {
 	int			i;
 	edict_t		*self;
-		
+
+	// ACEBOT_ADD
+	//ACEND_SaveNodes(); //save file nodes
+	num_players = 0;
+	botsRemoved = 0;
+	num_bots = 0;
+	level.bots_spawned = false;
+	// ACEBOT_END	
+
 	level.player_num=0;
 	level.modeset = TEAM_PRE_MATCH;
 	level.startframe = level.framenum;
@@ -191,8 +234,16 @@ void MatchStart()
 
     G_ClearUp (NULL, FOFS(classname));
 
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
+	for_each_player_inc_bot(self, i)
+	{
+
+// ACEBOT_ADD
+		if (self->acebot.is_bot){
+			ACESP_RemoveBot(self->client->pers.netname); //disco
+			continue;
+		}
+// ACEBOT_END
+
 		self->client->pers.bagcash = 0;
 		self->client->resp.deposited = 0;
 		self->client->resp.score = 0;
@@ -253,7 +304,7 @@ void SpawnPlayer () // Here I spawn players - 1 per server frame in hopes of red
 
 
 
-void SpawnPlayers ()  // Same idea but 1 player per team
+void SpawnTeamPlayers ()  // Same idea but 1 player per team
 {
 	edict_t		*self;
 	int			i;
@@ -275,14 +326,12 @@ void SpawnPlayers ()  // Same idea but 1 player per team
 			team1 = true;
 			self->client->pers.spectator = PLAYING;
 //			player_die (self, self, self, 1, vec3_origin, 0, 0);
-//acebot add
+
+// ACEBOT_ADD
 			if (!self->acebot.is_bot)
-			{
-// ACEBOT_ADD				
-				//ACEIT_PlayerAdded(self); //add real players to bot serch invitory
 // ACEBOT_END				
-				ClientBeginDeathmatch(self);
-			}
+			ClientBeginDeathmatch(self);
+
 			self->client->resp.is_spawn = true;
 		}
 		if ((self->client->pers.team == 2) && (!team2) && (!self->client->resp.is_spawn))
@@ -293,14 +342,11 @@ void SpawnPlayers ()  // Same idea but 1 player per team
 			team2 = true;
 			self->client->pers.spectator = PLAYING;
 //			player_die (self, self, self, 1, vec3_origin, 0, 0);
-//acebot add
+
+// ACEBOT_ADD	
 			if (!self->acebot.is_bot)
-			{
-// ACEBOT_ADD				
-				//ACEIT_PlayerAdded(self); //add real players to bot serch invitory
 // ACEBOT_END				
-				ClientBeginDeathmatch(self);
-			}
+			ClientBeginDeathmatch(self);
 
 			self->client->resp.is_spawn = true;
 		}
@@ -324,8 +370,8 @@ void Start_TeamMatch () // Starts the match
 	level.startframe = level.framenum;
 	level.modeset = TEAM_MATCH_SPAWNING;
 	level.is_spawn = false;
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
+	for_each_player_inc_bot(self, i)
+	{
 		safe_centerprintf(self, "The Match has begun.\n");
 		self->client->resp.is_spawn = false;
 		self->client->resp.enterframe = level.framenum;
@@ -354,8 +400,8 @@ void Start_FFA () // Starts a pub
 	level.startframe = level.framenum;
 	level.modeset = DM_MATCH_SPAWNING;
 	level.is_spawn = false;
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
+	for_each_player_inc_bot(self, i)
+	{
 		safe_centerprintf(self, "Let the Fun Begin!\n");
 		self->client->resp.is_spawn = false;
 		self->client->resp.enterframe = level.framenum;
@@ -383,16 +429,44 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 	int		selection;
 */	
 
-// acebot
+// ACEBOT_ADD
 	ACEND_SaveNodes(); //save file nodes
 	num_players = 0;
-//end
+	botsRemoved = 0;
+	num_bots = 0;
+// ACEBOT_END
 
 	level.modeset = ENDMATCHVOTING;
 	level.startframe = level.framenum;
 
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
+	{
+		// find an intermission spot
+		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
+		if (!intermision)
+		{	// the map creator forgot to put in an intermission point...
+			intermision = G_Find(NULL, FOFS(classname), "info_player_start");
+			if (!intermision)
+				intermision = G_Find(NULL, FOFS(classname), "info_player_deathmatch");
+		}
+		else
+		{	// chose one of four spots
+			i = rand() & 3;
+			while (i--)
+			{
+				intermision = G_Find(intermision, FOFS(classname), "info_player_intermission");
+				if (!intermision)	// wrap around the list
+					intermision = G_Find(intermision, FOFS(classname), "info_player_intermission");
+			}
+		}
+		VectorCopy(intermision->s.origin, level.intermission_origin);
+		VectorCopy(intermision->s.angles, level.intermission_angle);
+	}
+
+
+
+
+	for_each_player_inc_bot(self, i)
+	{	
 		HideWeapon(self);
 		if (self->client->flashlight) self->client->flashlight = false;
 		self->movetype = MOVETYPE_NOCLIP;
@@ -418,20 +492,26 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 
-		//hypov8 move player to intermision
+		self->flags &= ~FL_CHASECAM; //hypov8 turn off togglecam
 
+		//change wep to none
+		self->client->newweapon = NULL;
+		ChangeWeapon(self);
+
+//hypov8 move player to intermision
 		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
-
 		if (intermision)
-
 		{
+
+			MoveClientToIntermission(self);
+
 			VectorCopy(intermision->s.origin, self->s.origin);
 			self->client->ps.pmove.origin[0] = intermision->s.origin[0] * 8;
 			self->client->ps.pmove.origin[1] = intermision->s.origin[1] * 8;
 			self->client->ps.pmove.origin[2] = intermision->s.origin[2] * 8;
 			VectorCopy(level.intermission_angle, self->client->ps.viewangles);
 		}
-//end
+//hypov8 end
 	}
 
 	gi.WriteByte( svc_stufftext );
@@ -448,50 +528,28 @@ ONLY used for server cmd "matchend"
 move players to spec
 ================
 */
-void MatchEnd () // end of the match
+void MatchEnd() // end of the match
 {
-	edict_t *self, *intermision;
-	int i;
-// acebot
-	ACEND_SaveNodes(); //save file nodes
-	num_players = 0;
-//end
-	level.modeset = ENDMATCHVOTING; // MATCHSETUP; //hypov8 setup???
-	level.startframe = level.framenum;
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	self = &g_edicts[i];  if (!for_each_player(self)) continue;
-		HideWeapon(self);
-		if (self->client->flashlight) self->client->flashlight = false;
-		safe_centerprintf(self, "The Match has ended!");
-		self->flags &= ~FL_GODMODE;
-		self->health = 0;
-		meansOfDeath = MOD_RESTART;
+	int		i, count = 0;
+	edict_t	*doot;
 
-//hypov8 move player to intermision
-		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
-		if (intermision)
-		{
-			VectorCopy(intermision->s.origin, self->s.origin);
-			self->client->ps.pmove.origin[0] = intermision->s.origin[0] * 8;
-			self->client->ps.pmove.origin[1] = intermision->s.origin[1] * 8;
-			self->client->ps.pmove.origin[2] = intermision->s.origin[2] * 8;
-			VectorCopy(level.intermission_angle, self->client->ps.viewangles);
-		}
-//
+	safe_bprintf(PRINT_HIGH, "Admin ended match.\n");
 
-// acebot
-		self->think = NULL;
-		self->nextthink = 0; //reset bots think
-//end
-//		player_die (self, self, self, 1, vec3_origin, 0, 0);
-
-// acebot ???
-		/////////////////ClientBeginDeathmatch( self ); //hypov8 match end, spawn client again???
+	for_each_player_not_bot(doot, i)
+	{
+		count++; //hypov8 bots dont count
 	}
-	gi.WriteByte( svc_stufftext );
-	gi.WriteString( va("play world/cypress%i.wav", 2+(rand()%4)) );
-	gi.multicast (vec3_origin, MULTICAST_ALL);
 
+	if (count == 0)
+		ResetServer();
+	else
+	{
+		if (!allow_map_voting)
+			EndDMLevel(); //hypo MatchEnd(); // 
+		else
+			SetupMapVote();
+
+	}
 }
 
 /*
@@ -508,39 +566,13 @@ void CheckAllPlayersSpawned()
 {
 
 	if (teamplay->value) //hypov8 ToDo: acebot teamplay
-	{
-#ifdef SPAWNBOTS
-// ACEBOT_ADD
-		if (!level.bots_spawned)
-		{
-			ACEND_InitNodes();
-			ACEND_LoadNodes();
-			ACESP_LoadBots();
-		}
-		else
-// ACEBOT_END
-#endif
-		SpawnPlayers();
-	}
+		SpawnTeamPlayers();
 	else
-	{
-#ifdef SPAWNBOTS
-// ACEBOT_END
-		if (!level.bots_spawned)
-		{
-			ACEND_InitNodes();
-			ACEND_LoadNodes();
-			ACESP_LoadBots();
-		}
-		else
-// ACEBOT_END
-#endif
 		SpawnPlayer();
-	}
 		
-	if ((level.is_spawn) && (level.modeset == DM_MATCH_SPAWNING))
+	if (level.is_spawn && level.modeset == DM_MATCH_SPAWNING)
 		level.modeset = DM_MATCH_RUNNING;
-	if ((level.is_spawn) && (level.modeset == TEAM_MATCH_SPAWNING))
+	if (level.is_spawn && level.modeset == TEAM_MATCH_SPAWNING)
 		level.modeset = TEAM_MATCH_RUNNING;
 
 		
@@ -557,17 +589,18 @@ void CheckIdleMatchSetup () // restart the server if its empty in matchsetup mod
 	int		i;
 	edict_t	*doot;
 
-// acebots
+// ACEBOT_ADD
 	level.bots_spawned = 0;
 	num_players = 0;
-	level.lastTeamSpawned = TEAM_2; //hypo set 1st bot to spawn as dragons
-//end
+	botsRemoved = 0;
+	num_bots = 0;
+// ACEBOT_END
 
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
-	//if (doot->is_bot) continue; //hypov8 change to next map, instead of waiting for bots to vote
+	for_each_player_not_bot(doot, i) //hypov8 bots count!!
+	{
 		count++;
 	}
+
 	if (count == 0)
 		ResetServer (); //hypov8 bots count!!
 }
@@ -586,17 +619,18 @@ void CheckStartTeamMatch()
 // acebots
 	level.bots_spawned = 0; //hypov8 
 	num_players = 0;
-	level.lastTeamSpawned = TEAM_2; //hypo set 1st bot to spawn as dragons
+	botsRemoved = 0;
+	num_bots = 0;
 //end
 
-	if (level.framenum >= level.startframe + 145)
+	if (level.framenum >= level.startframe + (PRE_MATCH_TIME -5))
 	{
 		Start_TeamMatch ();
 		return;
 	}
 
-	if ((level.framenum % 10 == 0 ) && (level.framenum > level.startframe + 49))
-		safe_bprintf(PRINT_HIGH, "The Team Game will start in %d seconds!\n", (140 - (level.framenum - level.startframe)) / 10);
+	if ((level.framenum % 10 == 0) && (level.framenum > level.startframe + (PRE_MATCH_TIME -99)))
+		safe_bprintf(PRINT_HIGH, "The Team Game will start in %d seconds!\n", ((PRE_MATCH_TIME-10) - (level.framenum - level.startframe)) / 10);
 }
 
 /*
@@ -619,19 +653,21 @@ void CheckStartDM ()
 // acebots
 	level.bots_spawned = 0; //hypov8 
 	num_players = 0;
-	level.lastTeamSpawned = TEAM_2; //hypo set 1st bot to spawn as dragons. dm=not needed
+	botsRemoved = 0;
+	num_bots = 0;
 //end
 	//if (level.framenum >= 345)
-	if (level.framenum >= level.startframe + 145)
+	if (level.framenum >= level.startframe + (PRE_MATCH_TIME - 5)) //hypo global match start time PRE_MATCH_TIME
 	{
 		Start_FFA ();
 		return;
 	}
 
+
 	//if ((level.framenum % 10 == 0 ) && (level.framenum > 299))
 	//	safe_bprintf(PRINT_HIGH, "The DM Server will start in %d seconds!\n", (340 - (level.framenum)) / 10);
-	if ((level.framenum % 10 == 0) && (level.framenum > level.startframe + 49))
-		safe_bprintf(PRINT_HIGH, "The DM Game will start in %d seconds!\n", (140 - (level.framenum - level.startframe)) / 10);
+	if ((level.framenum % 10 == 0) && (level.framenum > level.startframe + (PRE_MATCH_TIME - 99)))
+		safe_bprintf(PRINT_HIGH, "The DM Game will start in %d seconds!\n", ((PRE_MATCH_TIME -10) - (level.framenum - level.startframe)) / 10);
 }
 
 
@@ -654,27 +690,26 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 		//	getTeamTags();
 		//}
 
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
+	for_each_player_inc_bot(doot, i)
+	{
 	//if (doot->is_bot) continue; //hypov8 change to next map, instead of waiting for bots to vote
 		count++;
 	}
 
 // ACEBOT_ADD
-#ifndef SPAWNBOTS
 	if (count && !level.bots_spawned)
 	{
 		ACEND_InitNodes();
 		ACEND_LoadNodes();
 		ACESP_LoadBots();
 	}
-#endif
 // ACEBOT_END
 
 	if ((count == 0) && (level.framenum > 12000))
 		ResetServer(); //hypov8 bots count?
 
-	if ((int)fraglimit->value && (int)teamplay->value == 4)	{
+	if ((int)fraglimit->value && (int)teamplay->value == 4)	
+	{
 		if (team_cash[1] >= (int)fraglimit->value || team_cash[2] >= (int)fraglimit->value) {
 			safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 			if (!allow_map_voting)
@@ -740,11 +775,8 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 
 	if (level.framenum == (level.startframe + 10))
 	{
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-		{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
-// ACEBOT_ADD
-	if (player->acebot.is_bot) continue;
-// ACEBOT_END
+	for_each_player_not_bot(player,i)
+		{
 			if (scoreboard_first)
 				player->client->showscores = SCOREBOARD;
 			else
@@ -756,13 +788,12 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 	if (level.framenum > (level.startframe + 300))
 	{
 		memset (&count, 0, sizeof(count));
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	player = &g_edicts[i];  if (!for_each_player(player)) continue;
-// ACEBOT_ADD
-	if (player->acebot.is_bot) continue;
-// ACEBOT_END
+
+		for_each_player_not_bot(player,i)
+		{
 			count[player->vote]++;
 		}
+
 		wining_map = 1;
 		for (i = 2;i < 9 ; i++)
 		{
@@ -770,6 +801,7 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 			if (count[i] > count[wining_map])
 				wining_map = i;
 		}
+
 		i = write_map_file();
 		if (i != OK)
 			gi.dprintf("Error writing custom map file!\n");
@@ -882,8 +914,8 @@ void getTeamTags(){
 	int			teamTagsFound[2]= { FALSE, FALSE };
 	int team;
 
-	for (i = 1; i <= maxclients->value; i++) //	for_each_player (player,i)
-	{	doot = &g_edicts[i];  if (!for_each_player(doot)) continue;
+	for_each_player_inc_bot(doot, i)
+	{
 		team = doot->client->pers.team;
 		if(team && namesLen[team-1] < 64){
 			strcpy(names[team-1][namesLen[team-1]++], doot->client->pers.netname);

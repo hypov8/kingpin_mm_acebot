@@ -111,7 +111,16 @@ edict_t *findradius (edict_t *from, vec3_t org, float rad)
 	return NULL;
 }
 
+/*
+if (teamplay->value != 1)
+continue;
 
+if (!from->item)
+continue;
+else
+if (!from->item && (strcmp(from->classname, "item_cashbagsmall") != 0 && strcmp(from->classname, "item_cashroll") != 0))
+continue;
+*/
 /*
 =============
 G_PickTarget
@@ -587,19 +596,28 @@ of ent.  Ent should be unlinked before calling this!
 qboolean KillBox (edict_t *ent)
 {
 	trace_t		tr;
+	int			mask = MASK_PLAYERSOLID; // MH: what to check
 
 	while (1)
 	{
-		tr = gi.trace (ent->s.origin, ent->mins, ent->maxs, ent->s.origin, NULL, MASK_PLAYERSOLID);
-		if (!tr.ent)
+		tr = gi.trace (ent->s.origin, ent->mins, ent->maxs, ent->s.origin, NULL, mask);
+		if (!tr.ent || !tr.startsolid) // MH: done if no hit
 			break;
 
 		// nail it
-		T_Damage(tr.ent, ent, ent, vec3_origin, ent->s.origin, vec3_origin, 100000, 0, DAMAGE_NO_PROTECTION, MOD_TRIGGER_HURT); //MOD TELEFRAG
+		T_Damage(tr.ent, ent, ent, vec3_origin, ent->s.origin, vec3_origin, 100000, 0, DAMAGE_NO_PROTECTION, MOD_TELEFRAG); //MOD TELEFRAG
 
 		// if we didn't kill it, fail
 		if (tr.ent->solid)
+		{
+			// MH: recheck if necessary to make sure a monster/player there is killed
+			if (!(tr.contents & CONTENTS_MONSTER) && mask != CONTENTS_MONSTER)
+			{
+				mask = CONTENTS_MONSTER;
+				continue;
+			}
 			return false;
+		}
 	}
 
 	return true;		// all clear

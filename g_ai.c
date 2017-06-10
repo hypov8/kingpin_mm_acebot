@@ -2001,7 +2001,7 @@ int AI_YawTrace( edict_t *self, float dist, float inyaw )
 {
 	trace_t	tr;
 	vec3_t	angle, vec, end, end2, mins;
-	int		count=0;
+	//int		count=0;
 
 	VectorCopy( self->mins, mins );
 	mins[2] += 16;
@@ -2882,7 +2882,14 @@ qboolean infront (edict_t *self, edict_t *other)
 	vec3_t	vec;
 	float	dot;
 	vec3_t	forward;
-	
+
+	//hypov8 make safe/cash look in 360 deg
+	if (strcmp(other->classname, "item_cashroll") == 0 
+		|| strcmp(other->classname, "item_cashbagsmall") == 0
+		|| strcmp(other->classname, "dm_safebag") == 0
+		)
+		return true;
+
 	AngleVectors (self->s.angles, forward, NULL, NULL);
 	VectorSubtract (other->s.origin, self->s.origin, vec);
 	VectorNormalize (vec);
@@ -3114,7 +3121,7 @@ qboolean AI_movetogoal (edict_t *self, edict_t *goal, float dist)
 	int			yaw, rnd;
 	int			aborted=false;
 	float		diff, goal_dist;
-	float		slide_scale = 1.0;
+//	float		slide_scale = 1.0;
 	qboolean	moved=false;
 	qboolean changezval = false;
 

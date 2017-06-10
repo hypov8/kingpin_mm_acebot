@@ -737,17 +737,20 @@ void ED_CallSpawn (edict_t *ent)
 		return;
 	}
 
-if (!Q_stricmp( ent->classname, "weapon_barmachinegun" ))
-{
-gi.dprintf("Hacking old BAR machine gun to grenade launcher for KPDM1-cash.bsp\n" );
-sprintf( ent->classname, "weapon_grenadelauncher" );
-}
+	if (!Q_stricmp( ent->classname, "weapon_barmachinegun" ))
+	{
+	gi.dprintf("Hacking old BAR machine gun to grenade launcher for KPDM1-cash.bsp\n" );
+	ent->classname = "weapon_grenadelauncher";
+	}
 
 
 	// Ridah: hack, KPDM1 has "item_flametank" which are now "ammo_flametank"
 	if (!strcmp( ent->classname, "item_flametank" ))
-		strcpy( ent->classname, "ammo_flametank" );
+		ent->classname = "ammo_flametank";
 
+	//hypov8 hmg mod typo in kprad .def
+	if (!strcmp(ent->classname, "hmg_mod_colling"))
+		ent->classname = "hmg_mod_cooling";
 
 	// check item spawn functions
 	for (i=0,item=itemlist ; i<game.num_items ; i++,item++)
@@ -1049,9 +1052,31 @@ parsing textual entity definitions out of an ent file.
 char	last_changelevel[64];
 extern void LightConfigstrings ();
 
-vec3_t spawnvecs[]={
-	{992,1088,-40},{480,-1824,24},{-688,-1104,32},
-	{2536,408,584},{-224,-544,-40},{-1960,24,24},
+vec3_t spawnvecs[] = {
+	{ 992, 1088, -40 },		//#0	//kpdm5 removed spawn
+	{ 480, -1824, 24 },		//#1	//kpdm4 removed spawn
+	{ -688, -1104, 32 },	//#2	//sickre
+	{ 2536, 408, 584 },		//#3	//team_rival make spawn style 1
+	{ -224, -544, -40 },	//#4	//kpdm2 removed spawn
+	{ -1960, 24, 24 },		//#5	//kpdm2 removed spawn
+	{ -32, -224, 272 },	//#6	//420dm1
+	{ -136, -200, 272 },	//#7	//420dm1
+	{ 112, -64, 168 },	//#8	//420dm1
+	{ -328, -200, 207 }, //#9	//420dm1
+	{ 216, 280, 271 },	//#10	//420dm1
+	{ 360, -544, 207 },	//#11	//420dm1
+	{ 256, -192, 15 },	//#12	//420dm1
+	{ -904, 88, 32 },	//#13	//8mile
+	{ 744, -736, 0 },	//#14	//nycdm2_kp
+	{ -40, 178, 0 },		//#15	//stdm5 jump pad speed
+	{ -40, 358, 0 },	//#16	//stdm5 jump pad speed
+	{ 720, 944, 16, },	//#17	//stdm5 hmg ammo
+	{ 880, 944, 16, },	//#18	//stdm5	hmg ammo
+	{544, 1968, 144, }, //19	//stdm5 health
+	{1056, 1968, 144,}, //20	//stdm5 health
+	{ -45, 255, 0, },	//#21	//stdm5 jump pad speed 
+	{ -45, 285, 0, },	//#22	//stdm5 jump pad speed	
+	{ -90, 270, 0, },	//#23	//stdm5	jump pad angle
 };
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
@@ -1163,21 +1188,133 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
             
             if (deathmatch->value)
 			{
-				if (!strcmp(ent->classname,"info_player_deathmatch")) {
-					if ((!strcmp(level.mapname,"kpdm5") && VectorCompare(ent->s.origin,spawnvecs[0]))
-						|| (!strcmp(level.mapname,"kpdm2") && VectorCompare(ent->s.origin,spawnvecs[4]))
-						|| (!strcmp(level.mapname,"kpdm2") && VectorCompare(ent->s.origin,spawnvecs[5]))
-						|| (!strcmp(level.mapname,"kpdm4") && VectorCompare(ent->s.origin,spawnvecs[1]))) {
-						G_FreeEdict (ent);
+				//fix for bots only
+				if (!_strcmpi(level.mapname, "stdm5"))
+				{
+					if (!strcmp(ent->classname, "trigger_push"))
+					{
+						if (VectorCompare(ent->s.angles, spawnvecs[15]))
+							ent->speed = 90.0f;
+						else if (VectorCompare(ent->s.angles, spawnvecs[16]))
+							ent->speed = 90.0f;
+						else if (VectorCompare(ent->s.angles, spawnvecs[21]))
+							ent->speed = 105.0f;
+						else if (VectorCompare(ent->s.angles, spawnvecs[22]))
+							ent->speed = 105.0f;
+						else if (VectorCompare(ent->s.angles, spawnvecs[23]))
+							ent->s.angles[0] = 80.0f;
+					}
+					else
+					{
+						if (VectorCompare(ent->s.origin, spawnvecs[17])) //hmg ammo
+							ent->s.origin[1] -= 92;
+						else if (VectorCompare(ent->s.origin, spawnvecs[18])) //hmg ammo
+							ent->s.origin[1] -= 92;
+						else if (VectorCompare(ent->s.origin, spawnvecs[19])) //health
+							ent->s.origin[0] += 128;
+						else if (VectorCompare(ent->s.origin, spawnvecs[20])) //health
+							ent->s.origin[0] -= 128;
+
+
+					}
+				}
+				else if (!_strcmpi(level.mapname, "dm_fis_b1"))
+				{
+					if (!strcmp(ent->classname, "trigger_hurt"))
+						ent->dmg = 9999;
+				}
+				//end bot fix
+
+				if (!strcmp(ent->classname, "info_player_deathmatch"))
+				{
+					if ((!_strcmpi(level.mapname, "kpdm5") && VectorCompare(ent->s.origin, spawnvecs[0]))
+						|| (!_strcmpi(level.mapname, "kpdm2") && VectorCompare(ent->s.origin, spawnvecs[4]))
+						|| (!_strcmpi(level.mapname, "kpdm2") && VectorCompare(ent->s.origin, spawnvecs[5]))
+						|| (!_strcmpi(level.mapname, "kpdm4") && VectorCompare(ent->s.origin, spawnvecs[1])))
+					{
+						G_FreeEdict(ent);
 						inhibit++;
 						continue;
 					}
-					if (!strcmp(level.mapname,"sickre") && VectorCompare(ent->s.origin,spawnvecs[2])) {
-						ent->s.origin[1]=-1300;
+					if (!_strcmpi(level.mapname, "sickre") && VectorCompare(ent->s.origin, spawnvecs[2]))
+						ent->s.origin[1] = -1300;
+
+					if (!_strcmpi(level.mapname, "team_rival") && VectorCompare(ent->s.origin, spawnvecs[3]))
+						ent->style = 1;
+//#if 0
+					//add hypov8 map fix for 420dm1
+					if (!_strcmpi(level.mapname, "420dm1"))
+					{
+						if (VectorCompare(ent->s.origin, spawnvecs[6])
+							|| VectorCompare(ent->s.origin, spawnvecs[7]))
+							ent->s.origin[2] -= 48;
+
+						else if (VectorCompare(ent->s.origin, spawnvecs[8]))
+							ent->s.origin[2] -= 128;
+
+						else if (VectorCompare(ent->s.origin, spawnvecs[9])
+							|| VectorCompare(ent->s.origin, spawnvecs[10])
+							|| VectorCompare(ent->s.origin, spawnvecs[11])
+							|| VectorCompare(ent->s.origin, spawnvecs[12]))
+							ent->s.origin[2] += 16;
 					}
-					if (!strcmp(level.mapname,"team_rival") && VectorCompare(ent->s.origin,spawnvecs[3])) {
-						ent->style=1;
+
+					if (!_strcmpi(level.mapname, "8mile") && VectorCompare(ent->s.origin, spawnvecs[13]))
+					{
+						ent->s.origin[0] = -888;
+						ent->s.origin[1] = 80;
 					}
+					if (!_strcmpi(level.mapname, "nycdm2_kp") && VectorCompare(ent->s.origin, spawnvecs[14]))
+					{
+						ent->s.origin[2] -= 16;
+					}
+					
+
+//#else
+					//MH: fix
+					{ // move or remove dodgy spawn points
+						static vec3_t mins = {-15,-15,-14 };	//hypov8
+						static vec3_t maxs = { 15, 15, 58 };	//spawns are moved up +9 and +1 (total =10)
+						trace_t tr;
+						tr = gi.trace(ent->s.origin, mins, maxs, ent->s.origin, NULL, CONTENTS_SOLID);
+						if (tr.startsolid)
+						{
+							vec3_t origin;
+							VectorSet(origin, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] + 10);
+							tr = gi.trace(origin, mins, maxs, origin, NULL, CONTENTS_SOLID);
+							if (tr.startsolid)
+							{
+								origin[2] -= 2 * 10;
+								tr = gi.trace(origin, mins, maxs, origin, NULL, CONTENTS_SOLID);
+								if (tr.startsolid)
+								{
+									for (i = 0; i<8; i++)
+									{
+										VectorCopy(ent->s.origin, origin);
+										if (i & 3)
+											origin[0] += i & 4 ? 8 : -8;
+										if ((i + 2) & 3)
+											origin[1] += (i + 2) & 4 ? 8 : -8;
+										tr = gi.trace(origin, mins, maxs, origin, NULL, CONTENTS_SOLID);
+										if (!tr.startsolid)
+											break;
+									}
+								}
+							}
+							if (tr.startsolid)
+							{
+								gi.dprintf("%s startsolid at %s\n", ent->classname, vtos(ent->s.origin));
+								G_FreeEdict(ent);
+								inhibit++;
+								continue;
+							}
+							gi.dprintf("%s startsolid at %s, moved to %s\n", ent->classname, vtos(ent->s.origin), vtos(origin));
+							VectorCopy(origin, ent->s.origin);
+						}
+					}
+//#endif
+
+
 				}
 				if ( ent->spawnflags & SPAWNFLAG_NOT_DEATHMATCH )
 				{
