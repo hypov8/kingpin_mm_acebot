@@ -32,7 +32,9 @@ If you have questions concerning this license or the applicable additional terms
 // NET_ANTILAG	//et-xreal antilag
 
 #include "g_local.h"
-#define DEBUGLAG 0
+
+//hypov8 debug print
+//#define HYPODEBUG_LAG
 
 /*
 =================
@@ -91,12 +93,13 @@ static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 
 	if (time > (level.framenum * 100 + 100)) //hypov8 allow prediction forward
 	{
-		#if DEBUGLAG
+		#ifdef HYPODEBUG_LAG
 		Com_Printf("ERROR: time=%i > framenum=%i\n", time, level.framenum * 100);
 		#endif
 		return; //hypo use normal trace, dont move anyone. will cause print_debug error when moving clients back
 	}	// no lerping forward....
 
+	if (!ent->acebot.is_bot)
 	time -= 100; //hypov8 introduce 100ms. game seems to be lagging behind?
 
 	// find a pair of markers which bound the requested time
@@ -114,14 +117,14 @@ static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 	} while(i != ent->client->topMarker);
 	
 	// save current position to backup
-	if (ent->client->backupMarker.time != level.framenum * 100)
+	if (ent->client->backupMarker.time != (level.framenum * 100))
 	{
 		VectorCopy(ent->s.origin, ent->client->backupMarker.origin);
 		VectorCopy(ent->mins, ent->client->backupMarker.mins);
 		VectorCopy(ent->maxs, ent->client->backupMarker.maxs);
-		ent->client->backupMarker.time = level.framenum * 100;
+		ent->client->backupMarker.time = (level.framenum * 100);
 	}
-#if DEBUGLAG
+#ifdef HYPODEBUG_LAG
 	else
 		Com_Printf("ERROR: backupMarker store for %s mkrTime=%i leveltime=%i ping=%i\n", ent->client->pers.netname, ent->client->backupMarker.time, level.framenum * 100, ent->client->ping);
 #endif
@@ -145,7 +148,7 @@ static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 		frac = (float)(time - ent->client->clientMarkers[i].time) /
 			(float)(ent->client->clientMarkers[j].time - ent->client->clientMarkers[i].time);
 
-#if DEBUGLAG
+#if 0 //def HYPODEBUG_LAG
 		Com_Printf("Time = %f ping = %i\n", frac, ent->client->ping);// ping = %i\n", ent->client->pers.netname, ent->client->backupMarker.time, level.framenum * 100, ent->client->ping
 #endif
 
@@ -158,7 +161,7 @@ static void G_AdjustSingleClientPosition(edict_t * ent, int time)
 
 	else // either head (topMarker) or tail (topMarker+1) of history
 	{
-		#if DEBUGLAG
+		#if 0 //def HYPODEBUG_LAG
 		//Com_Printf("NOTE: USING ent->client->topMarker for %s %i %i\n", ent->client->pers.netname, time, level.framenum * 100);
 		#endif
 		VectorCopy(ent->client->clientMarkers[j].origin, ent->s.origin);
@@ -179,7 +182,7 @@ move clients back to real position
 static void G_ReAdjustSingleClientPosition(edict_t * ent)
 {
 	// restore from backup 
-	if (ent->client->backupMarker.time == level.framenum * 100 /*(int)level.time * 1000*/)
+	if (ent->client->backupMarker.time == (level.framenum * 100) )
 	{
 		VectorCopy(ent->client->backupMarker.origin, ent->s.origin);
 		VectorCopy(ent->client->backupMarker.mins, ent->mins);
@@ -188,10 +191,10 @@ static void G_ReAdjustSingleClientPosition(edict_t * ent)
 
 		gi.linkentity(ent);//trap_LinkEntity
 	}
-	#if DEBUGLAG
+#ifdef HYPODEBUG_LAG
 	else
 		Com_Printf("ERROR: backupMarker NOT leveltime for %s mkrTime=%i leveltime=%i ping=%i\n", ent->client->pers.netname, ent->client->backupMarker.time, level.framenum * 100, ent->client->ping);
-	#endif
+#endif
 }
 
 /*
@@ -290,7 +293,7 @@ void G_HistoricalTraceBegin(edict_t * ent, edict_t * owner)
 	if (mSec > 99) mSec = 99;
 	if (mSec < 0) mSec = 0;
 
-#if DEBUGLAG
+#ifdef HYPODEBUG_LAG
 	gi.dprintf("shot %i ms afer server frame \n", mSec);
 #endif
 

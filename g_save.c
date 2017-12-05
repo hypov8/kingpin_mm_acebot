@@ -299,7 +299,8 @@ field_t		castmemoryfields[] =
 };
 
 
-char lockpvs[8], scaletime[8], locktex[8], lockfoot[8], lockmouse[8];
+char lockpvs[8], scaletime[8], locktex[8], gammatex[8], intensity[8], lockfoot[8], lockmouse[8];
+
 
 /*
 ============
@@ -526,7 +527,8 @@ void InitGame (void)
 	i = read_map_file();
 	if (i != OK)
 	{	
-		if (i == FILE_OPEN_ERROR)	gi.dprintf("Custom Maps file not opened!\n");
+		if (i == FILE_OPEN_ERROR)	
+			gi.dprintf("Custom Maps file not opened!\n");
 		else
 			gi.dprintf("Error opening Custom Maps file!\n");
 
@@ -536,15 +538,19 @@ void InitGame (void)
 		gi.dprintf("Processed custom_maps file!\n");
 
 	for (i=0;i<7;i++) lockpvs[i]='a'+(rand()%26);
-	lockpvs[i]=0;
+		lockpvs[i]=0;
 	for (i=0;i<7;i++) scaletime[i]='a'+(rand()%26);
-	scaletime[i]=0;
+		scaletime[i]=0;
 	for (i=0;i<7;i++) locktex[i]='a'+(rand()%26);
-	locktex[i]=0;
+		locktex[i]=0;
+	for (i=0;i<7;i++) gammatex[i]='a'+(rand()%26);
+		gammatex[i]=0;
+	for (i = 0; i<7; i++) intensity[i] = 'a' + (rand() % 26);
+		intensity[i] = 0;
     for (i=0;i<7;i++) lockfoot[i]='a'+(rand()%26);
-    lockfoot[i]=0;
+		lockfoot[i]=0;
 	for (i = 0; i<7; i++) lockmouse[i] = 'a' + (rand() % 26);
-	lockmouse[i] = 0;
+		lockmouse[i] = 0;
 
 	{ // load & initialize GeoIP library
 #ifdef _WIN32

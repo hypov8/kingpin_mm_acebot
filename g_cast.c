@@ -1139,7 +1139,7 @@ void cast_start_go (edict_t *self)
 
 	if (self->leader_target)
 	{
-		if (!(self->leader = G_Find( NULL, FOFS(name), self->leader_target )))
+		if ((self->leader = G_Find(NULL, FOFS(name), self->leader_target)) == 0)
 		{
 			gi.dprintf( "%s has un-matched leader_target at: %s\n", self->classname, vtos( self->s.origin ));
 		}

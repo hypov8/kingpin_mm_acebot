@@ -125,9 +125,9 @@ void BeginIntermission (edict_t *targ, char *changenext)
 
 	game.autosaved = false;
 
-	// acebot
+// ACEBOT_ADD
 	//ToDo: acebot player intermision
-	//end
+// ACEBOT_END
 
 	// respawn any dead clients
 	for (i=0 ; i<maxclients->value ; i++)
@@ -518,7 +518,7 @@ static void BotScoreboardVote(edict_t *ent) //SCORE_BOT_VOTE
 		"Antilag    ",
 		"Vote Yes   ",
 		"Vote No    ",
-		"blah       ",
+		"close      ",
 		"blah       ",
 		NULL
 	};
@@ -532,7 +532,7 @@ static void BotScoreboardVote(edict_t *ent) //SCORE_BOT_VOTE
 
 	for (i = 1; i <= 8; i++)
 	{
-		if (ent->vote == i)
+		if (ent->menu == i)
 			strcpy(color[i-1], "999");
 		else
 			strcpy(color[i-1], "777");
@@ -616,7 +616,7 @@ static void BotScoreboardAdd(edict_t *ent) // SCORE_BOT_ADD
 
 	for (i = 1; i <= 8; i++)
 	{
-		if (ent->vote == i)
+		if (ent->menu == i)
 			strcpy(color[i - 1], "999");
 		else
 			strcpy(color[i - 1], "777");
@@ -710,7 +710,7 @@ static void BotScoreboardRemove(edict_t *ent) //SCORE_BOT_REMOVE
 
 	for (i = 1; i <= 8; i++)
 	{
-		if (ent->vote == i)
+		if (ent->menu == i)
 			strcpy(color[i - 1], "999");
 		else
 			strcpy(color[i - 1], "777");
@@ -792,7 +792,7 @@ static void BotScoreboardSkill(edict_t *ent) //SCORE_BOT_SKIL
 
 	for (i = 1; i <= 8; i++)
 	{
-		if (ent->vote == i)
+		if (ent->menu == i)
 			strcpy(color[i - 1], "999");
 		else
 			strcpy(color[i - 1], "777");
@@ -2070,7 +2070,7 @@ void DeathmatchScoreboard (edict_t *ent)
 		SpectatorScoreboardMessage (ent);
 	else if (ent->client->showscores == SCORE_MAP_VOTE)
 		VoteMapScoreboardMessage(ent);
-#ifdef HYPODEBUG
+#if 1 //def HYPODEBUG
 	else if (ent->client->showscores == SCORE_BOT_VOTE)
 		BotScoreboardVote(ent);
 	else if (ent->client->showscores == SCORE_BOT_ADD)
@@ -2199,7 +2199,8 @@ void Cmd_Score_f (edict_t *ent)
 			ent->client->showscores = SCOREBOARD;
 		else
 			ent->client->showscores = SCORE_MAP_VOTE;
-
+	else if (level.modeset == MATCHEND)
+		ent->client->showscores = SCOREBOARD;
 	else if (ent->client->showscores == SCORE_MOTD)
 		ent->client->showscores = SCOREBOARD;
 	else if (ent->client->showscores == SCOREBOARD2)
@@ -2231,19 +2232,19 @@ void Cmd_Score_f (edict_t *ent)
 			else
 				ent->client->showscores = NO_SCOREBOARD;
 	}
-#ifdef HYPODEBUG
-	else if (ent->client->showscores == SCORE_BOT_VOTE)
+#if 1 //def HYPODEBUG //death, resets scoreboard
+	else if (ent->client->showscores == SCORE_BOT_VOTE ||
+	ent->client->showscores == SCORE_BOT_ADD ||
+	ent->client->showscores == SCORE_BOT_REMOVE ||
+	ent->client->showscores == SCORE_BOT_SKILL)
+	{
 		ent->client->showscores = NO_SCOREBOARD;
-	else if (ent->client->showscores == SCORE_BOT_ADD)
-		ent->client->showscores = NO_SCOREBOARD;
-	else if (ent->client->showscores == SCORE_BOT_REMOVE)
-		ent->client->showscores = NO_SCOREBOARD;
-	else if (ent->client->showscores == SCORE_BOT_SKILL)
-		ent->client->showscores = NO_SCOREBOARD;
+		ent->menu = 0;
+	}	
 #endif
 	else
-
 		ent->client->showscores = SCOREBOARD;
+
 		
 	DeathmatchScoreboard (ent);
 }

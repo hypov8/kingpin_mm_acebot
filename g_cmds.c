@@ -31,18 +31,18 @@ else {gi.cvar_set(a,value);cprintf(ent,PRINT_HIGH,"This setting will take effect
 extern int team_startcash[2];
 extern int memalloced[3];
 
-//acebot add
+// ACEBOT_ADD
 char changeMapName[32]; // = '\0';
 
 char voteAddBot[32]; //team
 char voteRemoveBot[32]; //name
 float voteBotSkill; //skill 0.0 to 4.0
-void Cmd_VoteRemoveBot_f(edict_t *ent,qboolean isMenu, char botnames[32]);
+static void Cmd_VoteRemoveBot_f(edict_t *ent,qboolean isMenu, char botnames[32]);
 static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse);
 static void Cmd_VoteSkill_f(edict_t *ent, qboolean skill);
 void Cmd_Yes_f(edict_t *ent);
 void Cmd_No_f(edict_t *ent);
-//end ace
+//e ACEBOT_END
 
 
 // Papa - I just commented out the Kingpin's ban player code 
@@ -497,9 +497,9 @@ void Cmd_Spec_f (edict_t *self)
 
 
 
-// acebot 	
+// ACEBOT_ADD	
 	ACEIT_PlayerRemoved(self);
-//end
+// ACEBOT_END
 	ClientBeginDeathmatch( self );
 
 	//hypov8 add esc/spec bug fix
@@ -1774,7 +1774,7 @@ void Cmd_Key_f (edict_t *ent, int who)
             }
             else if (mem->response)		// we're responding to a question
             {
-                response_t resp;
+                response_t resp=0;
                 
                 if (Q_stricmp (cmd, "key1") == 0)
                     resp = resp_yes;
@@ -1796,7 +1796,7 @@ void Cmd_Key_f (edict_t *ent, int who)
     if(!key_ent)
 	//else	// noone to talk to, so make it an order in case anyone's listening
 	{
-		int flags;
+		int flags=0;
 
 		if (Q_stricmp (cmd, "key1") == 0)		// Stay Here
 			flags = ORDER_FOLLOWME;
@@ -1869,7 +1869,7 @@ void Cmd_FryAll_f (edict_t *ent)
 	if (deathmatch->value)
 		return;
 
-	while (e = findradius(e, ent->s.origin, 512))
+	while ((e = findradius(e, ent->s.origin, 512)) != 0)
 	{
 		if (e->svflags & SVF_MONSTER)
 		{
@@ -1984,9 +1984,9 @@ void SelectNextItem (edict_t *ent, int itflags)
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
 			num_vote_set = 8; //8 menu items
-			ent->vote++;
-			if (ent->vote == num_vote_set+1)
-				ent->vote = 1;
+			ent->menu++;
+			if (ent->menu == num_vote_set + 1)
+				ent->menu = 1;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -1999,9 +1999,9 @@ void SelectNextItem (edict_t *ent, int itflags)
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
 			num_vote_set = 3; //8 menu items
-			ent->vote++;
-			if (ent->vote == num_vote_set+1)
-				ent->vote = 1;
+			ent->menu++;
+			if (ent->menu == num_vote_set + 1)
+				ent->menu = 1;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -2014,9 +2014,9 @@ void SelectNextItem (edict_t *ent, int itflags)
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
 			num_vote_set = 8; //8 menu items
-			ent->vote++;
-			if (ent->vote == num_vote_set+1)
-				ent->vote = 1;
+			ent->menu++;
+			if (ent->menu == num_vote_set + 1)
+				ent->menu = 1;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -2029,9 +2029,9 @@ void SelectNextItem (edict_t *ent, int itflags)
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
 			num_vote_set = 8; //8 menu items
-			ent->vote++;
-			if (ent->vote == num_vote_set+1)
-				ent->vote = 1;
+			ent->menu++;
+			if (ent->menu == num_vote_set + 1)
+				ent->menu = 1;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -2114,9 +2114,9 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		num_vote_set = 8;
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
-			ent->vote--;
-			if (ent->vote < 1)
-				ent->vote = num_vote_set;
+			ent->menu--;
+			if (ent->menu < 1)
+				ent->menu = num_vote_set;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -2128,9 +2128,9 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		num_vote_set = 8;
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
-			ent->vote--;
-			if (ent->vote < 1)
-				ent->vote = num_vote_set;
+			ent->menu--;
+			if (ent->menu < 1)
+				ent->menu = num_vote_set;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -2142,9 +2142,9 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		num_vote_set = 8;
 		if (level.framenum > (ent->switch_teams_frame + 4))
 		{
-			ent->vote--;
-			if (ent->vote < 1)
-				ent->vote = num_vote_set;
+			ent->menu--;
+			if (ent->menu < 1)
+				ent->menu = num_vote_set;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
 		}
@@ -2155,9 +2155,9 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		num_vote_set = 8;
 		if (level.framenum >(ent->switch_teams_frame + 4))
 		{
-			ent->vote--;
-			if (ent->vote < 1)
-				ent->vote = num_vote_set;
+			ent->menu--;
+			if (ent->menu < 1)
+				ent->menu = num_vote_set;
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard(ent);
 		}
@@ -2576,7 +2576,6 @@ void Cmd_Use_f (edict_t *ent)
 // Papa
 // Kingpin uses whatever key your weapon is bound to, to work its menus
 // So I kept with this format for the menus that I added
-// hypo individual key used
     if (ent->client->showscores == SCORE_MAP_VOTE)  // next map vote menu
 	{
 		if (level.framenum > (ent->switch_teams_frame + 4))
@@ -2607,29 +2606,29 @@ void Cmd_Use_f (edict_t *ent)
 
 	if (ent->client->showscores == SCORE_BOT_VOTE)
 	{
-			if (s)
-			{
+		if (s)
+		{
 
-				if (!strcmp(s, "pipe"))
-					ent->client->showscores = SCORE_BOT_ADD;
-				else if (!strcmp(s, "pistol"))
-					ent->client->showscores = SCORE_BOT_REMOVE;
-				else if (!strcmp(s, "shotgun"))
-					ent->client->showscores = SCORE_BOT_SKILL;
-				else if (!strcmp(s, "tommygun"))
-					if (ent->cl_noAntiLag)	ent->cl_noAntiLag = 0;
-					else					ent->cl_noAntiLag = 1;
-				else if (!strcmp(s, "heavy machinegun"))
-						Cmd_Yes_f(ent);
-				else if (!strcmp(s, "grenade launcher"))
-						Cmd_No_f(ent);
-				else if (!strcmp(s, "bazooka"))
-					;
-				else if (!strcmp(s, "flamethrower"))
-					;
+			if (!strcmp(s, "pipe")){
+				ent->client->showscores = SCORE_BOT_ADD; ent->menu = 0;		}
+			else if (!strcmp(s, "pistol")){
+				ent->client->showscores = SCORE_BOT_REMOVE; ent->menu = 0;		}
+			else if (!strcmp(s, "shotgun")){
+				ent->client->showscores = SCORE_BOT_SKILL; ent->menu = 0;		}
+			else if (!strcmp(s, "tommygun")){
+				if (ent->cl_noAntiLag)	ent->cl_noAntiLag = 0;
+				else					ent->cl_noAntiLag = 1; ent->menu = 4;		}
+			else if (!strcmp(s, "heavy machinegun")){
+				Cmd_Yes_f(ent); ent->client->showscores = NO_SCOREBOARD; ent->menu = 0;			}
+			else if (!strcmp(s, "grenade launcher")){
+				Cmd_No_f(ent); ent->client->showscores = NO_SCOREBOARD;	ent->menu = 0;			}
+			else if (!strcmp(s, "bazooka")){
+				ent->client->showscores = NO_SCOREBOARD; ent->menu = 0;		}
+			else if (!strcmp(s, "flamethrower")){
+				ent->client->showscores = NO_SCOREBOARD; ent->menu = 0;		}
 
 			}
-			ent->vote = 0;
+
 
 			ent->switch_teams_frame = level.framenum;
 			DeathmatchScoreboard (ent);
@@ -2660,7 +2659,7 @@ void Cmd_Use_f (edict_t *ent)
 					Cmd_VoteAddBot_f(ent, 3);
 			}
 			ent->client->showscores = NO_SCOREBOARD;
-			ent->vote = 0;
+			ent->menu = 0;
 			DeathmatchScoreboard(ent);
 			return;
 		}
@@ -2691,7 +2690,7 @@ void Cmd_Use_f (edict_t *ent)
 						Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[7]);
 				}
 				ent->client->showscores = NO_SCOREBOARD;
-				ent->vote = 0;
+				ent->menu = 0;
 				DeathmatchScoreboard(ent);
 				return;
 			}
@@ -2739,7 +2738,7 @@ void Cmd_Use_f (edict_t *ent)
 					}
 				}
 				ent->client->showscores = NO_SCOREBOARD;
-				ent->vote = 0;
+				ent->menu = 0;
 				DeathmatchScoreboard(ent);
 				return;
 			}
@@ -3067,8 +3066,96 @@ void Cmd_InvUse_f (edict_t *ent)
 		}
 		return;
 	}	
-	
-	
+//hypo
+		if (ent->client->showscores == SCORE_BOT_VOTE)
+		{
+			switch (ent->menu)
+			{
+			case 1:ent->client->showscores = SCORE_BOT_ADD; ent->menu = 0; break;
+			case 2:ent->client->showscores = SCORE_BOT_REMOVE; ent->menu = 0; break;
+			case 3:ent->client->showscores = SCORE_BOT_SKILL; ent->menu = 0; break;
+			case 4:	if (ent->cl_noAntiLag) ent->cl_noAntiLag = 0;
+					else				ent->cl_noAntiLag = 1; ent->menu = 4; break;
+			case 5:Cmd_Yes_f(ent); ent->client->showscores = NO_SCOREBOARD; ent->menu = 0; break;
+			case 6:Cmd_No_f(ent); ent->client->showscores = NO_SCOREBOARD;	ent->menu = 0; break;
+			default:			  ent->client->showscores = NO_SCOREBOARD; ent->menu = 0; break;
+
+
+			}
+
+			DeathmatchScoreboard(ent);
+			return;
+		}
+
+	if (ent->client->showscores == SCORE_BOT_ADD)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			switch (ent->menu)
+			{
+			case 1: Cmd_VoteAddBot_f(ent, 1); break;
+			case 2: Cmd_VoteAddBot_f(ent, 2); break;
+			case 3:Cmd_VoteAddBot_f(ent, 0); break;
+			default:  break;
+
+			}
+		}
+		ent->client->showscores = NO_SCOREBOARD;
+		ent->menu = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+
+
+	if (ent->client->showscores == SCORE_BOT_REMOVE)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			switch (ent->menu)
+			{
+			case 1: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[0]); break;
+			case 2: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[1]); break;
+			case 3: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[2]); break;
+			case 4: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[3]); break;
+			case 5: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[4]); break;
+			case 6: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[5]); break;
+			case 7: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[6]); break;
+			case 8: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[7]); break;
+			default: Cmd_VoteRemoveBot_f(ent, true, '\0'); break;
+
+			}
+		}
+		ent->client->showscores = NO_SCOREBOARD;
+		ent->menu = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+
+	if (ent->client->showscores == SCORE_BOT_SKILL)
+	{
+		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+		{
+			switch (ent->menu)
+			{
+			case 1: VoteBotSkill = 4.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 2: VoteBotSkill = 3.5; Cmd_VoteSkill_f(ent, 1); break;
+			case 3: VoteBotSkill = 3.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 4: VoteBotSkill = 2.5; Cmd_VoteSkill_f(ent, 1); break;
+			case 5: VoteBotSkill = 2.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 6: VoteBotSkill = 1.5; Cmd_VoteSkill_f(ent, 1); break;
+			case 7: VoteBotSkill = 1.0; Cmd_VoteSkill_f(ent, 1); break;
+			case 8: VoteBotSkill = 0.5; Cmd_VoteSkill_f(ent, 1); break;
+				//default:Cmd_VoteSkill_f(ent, 1); break;
+
+			}
+		}
+		ent->client->showscores = NO_SCOREBOARD;
+		ent->menu = 0;
+		DeathmatchScoreboard(ent);
+		return;
+	}
+//end hypo
+
 	ValidateSelectedItem (ent);
 
 	if (ent->client->pers.selected_item == -1)
@@ -3191,22 +3278,21 @@ void Cmd_Activate_f (edict_t *ent)
 
 	if (ent->client->showscores == SCORE_BOT_VOTE)
 	{
-		switch (ent->vote)
+		switch (ent->menu)
 		{
-		case 1:ent->client->showscores = SCORE_BOT_ADD; break;
-		case 2:ent->client->showscores = SCORE_BOT_REMOVE; break;
-		case 3:ent->client->showscores = SCORE_BOT_SKILL; break;
-		case 4:	if (ent->cl_noAntiLag)  ent->cl_noAntiLag = 0; 
-					else				ent->cl_noAntiLag = 1;
-				break;
-		case 5:Cmd_Yes_f(ent);	break;
-		case 6:Cmd_No_f(ent);	break;
+		case 1:ent->client->showscores = SCORE_BOT_ADD; ent->menu = 0; break;
+		case 2:ent->client->showscores = SCORE_BOT_REMOVE; ent->menu = 0; break;
+		case 3:ent->client->showscores = SCORE_BOT_SKILL; ent->menu = 0; break;
+		case 4:	if (ent->cl_noAntiLag) ent->cl_noAntiLag = 0;
+				else				ent->cl_noAntiLag = 1; ent->menu = 4; break;
+		case 5:Cmd_Yes_f(ent); ent->client->showscores = NO_SCOREBOARD; ent->menu = 0; break;
+		case 6:Cmd_No_f(ent); ent->client->showscores = NO_SCOREBOARD; ent->menu = 0;	break;
 
-			//case 2:ent->client->showscores == SCORE_BOT_ADD; break;
-		default: break;
+		default: ent->client->showscores = NO_SCOREBOARD; ent->menu = 0; break;
 			
+
 		}
-		ent->vote = 0;
+		//ent->menu = 0;
 		DeathmatchScoreboard(ent);
 		return;
 	}
@@ -3215,17 +3301,17 @@ void Cmd_Activate_f (edict_t *ent)
 	{
 		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 		{
-			switch (ent->vote)
+			switch (ent->menu)
 			{
 			case 1: Cmd_VoteAddBot_f(ent,1) ; break;
 			case 2: Cmd_VoteAddBot_f(ent, 2); break;
-			case 3:
-			default: Cmd_VoteAddBot_f(ent, 0); break;
+			case 3:Cmd_VoteAddBot_f(ent, 0); break;
+			default: ; break;
 
 			}
 		}
 		ent->client->showscores = NO_SCOREBOARD;
-		ent->vote = 0;
+		ent->menu = 0;
 		DeathmatchScoreboard(ent);
 		return;
 	}
@@ -3235,7 +3321,7 @@ void Cmd_Activate_f (edict_t *ent)
 	{
 		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 		{
-			switch (ent->vote)
+			switch (ent->menu)
 			{
 			case 1: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[0]); break;
 			case 2: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[1]); break;
@@ -3245,12 +3331,12 @@ void Cmd_Activate_f (edict_t *ent)
 			case 6: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[5]); break;
 			case 7: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[6]); break;
 			case 8: Cmd_VoteRemoveBot_f(ent, true, VoteBotRemoveName[7]); break;
-			default:Cmd_VoteRemoveBot_f(ent, true, '\0'); break;
+			default: Cmd_VoteRemoveBot_f(ent, true, '\0'); break;
 
 			}
 		}
 		ent->client->showscores = NO_SCOREBOARD;
-		ent->vote = 0;
+		ent->menu = 0;
 		DeathmatchScoreboard(ent);
 		return;
 	}
@@ -3259,7 +3345,7 @@ void Cmd_Activate_f (edict_t *ent)
 	{
 		if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 		{
-			switch (ent->vote)
+			switch (ent->menu)
 			{
 			case 1: VoteBotSkill = 4.0; Cmd_VoteSkill_f(ent, 1); break;
 			case 2: VoteBotSkill = 3.5; Cmd_VoteSkill_f(ent, 1); break;
@@ -3274,7 +3360,7 @@ void Cmd_Activate_f (edict_t *ent)
 			}
 		}
 		ent->client->showscores = NO_SCOREBOARD;
-		ent->vote = 0;
+		ent->menu = 0;
 		DeathmatchScoreboard(ent);
 		return;
 	}
@@ -3319,7 +3405,7 @@ void Cmd_Activate_f (edict_t *ent)
 		// find the near enemy 
 		trav = best = NULL;
 		// JOSEPH 13-MAY-99
-		while (trav = findradius( trav, ent->s.origin, 80 ))
+		while ((trav = findradius(trav, ent->s.origin, 80)) != 0)
 		// END JOSEPH
 		{
 			// JOSEPH 14-MAY-99
@@ -3419,7 +3505,7 @@ void Cmd_Activate_f (edict_t *ent)
 		topdistance = 10000;
 		directtarget = 0;
 
-		while (((target = findradius(target, ent->s.origin, DREWACTIVATEDISTANCE * (1 + (deathmatch->value != 0)))) || toptarget) && !directtarget)
+		while (((target = findradius(target, ent->s.origin, DREWACTIVATEDISTANCE * (1 + (deathmatch->value != 0)))) != 0 || toptarget) && !directtarget)
 		{
 			if (!target)
 				goto startyourtriggers;
@@ -3443,7 +3529,7 @@ void Cmd_Activate_f (edict_t *ent)
 
 				targetL = NULL;
 
-				while (((targetL = findradius(targetL, trace.endpos, 16))))
+				while ((targetL = findradius(targetL, trace.endpos, 16)) != 0)
 				{
 					if (!(targetL->activate_flags & ACTIVATE_GENERAL))
 						continue;			
@@ -4507,7 +4593,7 @@ void Cmd_PrintSettings_f (edict_t *ent)
 	cprintf(ent, PRINT_HIGH,"Teamplay mode   : %d\n",(int)teamplay->value);
 	if (admincode[0] || !disable_admin_voting) {
 		int			i,found;
-		edict_t		*player;
+		edict_t		*player=NULL;
 
 		i=0;
 		found = false;
@@ -4629,59 +4715,65 @@ void Cmd_Yes_f (edict_t *ent)
 						if (dude->vote == CALLED_VOTE)
 						{
 							dude->client->pers.admin = ELECTED;
-							safe_bprintf (PRINT_HIGH,"%s has been elected Admin.\n",dude->client->pers.netname);
+							safe_bprintf(PRINT_HIGH, "%s has been elected Admin.\n", dude->client->pers.netname);
 							Cmd_CommandList_f(dude);
 						}
 					}
 					break;
 
 				case VOTE_ON_MAP:
+					Com_sprintf(mapNameStr, sizeof(mapNameStr), "map \"%s\"\n", changeMapName);
+					gi.AddCommandString(mapNameStr);
+					for_each_player_not_bot(dude, i)
 					{
-						Com_sprintf(mapNameStr, sizeof(mapNameStr), "map \"%s\"\n", changeMapName);
-						if (dude)
-							safe_bprintf(PRINT_HIGH, "Map change accepted.\n", dude->client->pers.netname);
-						gi.AddCommandString(mapNameStr);
+						if (dude->vote == CALLED_VOTE){
+							safe_bprintf(PRINT_HIGH, "Map change by %s accepted.\n", dude->client->pers.netname);
+							gi.dprintf("Map change by: %s accepted.\n", dude->client->pers.netname);
+						}
 					}
+						
 					break;
 					
 // ACEBOT_ADD			
 				case	VOTE_ADDBOT:
+					for_each_player_not_bot(dude, i)
 					{
-						if (dude)
-							safe_bprintf(PRINT_HIGH, "Add Bot accepted.\n", dude->client->pers.netname);
-
-						if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
-						{
-							if (teamplay->value)
-								ACESP_SpawnRandomBot(voteAddBot, "\0", "\0", NULL);
-							else 		
-								ACESP_SpawnRandomBot("\0", "\0", "\0", NULL);
+						if (dude->vote == CALLED_VOTE){
+							safe_bprintf(PRINT_HIGH, "Add Bot by: %s accepted.\n", dude->client->pers.netname);
+							gi.dprintf("Vote AddBot by: %s accepted.\n", dude->client->pers.netname);
 						}
-
 					}
+					if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+					{
+						if (teamplay->value)
+							ACESP_SpawnRandomBot(voteAddBot, "\0", "\0", NULL);
+						else 		
+							ACESP_SpawnRandomBot("\0", "\0", "\0", NULL);
+					}
+
 					break;
 				case	VOTE_REMOVEBOT:
+					for_each_player_not_bot(dude, i)
 					{
-						if (dude)
-							safe_bprintf(PRINT_HIGH, "Remove Bot accepted.\n", dude->client->pers.netname);
-
-						if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
-						{
-							ACESP_RemoveBot(voteRemoveBot);
+						if (dude->vote == CALLED_VOTE){
+							safe_bprintf(PRINT_HIGH, "Remove Bot by: %s accepted. \n", dude->client->pers.netname);
+							gi.dprintf("Vote AddRemove by: %s accepted. \n", dude->client->pers.netname);
 						}
 					}
+					if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+						ACESP_RemoveBot(voteRemoveBot);
 					break;
 
 				case VOTE_BOTSKILL:
-				{
-					if (dude)
-						safe_bprintf(PRINT_HIGH, "Skill settings change accepted.\n", dude->client->pers.netname);
-
-					if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+					for_each_player_not_bot(dude, i)
 					{
-						sv_botskill->value = voteBotSkill;
+						if (dude->vote == CALLED_VOTE){
+							safe_bprintf(PRINT_HIGH, "Skill settings change to %1.1f by: %s accepted.\n", voteBotSkill, dude->client->pers.netname);
+							gi.dprintf("Vote BotSkill %1.1f by: %s accepted. \n", voteBotSkill, dude->client->pers.netname);
+						}
 					}
-				}
+					if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+						sv_botskill->value = voteBotSkill;
 				break;
 // ACEBOT_END
 
@@ -4689,13 +4781,18 @@ void Cmd_Yes_f (edict_t *ent)
 			for_each_player_not_bot(dude, i)
 			{
 				if (dude->vote == CALLED_VOTE)
-					dude->vote = HASNT_VOTED;
+					dude->vote = HASNT_VOTED; //hypov8 reset all players vote?
 			}
 			level.voteset = NO_VOTES;
 		}
 	}
 	else
-		cprintf(ent,PRINT_HIGH,"There is nothing to vote on at this time!\n");
+	{
+		if (!ent->vote == HASNT_VOTED)
+			cprintf(ent, PRINT_HIGH, "You have already voted!\n");
+		else
+			cprintf(ent, PRINT_HIGH, "There is nothing to vote on at this time!\n");
+	}
 }
 
 
@@ -4745,7 +4842,7 @@ void Cmd_No_f (edict_t *ent)
 			for_each_player_not_bot(dude, i)
 			{
 				if (dude->vote == CALLED_VOTE)
-					dude->vote = HASNT_VOTED;
+					dude->vote = HASNT_VOTED; //hypov8 reset all players vote?
 			}
 
 			level.voteset = NO_VOTES;
@@ -4818,7 +4915,7 @@ void Cmd_Elect_f (edict_t *ent)
 			Cmd_CommandList_f(ent);
 			return;
 		}						//¡¢£¤¥¦§¨©ª«¬­­
-		safe_bprintf(PRINT_HIGH,"¡%s has requested admin privilages.\n\nPLEASE VOTE\n\n",ent->client->pers.netname);
+		safe_bprintf(PRINT_CHAT,"%s has requested admin privilages.\n\nPLEASE VOTE\n\n",ent->client->pers.netname);
 		ent->vote = CALLED_VOTE;
 		level.voteframe = level.framenum;
 		level.voteset= VOTE_ON_ADMIN;
@@ -4912,8 +5009,6 @@ void Cmd_VoteMap_f(edict_t *ent)
 	char		*s;
 	char	command[256];
 	struct stat st;
-
-
 	char mapInMod[60], mapInMain[60];
 	cvar_t	*game_dir;
 
@@ -4959,14 +5054,14 @@ void Cmd_VoteMap_f(edict_t *ent)
 		if (count == 1)
 		{
 			//safe_bprintf(PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
-			cprintf(ent, PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
+			cprintf(ent, PRINT_CHAT, "%s alowed to change map.\n", ent->client->pers.netname);
 
 			Com_sprintf(command, sizeof(command), "map \"%s\"\n", s);
 			gi.AddCommandString(command);
 
 			return;
 		}						//¡¢£¤¥¦§¨©ª«¬­­
-		safe_bprintf(PRINT_HIGH, "¡%s has requested map change to %s.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, s);
+		safe_bprintf(PRINT_CHAT, "%s has requested map change to %s.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, s);
 		ent->vote = CALLED_VOTE;
 		level.voteframe = level.framenum;
 		level.voteset = VOTE_ON_MAP;
@@ -4988,12 +5083,6 @@ static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse)
 	int i, count;
 	edict_t *dude;
 	char	*s = '\0';
-	//char	command[256];
-	//struct stat st;
-
-
-	//char mapInMod[60], mapInMain[60];
-	//cvar_t	*game_dir;
 	char *team ='\0';
 
 
@@ -5044,12 +5133,13 @@ static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse)
 		if (count == 1)
 		{
 			//safe_bprintf(PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
-			cprintf(ent, PRINT_HIGH, "%s alowed to add bot.\n", ent->client->pers.netname);
+			gi.dprintf("Vote AddBot by: %s accepted.\n", ent->client->pers.netname);
+			cprintf(ent, PRINT_CHAT, "¡­%s alowed to add bot.\n", ent->client->pers.netname);
 			//ACESP_SpawnBot(team, "\0", "\0", NULL);
 			ACESP_SpawnRandomBot(team, "\0", "\0", NULL);
 			return;
 		}						//¡¢£¤¥¦§¨©ª«¬­­
-		safe_bprintf(PRINT_HIGH, "¡%s has requested to add a bot.\n\nPLEASE VOTE\n\n", ent->client->pers.netname);
+		safe_bprintf(PRINT_CHAT, "%s has requested to add a bot.\n\nPLEASE VOTE\n\n", ent->client->pers.netname);
 		ent->vote = CALLED_VOTE;
 		level.voteframe = level.framenum;
 		level.voteset = VOTE_ADDBOT;
@@ -5069,7 +5159,6 @@ static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse)
 
 //hypo vote remove bot
 void Cmd_VoteRemoveBot_f(edict_t *ent, qboolean isMenu, char botnames[32]) //VOTE_REMOVEBOT;
-
 {
 	int i, count;
 	edict_t *dude;
@@ -5121,8 +5210,6 @@ void Cmd_VoteRemoveBot_f(edict_t *ent, qboolean isMenu, char botnames[32]) //VOT
 		}
 	}
 
-
-
 	if (level.voteset == NO_VOTES)
 	{
 		count = 0;
@@ -5134,12 +5221,13 @@ void Cmd_VoteRemoveBot_f(edict_t *ent, qboolean isMenu, char botnames[32]) //VOT
 
 		if (count == 1)
 		{
+			gi.dprintf("Vote BotRemove accepted. by: %s\n", ent->client->pers.netname);
 			//safe_bprintf(PRINT_HIGH, "%s alowed to change map.\n", ent->client->pers.netname);
-			cprintf(ent, PRINT_HIGH, "%s alowed to remove bot.\n", ent->client->pers.netname);
+			cprintf(ent, PRINT_CHAT, "%s alowed to remove bot.\n", ent->client->pers.netname);
 			ACESP_RemoveBot(s);
 			return;
 		}						//¡¢£¤¥¦§¨©ª«¬­­
-		safe_bprintf(PRINT_HIGH, "¡%s has requested to remove bot %s.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, name);
+		safe_bprintf(PRINT_CHAT, "%s has requested to remove bot %s.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, name);
 		ent->vote = CALLED_VOTE;
 		level.voteframe = level.framenum;
 		level.voteset = VOTE_REMOVEBOT;
@@ -5184,7 +5272,6 @@ void Cmd_VoteSkill_f(edict_t *ent, qboolean skill) //VOTE_BOTSKILL;
 		string = VoteBotSkill;
 
 
-
 	if (level.voteset == NO_VOTES)
 	{
 		count = 0;
@@ -5196,11 +5283,12 @@ void Cmd_VoteSkill_f(edict_t *ent, qboolean skill) //VOTE_BOTSKILL;
 
 		if (count == 1)
 		{
-			cprintf(ent, PRINT_HIGH, "%s alowed to set bot skill.\n", ent->client->pers.netname);
+			gi.dprintf("Vote BotSkill %1.1f by: %s accepted.\n", string, ent->client->pers.netname);
+			cprintf(ent, PRINT_CHAT, "%s alowed to set bot skill to %1.1f \n", ent->client->pers.netname, string);
 			sv_botskill->value = string;
 			return;
 		}						//¡¢£¤¥¦§¨©ª«¬­­
-		safe_bprintf(PRINT_HIGH, "¡%s has requested to change bot skill to %1.1f.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, string);
+		safe_bprintf(PRINT_CHAT, "%s has requested to change bot skill to %1.1f.\n\nPLEASE VOTE\n\n", ent->client->pers.netname, string);
 		ent->vote = CALLED_VOTE;
 		level.voteframe = level.framenum;
 		level.voteset = VOTE_BOTSKILL;
@@ -5242,7 +5330,7 @@ void Cmd_EndMap_f(edict_t *ent)
 {
 	if (ent->client->pers.admin > NOT_ADMIN)
 	{
-		if (level.modeset != ENDMATCHVOTING)
+		if (level.modeset != ENDMATCHVOTING || level.modeset != MATCHEND)
 		{
 			safe_bprintf(PRINT_HIGH, "Admin ended map.\n");
 
@@ -5677,7 +5765,7 @@ void Cmd_Resign_f (edict_t *ent)
 
 void checkkick(edict_t *ent, char *cmd, char *action)
 {
-	int a, reason;
+	int a, reason=0;
 	char *name;
 
 	if (gi.argc()<3 || gi.argc()>4) {
@@ -5956,8 +6044,8 @@ void ErrorMSGBox(edict_t *ent, char *msg)
     char errmsg[256];
     
     //errmsg = strcat("error ", msg);
-    sprintf(errmsg, "error %s", msg);
-    gi.WriteByte(13);
+    sprintf(errmsg, "error %s\n", msg);
+	gi.WriteByte(svc_stufftext);
     gi.WriteString(errmsg);
     gi.unicast(ent, true);
 }
@@ -5977,16 +6065,16 @@ void ClientCommand (edict_t *ent)
 	if (!ent->client)
 		return;		// not fully in game yet
 
+	if (!ent->inuse)
+		return;
+
 // ACEBOT_ADD
 	if (ACECM_Commands(ent))
 		return;
 
 	if (ent->acebot.is_bot)
-		return; //hypo bot wont use console?
+		return; //hypo bot wont use console
 // ACEBOT_END
-
-	if (!ent->inuse)
-		return;
 
 	//pers=&(ent->client->pers);
 	cmd = gi.argv(0);
@@ -6001,9 +6089,6 @@ void ClientCommand (edict_t *ent)
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&1) {
 #endif
-// ACEBOT_ADD
-				if (!ent->acebot.is_bot)
-// ACEBOT_END
 				KICKENT(ent,"%s is being kicked for using a see-thru cheat!\n");
 #ifdef DOUBLECHECK
 			} else {
@@ -6028,9 +6113,6 @@ void ClientCommand (edict_t *ent)
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&2) {
 #endif
-// ACEBOT_ADD
-				if (!ent->acebot.is_bot)
-// ACEBOT_END
 				KICKENT(ent,"%s is being kicked for using a speed cheat!\n");
 #ifdef DOUBLECHECK
 			} else {
@@ -6046,16 +6128,18 @@ void ClientCommand (edict_t *ent)
 		return;
 	}
 
-	if (!strcmp(cmd,locktex)) {
-        char *cmd3=gi.argv(3);
-        char *cmd2=gi.argv(2);
-		cmd=gi.argv(1);
+	if (!strcmp(cmd,locktex)) 
+	{
+        char *cmd3=gi.argv(3);	//$gl_polyblend 
+        char *cmd2=gi.argv(2);	//$gl_maxtexsize 
+		cmd=gi.argv(1);			//$gl_picmip
 
 
 		if (cmd3 && atof(cmd3) == 1.0f) 
 			ent->client->pers.polyblender = 0;
 
-		if (!cmd || atof(cmd)!=0.0f || !cmd2 || atof(cmd2)<16.0f || !cmd3 || atof(cmd3)!=1.0f) {
+		if (!cmd || atof(cmd)!=0.0f || !cmd2 || atof(cmd2)<16.0f || !cmd3 || atof(cmd3)!=1.0f )
+		{
 #ifdef DOUBLECHECK
 			if (ent->client->resp.checked&3) {
 #endif
@@ -6087,16 +6171,83 @@ void ClientCommand (edict_t *ent)
 		return;
 	}
 
+
+	if (!strcmp(cmd, gammatex))
+	{
+		cmd = gi.argv(1);		//$vid_gamma
+
+
+		if (!cmd || atof(cmd) < 0.39f) //hypo vid_gamma
+		{
+#ifdef DOUBLECHECK
+			if (ent->client->resp.checked & 3) 
+			{
+#endif
+				gi.WriteByte(svc_stufftext);
+				gi.WriteString("set vid_gamma 0.5;vid_restart\n");
+				gi.unicast(ent, true);
+
+				Com_Printf("%s Using 'vid_gamma' texture cheat. value reset to 0.5\n", ent->client->pers.netname);
+				//KICKENT(ent, "%s is being kicked for using a texture cheat!\n");
+#ifdef DOUBLECHECK
+			}
+			else 
+			{
+				ent->client->resp.checked |= 3;
+				ent->client->resp.checktime = level.framenum + 5;
+			}
+#endif
+		}
+#ifdef DOUBLECHECK
+		else
+			ent->client->resp.checked &= ~3;
+#endif
+		return;
+	}
+
+	if (!strcmp(cmd, intensity))
+	{
+		cmd = gi.argv(1);		//$intensity
+
+
+		if (!cmd || atof(cmd) != 2.0f) //hypo vid_gamma
+		{
+#ifdef DOUBLECHECK
+			if (ent->client->resp.checked & 3) 
+			{
+#endif
+				gi.WriteByte(svc_stufftext);
+				gi.WriteString("set intensity 2.0;vid_restart\n");
+				gi.unicast(ent, true);
+
+				Com_Printf("%s Using 'intensity' texture cheat. value reset to 2\n", ent->client->pers.netname);
+				//KICKENT(ent, "%s is being kicked for using a texture cheat!\n");
+#ifdef DOUBLECHECK
+			}
+			else 
+			{
+				ent->client->resp.checked |= 3;
+				ent->client->resp.checktime = level.framenum + 5;
+			}
+#endif
+		}
+#ifdef DOUBLECHECK
+		else
+			ent->client->resp.checked &= ~3;
+#endif
+		return;
+	}
+
     if (!strcmp(cmd,lockfoot)) {
         char *cmd2=gi.argv(2);
         cmd=gi.argv(1);
 
 		if (!cmd || atof(cmd)<120.0f || !cmd2 || atof(cmd2)<120.0f) {
-			gi.WriteByte(13);
+			gi.WriteByte(svc_stufftext);
 			if (atof(cmd)<120.0f)
-                gi.WriteString("cl_forwardspeed 160\n");
+                gi.WriteString("set cl_forwardspeed 160\n");
             else
-                gi.WriteString("cl_sidespeed 140\n");
+                gi.WriteString("set cl_sidespeed 140\n");
             gi.unicast(ent, true);
         }
         return;
@@ -6108,11 +6259,11 @@ void ClientCommand (edict_t *ent)
 
 
 		if (!cmd || Q_fabs(atof(cmd)) != 0.02200f) {
-			gi.WriteByte(13);
+			gi.WriteByte(svc_stufftext);
 			if (atof(cmd) < 0.0f)
-				gi.WriteString("m_yaw 0.022\nm_pitch -0.022\n");
+				gi.WriteString("set m_yaw 0.022;set m_pitch -0.022\n");
 			else
-				gi.WriteString("m_yaw 0.022\nm_pitch 0.022\n");
+				gi.WriteString("set m_yaw 0.022;set m_pitch 0.022\n");
 			gi.unicast(ent, true);
 		}
 		return;

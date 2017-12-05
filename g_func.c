@@ -70,7 +70,7 @@ void Move_Done (edict_t *self)
 		VectorCopy(self->s.origin, self->cast_info.saved_goal);
 
 		// is there a human standing on this plat?
-		while (trav = G_Find(trav, FOFS(classname), "player"))
+		while ((trav = G_Find(trav, FOFS(classname), "player")) != 0)
 		{
 			if (trav->groundentity == self)
 			{	// this player is standing on us, so drop a node
@@ -518,7 +518,7 @@ if (!(other->cast_info.aiflags & AI_GRUNT))
 		int		i=0;
 
 		// inform characters of the trigger
-		while (character = level.characters[i++])
+		while ((character = level.characters[i++]) != 0)
 		{
 			if ((!character->client) && ((other == character) || (VectorDistance(character->s.origin, other->s.origin) < 512)))
 				character->target_ent = ent;
@@ -1199,7 +1199,7 @@ void door_use_areaportals (edict_t *self, qboolean open)
 	if (!self->target)
 		return;
 
-	while ((t = G_Find (t, FOFS(targetname), self->target)))
+	while ((t = G_Find(t, FOFS(targetname), self->target)) != 0)
 	{
 		if (Q_stricmp(t->classname, "func_areaportal") == 0)
 		{

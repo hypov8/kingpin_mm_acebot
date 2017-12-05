@@ -658,12 +658,11 @@ qboolean Teamplay_ValidateJoinTeam( edict_t *self, int teamindex )
 		self->svflags &= ~SVF_NOCLIENT;
 
 #if 1
-		// ACEBOT_ADD
-
-			if (self->inuse && self->client->pers.spectator != SPECTATING)
-				ACEIT_PlayerAdded(self); //only add to bot list if player can enter game
-						//also called in match begin
-		// ACEBOT_END
+// ACEBOT_ADD
+		if (self->inuse && self->client->pers.spectator != SPECTATING)
+			ACEIT_PlayerAdded(self); //only add to bot list if player can enter game
+					//also called in match begin
+// ACEBOT_END
 #endif
 
 /*

@@ -237,7 +237,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 	if (ent->killtarget)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->killtarget)))
+		while ((t = G_Find(t, FOFS(targetname), ent->killtarget)) != 0)
 		{
 			G_FreeEdict (t);
 			if (!ent->inuse)
@@ -248,7 +248,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 		}
 
 		t = NULL;
-		while ((t = G_Find (t, FOFS(target2), ent->killtarget)))
+		while ((t = G_Find(t, FOFS(target2), ent->killtarget)) != 0)
 		{
 			G_FreeEdict (t);
 			if (!ent->inuse)
@@ -265,7 +265,7 @@ void G_UseTargets (edict_t *ent, edict_t *activator)
 	if (ent->target)
 	{
 		t = NULL;
-		while ((t = G_Find (t, FOFS(targetname), ent->target)))
+		while ((t = G_Find(t, FOFS(targetname), ent->target)) != 0)
 		{
 			// Rafael: hack to fix Entity used itself message
 			// this was showing up when you leave a pawnomatic 
@@ -492,8 +492,9 @@ void G_FreeEdict (edict_t *ed)
 	if (ed->character_index)
 		level.characters[ed->character_index] = NULL;
 
-
-	gi.unlinkentity (ed);		// unlink from world
+	//hypo allready unlinked!!! kpded2 caught error from  droptofloor()
+	if (ed->area.prev) //!(ed->area.next == NULL && ed->area.prev == NULL)
+		gi.unlinkentity (ed);		// unlink from world
 
 	if ((ed - g_edicts) <= (maxclients->value + BODY_QUEUE_SIZE))
 	{

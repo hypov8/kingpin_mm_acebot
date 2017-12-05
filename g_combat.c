@@ -632,7 +632,7 @@ void M_ReactToDamage (edict_t *targ, edict_t *attacker, float damage)
 	}
 
 	// they aren't on our side, are they a friend?
-	if (!(cast_memory = level.global_cast_memory[targ->character_index][attacker->character_index]))
+	if ((cast_memory = level.global_cast_memory[targ->character_index][attacker->character_index]) == 0)
 	{	// record this sighting, so we can start to attack them
 
 		AI_RecordSighting(targ, attacker, VectorDistance(targ->s.origin, attacker->s.origin) );

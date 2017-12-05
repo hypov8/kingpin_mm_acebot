@@ -1757,6 +1757,8 @@ void SpawnItem (edict_t *ent, gitem_t *item)
 		item->drop = NULL;
 	}
 */
+	PrecacheItem(item); //MH:
+
 	// JOSEPH 22-JAN-99
 	ent->item = item;
 	ent->nextthink = level.time + 2 * FRAMETIME;    // items start after other solids
@@ -3866,7 +3868,7 @@ void SetItemNames (void)
 	int		i;
 	gitem_t	*it;
 
-	for (i=0 ; i<game.num_items ; i++)
+	for (i=1 ; i<game.num_items ; i++)
 	{
 		it = &itemlist[i];
 		gi.configstring (CS_ITEMS+i, it->pickup_name);

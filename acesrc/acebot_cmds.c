@@ -71,21 +71,24 @@ qboolean ACECM_Commands(edict_t *ent)
 	//char *arg1;
 	short int node;
 
+	if (!debug_mode)
+		return false;
+
 	cmd = gi.argv(0);
 
-	if(Q_stricmp (cmd, "addnode") == 0 && debug_mode)
+	if(Q_stricmp (cmd, "addnode") == 0)
 		ent->acebot.last_node = ACEND_AddNode(ent,atoi(gi.argv(1))); 
 	
-	else if(Q_stricmp (cmd, "removelink") == 0 && debug_mode)
+	else if(Q_stricmp (cmd, "removelink") == 0)
 		ACEND_RemoveNodeEdge(ent,atoi(gi.argv(1)), atoi(gi.argv(2)));
 
-	else if(Q_stricmp (cmd, "addlink") == 0 && debug_mode)
+	else if(Q_stricmp (cmd, "addlink") == 0)
 		ACEND_UpdateNodeEdge(atoi(gi.argv(1)), atoi(gi.argv(2)),false);
 	
-	else if(Q_stricmp (cmd, "showpath") == 0 && debug_mode)
+	else if(Q_stricmp (cmd, "showpath") == 0)
     	ACEND_ShowPath(ent,atoi(gi.argv(1)));
 
-	else if (Q_stricmp(cmd, "localnode") == 0 && debug_mode) //hypov8 add. show nodes close by
+	else if (Q_stricmp(cmd, "localnode") == 0) //hypov8 add. show nodes close by
 	{
 		if (!dedicated->value)
 		{
@@ -103,7 +106,7 @@ qboolean ACECM_Commands(edict_t *ent)
 			}
 		}
 	}
-	else if(Q_stricmp (cmd, "findnode") == 0 && debug_mode)
+	else if(Q_stricmp (cmd, "findnode") == 0)
 	{
 		char strWrite[MAX_INFO_STRING];
 
@@ -114,14 +117,14 @@ qboolean ACECM_Commands(edict_t *ent)
 	
 		ACEND_ShowNode(node, 1); //hypov8 show closest node
 
-		sprintf(strWrite, "bind 9 movenode %d\n$Bound key 9 to %d", node, node);
+		sprintf(strWrite, "bind 9 movenode %d\n$Bound key 9 to %d\n", node, node);
 
 		gi.WriteByte(13);
 		gi.WriteString(strWrite);
 		gi.unicast(ent, true);
 	}
 
-	else if (Q_stricmp(cmd, "movenode") == 0 && debug_mode)
+	else if (Q_stricmp(cmd, "movenode") == 0)
 	{
 		int cmd2, cmd3, cmd4;
 		node = atoi(gi.argv(1));
@@ -149,7 +152,7 @@ qboolean ACECM_Commands(edict_t *ent)
 
 	}
 
-	else if (Q_stricmp(cmd, "nodefinal") == 0 && debug_mode) //add hypov8 finalise node table
+	else if (Q_stricmp(cmd, "nodefinal") == 0) //add hypov8 finalise node table
 		stopNodeUpdate = 1;
 
 	else

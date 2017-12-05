@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DDebug2|Win32'">
-    <LocalDebuggerCommand>$(OutDir)..\kingpin.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>+set game comp +set dedicated 1 +exec dm.cfg +exec bot_setup.cfg +map dm_fis_b1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommand>$(OutDir)..\kpded2.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>+set dedicated 1 +set game comp +set port 31510 +exec server.cfg</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(OutDir)..\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

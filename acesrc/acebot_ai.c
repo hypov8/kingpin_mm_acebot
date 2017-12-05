@@ -849,16 +849,17 @@ static void ACEAI_PreChooseWeapon(edict_t *self)
 
 }
 
+//hypov8 bot debug, stops goal move etc
+//#define HYPODEBUG_BOTS
 
 ///////////////////////////////////////////////////////////////////////
 // Main Think function for bot
 ///////////////////////////////////////////////////////////////////////
-
 void ACEAI_Think(edict_t *self)
 {
 	usercmd_t	ucmd;
-
-	float tmpTimeout;
+	vec3_t		v;
+	float		tmpTimeout, velo;
 
 	VectorCopy(self->client->ps.viewangles, self->s.angles);
 	VectorSet(self->client->ps.pmove.delta_angles, 0, 0, 0);
@@ -938,13 +939,16 @@ void ACEAI_Think(edict_t *self)
 		return;
 	}
 
-
+#ifndef HYPODEBUG_BOTS
 	if (self->acebot.state == BOTSTATE_WANDER && self->acebot.wander_timeout < level.time)
 		ACEAI_PickLongRangeGoal(self); // pick a new long range goal
-
+#endif
 	//check if bot is moving.
-	if (VectorCompare(self->s.origin, self->acebot.oldOrigin) == 0)
-	//if (VectorLength(self->velocity) > 37) //
+
+	//if (VectorCompare(self->s.origin, self->acebot.oldOrigin) == 0)
+	VectorSubtract(self->acebot.oldOrigin, self->s.origin, v);
+	velo = VectorLength(v);
+	if ( velo > 2) //if (VectorLength(self->velocity) > 37) //
 		self->acebot.suicide_timeout = level.time + 10.0;
 
 	tmpTimeout = self->acebot.suicide_timeout - level.time;
@@ -970,7 +974,7 @@ void ACEAI_Think(edict_t *self)
 
 		player_die(self, self, self, 100000, vec3_origin, 0, 0); //hypov8 add null
 	}
-
+#ifndef HYPODEBUG_BOTS
 	// Find any short range goal
 	if (!self->acebot.isMovingUpPushed)
 		ACEAI_PickShortRangeGoal(self);
@@ -981,7 +985,6 @@ void ACEAI_Think(edict_t *self)
 
 
 	//allow some extra time to serch for a better wep
-	
 	if (strcmp(self->client->pers.weapon->classname,"weapon_pistol") == 0 
 		&& self->acebot.spawnedTime >level.framenum
 		&& !self->acebot.isMovingUpPushed)
@@ -1001,8 +1004,7 @@ void ACEAI_Think(edict_t *self)
 			}
 		}
 	}
-	
-	
+
 	// Look for enemies //hypo serch weps if reloading etc. can make it serch while fireing
 	if ((self->client->weaponstate == WEAPON_READY || self->client->weaponstate == WEAPON_FIRING)
 		&& ACEAI_FindEnemy(self)
@@ -1021,7 +1023,7 @@ void ACEAI_Think(edict_t *self)
 			ACEMV_Move(self, &ucmd);
 	}
 	//debug_printf("State: %d\n",self->state);
-
+#endif
 	// set approximate ping
 	ucmd.msec = 100;// 75 + floor(random() * 25) + 1;
 
@@ -1043,6 +1045,23 @@ void ACEAI_Think(edict_t *self)
 		ucmd.sidemove = 0;
 		ucmd.upmove = 0;
 	}
+
+#ifdef HYPODEBUG_BOTS
+	{
+		VectorCopy( self->acebot.oldAngles,self->s.angles);
+		self->s.angles[YAW] += 4.2;
+		if (self->s.angles[YAW] >= 180)
+			self->s.angles[YAW] = self->s.angles[YAW] - 360;
+
+		VectorCopy( self->s.angles,self->acebot.oldAngles);
+		ucmd.forwardmove = BOT_FORWARD_VEL;
+		ucmd.sidemove = 0;
+		ucmd.upmove = 0;
+		ucmd.angles[PITCH] = ANGLE2SHORT(0.0f);
+		ucmd.angles[YAW] = ANGLE2SHORT(self->s.angles[YAW]);
+		ucmd.angles[ROLL] = ANGLE2SHORT(0.0f);
+	}
+#endif
 
 	// send command through id's code
 	ClientThink(self, &ucmd);

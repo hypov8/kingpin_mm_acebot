@@ -80,7 +80,7 @@ qboolean SV_RunThink (edict_t *ent)
 	thinktime = ent->nextthink;
 	if (thinktime <= 0)
 		return true;
-	if (thinktime > level.time+0.001)
+	if (thinktime > level.time + 0.001f)
 		return true;
 	
 	ent->nextthink = 0;
@@ -542,7 +542,7 @@ qboolean SV_Push (edict_t *pusher, vec3_t move, vec3_t amove)
 				extern void AI_FreeAndClearGoalEnt( edict_t *self );
 				node_t *node;
 
-				if (node = NAV_GetClosestNode( check, VIS_PARTIAL, false, false ))
+				if ((node = NAV_GetClosestNode(check, VIS_PARTIAL, false, false)) != 0)
 				{
 					check->goal_ent = G_Spawn();
 					check->goal_ent->owner = check;
@@ -802,6 +802,7 @@ void SV_Physics_Toss (edict_t *ent)
 
 // regular thinking
 	SV_RunThink (ent);
+	if (!ent->inuse) return; // got freed during think //MH:
 
 	// if not a team captain, so movement will be handled elsewhere
 	if ( ent->flags & FL_TEAMSLAVE)
@@ -1183,7 +1184,7 @@ void SV_Physics_Step (edict_t *ent)
 			// see if we've gone passed the landing position
 			if (	!(ent->flags & FL_FLY)
 				&&	(retval == -1) && (ent->nav_data.goal_index)
-				&&	(land_node = level.node_data->nodes[ent->nav_data.goal_index-1]))
+				&& ((land_node = level.node_data->nodes[ent->nav_data.goal_index - 1])) != 0)
 //				&&	(land_node->node_type & NODE_LANDING))
 			{
 				vec3_t	unit_vel, goal_dir, goal_vec;
@@ -1234,7 +1235,7 @@ void SV_Physics_Step (edict_t *ent)
 			}	
 
 			if (	(ent->flags & FL_FLY)
-				&&	((land_node = level.node_data->nodes[ent->nav_data.goal_index-1]) || ((ent->flags &= ~FL_FLY) && false))
+				&& ((land_node = level.node_data->nodes[ent->nav_data.goal_index - 1]) != 0 || ((ent->flags &= ~FL_FLY) && false))
 				/*&&	(land_node->node_type & NODE_LANDING)*/)
 			{	// if climbing ladder, and we're reached the landing position, stop
 

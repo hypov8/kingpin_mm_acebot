@@ -256,6 +256,7 @@ void SVCmd_BotDebug(void)
 {
 	int		i;
 	edict_t	*doot;
+	char string[10];
 
 	if (debug_mode == false)
 	{
@@ -269,7 +270,7 @@ void SVCmd_BotDebug(void)
 			//sv botdebug on
 			//safe_cprintf(doot, PRINT_MEDIUM, "0=MOVE 1=LADDER 2=PLATFORM 3=TELEPORTER 4=ITEM 5=WATER 7=JUMP\n");
 			//=======================================================
-			safe_cprintf(doot, PRINT_MEDIUM, " \n");
+		/*	safe_cprintf(doot, PRINT_MEDIUM, " \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†††††††††††††††††††††ƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†===================†ƒ \n");
@@ -284,10 +285,34 @@ void SVCmd_BotDebug(void)
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†††††††††††††††††††††ƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, " \n");
+
+			*/
+		//	string[0] = 'a' + 'z'; 
+		//	string[1] = 'b' + 'z';
+			//string[2] = 'c' + 'z';
+			//string[3] = 'd' + 'z';
+			//string[4] = 'e' + 'z';
+			string[0] = 'a' + (char)127;
+			string[1] = 'a' + (char)127;
+			string[2] = 'a' + (char)128;
+			string[3] = 'a' + (char)129;
+			string[4] = (char)122;
+
+			string[5] = (char)122;
+			string[6] = (char)122;
+
+
+
+			safe_cprintf(doot, PRINT_MEDIUM, "-=( %s )=- \n", string);
+
+//#define	PRINT_LOW			0		// pickup messages
+//#define	PRINT_MEDIUM		1		// death messages
+//#define	PRINT_HIGH			2		// critical messages
+//#define	PRINT_CHAT			3		// chat messages
 			//=======================================================	
 
 			gi.WriteByte(13);
-			gi.WriteString("bind 0 addnode 0;bind 5 addnode 5;bind 6 addnode 1; bind 7 addnode 7; bind 8 findnode; bind 9 movenode 999");
+			gi.WriteString("bind 0 addnode 0;bind 5 addnode 5;bind 6 addnode 1; bind 7 addnode 7; bind 8 findnode; bind 9 movenode 999\n");
 			gi.unicast(doot, true);
 		}
 	}

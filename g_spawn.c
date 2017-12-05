@@ -1393,7 +1393,7 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 
 	// modifications
 		sp = NULL;
-		while (sp = G_Find( sp, FOFS(classname), "info_player_deathmatch" ))
+		while ((sp = G_Find(sp, FOFS(classname), "info_player_deathmatch")) != 0)
 		{
 			if (VectorDistance( sp->s.origin, tv(552, -1704, 216) ) < 1)
 			{
@@ -1408,7 +1408,7 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 
 	// modifications
 		sp = NULL;
-		while (sp = G_Find( sp, FOFS(classname), "info_player_deathmatch" ))
+		while ((sp = G_Find(sp, FOFS(classname), "info_player_deathmatch")) != 0)
 		{
 			if (VectorDistance( sp->s.origin, tv(-736, 2272, 288) ) < 1)
 			{

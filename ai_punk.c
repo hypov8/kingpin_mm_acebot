@@ -827,7 +827,7 @@ skipbail:
 	else if (self->spawnflags & PUNK_FLAMEGUN)
 	{
 		int damage = 1;
-		int	kick = 4;
+		//int	kick = 4;
 		static int flamesnd = 0;
 		
 		extern void fire_target_flamethrower (edict_t *self, vec3_t start, vec3_t forward, int damage, int kick, int mod);

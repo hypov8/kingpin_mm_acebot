@@ -792,7 +792,7 @@ static qboolean ACEMV_CheckEyes(edict_t *self, usercmd_t *ucmd)
 		traceUp = gi.trace(upstart, self->mins, self->maxs, upend, self, MASK_BOT_SOLID_FENCE); //hypo min/max was null
 
 		// If the upper trace is not open, we need to turn.
-		if (traceUp.fraction != 1 /*|| (traceUp.allsolid || traceUp.startsolid)*/)
+		if (traceUp.fraction != 1 || traceUp.allsolid || traceUp.startsolid)
 		{
 			//hypov8 check time last uturned
 			if (self->acebot.uTurnTime < level.framenum)
@@ -1200,9 +1200,22 @@ void ACEMV_Wander(edict_t *self, usercmd_t *ucmd)
 {
 	vec3_t  temp;
 	qboolean isExplosive = 0;
+
+	trace_t trace; // for lift
+	vec3_t minx = { 0, 0, -25 };
+	vec3_t maxx = { 0, 0, -25 };
+
 	// Do not move
 	if (self->acebot.next_move_time > level.time)
 		return; //todo: func plate timmer. check if stuck underneath, allow move
+
+	trace = gi.trace(self->s.origin, minx, maxx, self->s.origin, self,CONTENTS_SOLID );
+	if (Q_stricmp(trace.ent->classname, "func_plat")== 0 /*& (CONTENTS_LAVA | CONTENTS_SLIME)*/)
+	{
+		// hypo moving up on a plate, stand still
+		if (self->s.origin[2] > self->acebot.oldOrigin[2]+2)
+			return;
+	}
 
 	//hypov8 jumping upto crate timmer
 	if (self->acebot.is_crate)
@@ -1358,7 +1371,7 @@ void ACEMV_Wander(edict_t *self, usercmd_t *ucmd)
 
 }
 
-static int ACEMV_CheckLavaAndSky(edict_t *self)
+static int ACEMV_CheckLavaAndSky(edict_t *self) //add normal falling edges
 {
 	vec3_t dir, forward, right, offset, start,wall, down;
 	trace_t trace; // for eyesight

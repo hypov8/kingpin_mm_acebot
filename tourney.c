@@ -90,6 +90,8 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 	edict_t		*self;
 	int			i;
 
+	gi.dprintf("--== PublicSetup ==-- command has been used\n"); //add hypo
+
 // ACEBOT_ADD
 	//ACEND_SaveNodes(); //save file nodes
 	num_players = 0;
@@ -142,6 +144,8 @@ void MatchSetup ()
 	edict_t		*self;
 	int			i;
 
+	gi.dprintf("--== MatchSetup ==-- command has been used\n"); //add hypo
+
 // ACEBOT_ADD
 	//ACEND_SaveNodes(); //save file nodes
 	num_players = 0;
@@ -183,6 +187,8 @@ void ResetServer () // completely resets the server including map
 {
 	char command[64];
 
+	gi.dprintf("--== ResetServer ==-- command has been used\n"); //add hypo
+
 	gi.cvar_set("dmflags",default_dmflags);
 	gi.cvar_set("teamplay",default_teamplay);
 	gi.cvar_set("password",default_password);
@@ -216,13 +222,12 @@ void MatchStart()
 	int			i;
 	edict_t		*self;
 
-	// ACEBOT_ADD
-	//ACEND_SaveNodes(); //save file nodes
+// ACEBOT_ADD
 	num_players = 0;
 	botsRemoved = 0;
 	num_bots = 0;
 	level.bots_spawned = false;
-	// ACEBOT_END	
+// ACEBOT_END	
 
 	level.player_num=0;
 	level.modeset = TEAM_PRE_MATCH;
@@ -380,8 +385,6 @@ void Start_TeamMatch () // Starts the match
 	gi.WriteByte( svc_stufftext );
 	gi.WriteString("play world/pawnbuzz_out.wav");
 	gi.multicast (vec3_origin, MULTICAST_ALL);
-
-//	level.modeset = TEAM_MATCH_RUNNING;
 }
 
 /*
@@ -533,6 +536,8 @@ void MatchEnd() // end of the match
 	int		i, count = 0;
 	edict_t	*doot;
 
+	gi.dprintf("--== MatchEnd ==-- command has been used\n"); //add hypo
+
 	safe_bprintf(PRINT_HIGH, "Admin ended match.\n");
 
 	for_each_player_not_bot(doot, i)
@@ -564,16 +569,19 @@ then sets mode dm or bm
 */
 void CheckAllPlayersSpawned()
 {
-
+	level.startframe = level.framenum; // delay clock until all players have spawned
 	if (teamplay->value) //hypov8 ToDo: acebot teamplay
 		SpawnTeamPlayers();
 	else
 		SpawnPlayer();
-		
-	if (level.is_spawn && level.modeset == DM_MATCH_SPAWNING)
-		level.modeset = DM_MATCH_RUNNING;
-	if (level.is_spawn && level.modeset == TEAM_MATCH_SPAWNING)
-		level.modeset = TEAM_MATCH_RUNNING;
+
+	if (level.is_spawn)
+	{
+		if (level.is_spawn && level.modeset == TEAM_MATCH_SPAWNING)
+			level.modeset = TEAM_MATCH_RUNNING;
+		else	//DM_MATCH_SPAWNING
+			level.modeset = DM_MATCH_RUNNING;
+	}
 
 		
 }
@@ -596,8 +604,7 @@ void CheckIdleMatchSetup () // restart the server if its empty in matchsetup mod
 	num_bots = 0;
 // ACEBOT_END
 
-	for_each_player_not_bot(doot, i) //hypov8 bots count!!
-	{
+	for_each_player_not_bot(doot, i){ //hypov8 bots count!!
 		count++;
 	}
 
@@ -616,12 +623,12 @@ level.modeset = TEAM_MATCH_SPAWNING;
 */
 void CheckStartTeamMatch()
 {
-// acebots
+// ACEBOT_ADD
 	level.bots_spawned = 0; //hypov8 
 	num_players = 0;
 	botsRemoved = 0;
 	num_bots = 0;
-//end
+// ACEBOT_END
 
 	if (level.framenum >= level.startframe + (PRE_MATCH_TIME -5))
 	{
@@ -650,15 +657,16 @@ void CheckStartDM ()
 		return; 
 	}
 
-// acebots
+
+	//if (level.framenum >= 345)
+	if (level.framenum >= level.startframe + (PRE_MATCH_TIME - 5)) //hypo global match start time PRE_MATCH_TIME
+	{
+// ACEBOT_ADD
 	level.bots_spawned = 0; //hypov8 
 	num_players = 0;
 	botsRemoved = 0;
 	num_bots = 0;
-//end
-	//if (level.framenum >= 345)
-	if (level.framenum >= level.startframe + (PRE_MATCH_TIME - 5)) //hypo global match start time PRE_MATCH_TIME
-	{
+// ACEBOT_END
 		Start_FFA ();
 		return;
 	}
@@ -705,8 +713,10 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 	}
 // ACEBOT_END
 
-	if ((count == 0) && (level.framenum > 12000))
+	if ((count == 0) && (level.framenum > 12000))	{
 		ResetServer(); //hypov8 bots count?
+		//return??
+	}
 
 	if ((int)fraglimit->value && (int)teamplay->value == 4)	
 	{
@@ -739,13 +749,10 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 		if (level.framenum > (level.startframe + ((int)timelimit->value) * 600 - 1))
 		{
 			safe_bprintf(PRINT_HIGH, "Timelimit hit.\n");
-			if (count == 0)
-				ResetServer();
+			if (!allow_map_voting)
+				EndDMLevel(); //hypo MatchEnd(); // 
 			else
-				if (!allow_map_voting)
-					EndDMLevel(); //hypo MatchEnd(); // 
-				else
-					SetupMapVote();
+				SetupMapVote();
 			return;
 		}
 		if (((level.framenum - level.startframe ) % 10 == 0 ) && (level.framenum > (level.startframe + (((int)timelimit->value  * 600) - 155))))  
@@ -810,6 +817,44 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 		gi.AddCommandString (command);
 	}
 }
+
+//hypo add
+void CheckEndMatchTime() // check the timelimit for voting next level/start next map
+{
+	int		i;
+	edict_t *player;
+	char	command[64];
+	static int		wining_map;
+
+	if (level.framenum == (level.startframe + 10))
+	{
+		for_each_player_not_bot(player, i)
+		{
+			player->client->showscores = SCOREBOARD;
+			DeathmatchScoreboard(player);
+		}
+	}
+
+	if (level.framenum > (level.startframe + 100))
+	{
+		if (num_custom_maps)
+		{
+
+			if (wining_map >= num_custom_maps)
+				wining_map = 0;
+			else
+				wining_map += 1;
+
+			Com_sprintf(command, sizeof(command), "gamemap \"%s\"\n", custom_list[wining_map].custom_map);
+		}
+		else
+			Com_sprintf(command, sizeof(command), "gamemap \"%s\"\n", level.mapname);
+		
+		gi.AddCommandString(command);
+
+	}
+}
+
 
 void CheckVote() // check the timelimit for an admin vote
 {

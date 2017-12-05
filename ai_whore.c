@@ -284,7 +284,7 @@ qboolean whore_attack( edict_t *self )
 			int		side_result;
 
 			// see if we can go backwards
-			if (side_result = AI_SideTrace( self, -64, 0, 1 ))
+			if ((side_result = AI_SideTrace( self, -64, 0, 1 )) !=0 )
 			{
 				self->cast_info.currentmove = &whore_move_run_reverse_tg_sht;
 				return true;
@@ -827,7 +827,7 @@ skipbail:
 	else if (self->spawnflags & WHORE_FLAMEGUN)
 	{
 		int damage = 1;
-		int	kick = 4;
+		//int	kick = 4;
 		static int flamesnd = 0;
 		
 		extern void fire_target_flamethrower (edict_t *self, vec3_t start, vec3_t forward, int damage, int kick, int mod);

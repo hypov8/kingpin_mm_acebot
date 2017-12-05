@@ -14,6 +14,17 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 
 void SP_misc_teleporter_dest (edict_t *ent);
 
+//MH:
+static void playerskin(int playernum, char *s)
+{
+	// only update player's skin config if it has changed (saves a bit of bandwidth)
+	if (strcmp(level.playerskins[playernum], s))
+	{
+		strncpy(level.playerskins[playernum], s, sizeof(level.playerskins[playernum]) - 1);
+		gi.configstring(CS_PLAYERSKINS + playernum, s);
+	}
+}
+
 //
 // Gross, ugly, disgustuing hack section
 //
@@ -700,7 +711,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 				{
 					// if they were killed in the enemy base, reward them with some extra cash
 					cash = NULL;
-					while (cash = G_Find( cash, FOFS(classname), "dm_safebag" ))
+					while ((cash = G_Find(cash, FOFS(classname), "dm_safebag")) != 0)
 					{
 						if (cash->style != self->client->pers.team)
 						{
@@ -949,8 +960,10 @@ void InitClientResp (gclient_t *client)
 	client->resp.checkpvs=level.framenum+23;
 	client->resp.checktime=level.framenum+11;
 	client->resp.checktex=level.framenum+30;
+	client->resp.checktex2=level.framenum+32;
+	client->resp.checktex3=level.framenum+35;
     client->resp.checkfoot=level.framenum+25;
-	client->resp.checkmouse=level.framenum+35;
+	client->resp.checkmouse=level.framenum+37;
 
 #ifdef DOUBLECHECK
 	client->resp.checked=0;
@@ -968,7 +981,9 @@ void InitClientRespClear (gclient_t *client)
     client->resp.checkfoot=level.framenum+25;
 	client->resp.checktime=level.framenum+11;
 	client->resp.checktex=level.framenum+30;
-	client->resp.checkmouse = level.framenum + 35;
+	client->resp.checktex2=level.framenum+32;
+	client->resp.checktex3=level.framenum+35;
+	client->resp.checkmouse = level.framenum + 37;
 
 #ifdef DOUBLECHECK
 	client->resp.checked=0;
@@ -1158,7 +1173,7 @@ spotagain:
 		}
 		// teamplay, done.
 
-		if (bestplayerdistance = PlayersRangeFromSpot (spot)) {
+		if ((bestplayerdistance = PlayersRangeFromSpot(spot)) != 0) {
 
 //			if (bestplayerdistance > bestdistance)
 			if ((0.9*bestplayerdistance)>bestdistance
@@ -1190,7 +1205,7 @@ spotagain:
 
 	// if there is a player just spawned on each and every start spot
 	// we have no choice to turn one into a telefrag meltdown
-	if (!(spot=SelectRandomDeathmatchSpawnPoint(ent)))
+	if ((spot = SelectRandomDeathmatchSpawnPoint(ent)) == 0)
 		spot = G_Find (NULL, FOFS(classname), "info_player_deathmatch");
 
 	return spot;
@@ -1923,6 +1938,15 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
+		else if (level.modeset == MATCHEND)
+		{
+			//add hypo matchend
+			ent->movetype = MOVETYPE_NONE;
+			ent->solid = SOLID_NOT;
+			ent->svflags |= SVF_NOCLIENT;
+			ent->client->pers.weapon = NULL;
+			ent->client->pers.spectator = SPECTATING;
+		}
 		else if (ent->client->pers.team) 
 		{
 			// so we don't KillBox() ourselves
@@ -1958,6 +1982,15 @@ void ClientBeginDeathmatch (edict_t *ent)
 		if (ent->client->pers.spectator == SPECTATING || ent->client->showscores == SCORE_REJOIN || level.modeset == ENDMATCHVOTING)
 		{
 			ent->movetype = MOVETYPE_NOCLIP;
+			ent->solid = SOLID_NOT;
+			ent->svflags |= SVF_NOCLIENT;
+			ent->client->pers.weapon = NULL;
+			ent->client->pers.spectator = SPECTATING;
+		}
+		else if (level.modeset == MATCHEND)
+		{
+			//add hypo
+			ent->movetype = MOVETYPE_NONE;
 			ent->solid = SOLID_NOT;
 			ent->svflags |= SVF_NOCLIENT;
 			ent->client->pers.weapon = NULL;
@@ -2215,7 +2248,7 @@ void ClientBegin (edict_t *ent)
 			spawnspot = NULL;
 			while (1)
 			{
-				if (!(spawnspot = G_Find( spawnspot, FOFS(classname), "info_player_coop" )))
+				if ((spawnspot = G_Find(spawnspot, FOFS(classname), "info_player_coop")) == 0)
 					break;
 
 				if (VectorDistance( spawnspot->s.origin, ent->s.origin ) > 384)
@@ -2303,7 +2336,7 @@ void ClientBegin (edict_t *ent)
 		spawnspot = NULL;
 		while (1)
 		{
-			if (!(spawnspot = G_Find( spawnspot, FOFS(classname), "info_player_coop" )))
+			if ((spawnspot = G_Find(spawnspot, FOFS(classname), "info_player_coop")) == 0)
 				break;
 
 			spawnspot->spawnflags &= ~0x10000000;
@@ -2392,7 +2425,9 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
     if (strchr(s,'%')) 
     {
 		char *s2;
-		while (s2=strchr(s,'%')) *s2=' ';
+		while ((s2 = strchr(s, '%')) != 0)
+			*s2 = ' ';
+
 		Info_SetValueForKey (userinfo, "name", s);
 	}
 
@@ -2467,7 +2502,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 
 	// check maxrate
 	s=Info_ValueForKey (userinfo, "rate");
-	if (s[0] && (a=atoi(s))) {
+	if (s[0] && (a = atoi(s)) != 0) {
 		if ((int)maxrate->value && a>(int)maxrate->value) {
 			if (!ent->client->resp.enterframe) {
 				edict_t *thinker;
@@ -2635,7 +2670,8 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 	playernum = ent-g_edicts-1;
 
 	// combine name and skin into a configstring
-	gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s %s", ent->client->pers.netname, s, extras) );
+	//gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s %s", ent->client->pers.netname, s, extras) );
+	playerskin(ent - g_edicts - 1, va("%s\\%s %s", ent->client->pers.netname, s, extras));
 
 	// fov
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
@@ -2971,10 +3007,11 @@ void ClientDisconnect (edict_t *ent)
 {
 	int		playernum;
 	int		i, z;
-	char	*skinvalue;
+	//char	*skinvalue;
 
 	if (!ent->client)
 		return;
+	playernum = ent - g_edicts - 1;
 
 //	sl_LogPlayerDisconnect( &gi, level, ent );	// Standard Logging
 	ent->client->pers.fakeThief = 0;
@@ -2995,13 +3032,23 @@ void ClientDisconnect (edict_t *ent)
 		playerlist[level.player_num].team = ent->client->pers.team;
 		playerlist[level.player_num].time = level.framenum - ent->client->resp.enterframe;
 
-		skinvalue = Info_ValueForKey (ent->client->pers.userinfo, "skin");
-		strcpy (playerlist[level.player_num].skin, skinvalue);
-		
-		strcpy (playerlist[level.player_num].netname, ent->client->pers.netname);
+		//MH:
+		//skinvalue = Info_ValueForKey (ent->client->pers.userinfo, "skin");
+		//strcpy (playerlist[level.player_num].skin, skinvalue);
+		strcpy(playerlist[level.player_num].netname, level.playerskins[playernum]);
+		//strcpy (playerlist[level.player_num].netname, ent->client->pers.netname);
+
+		if (teamplay->value)
+		{
+			char *p = strrchr(playerlist[level.player_num].netname, '/');
+			if (!p) goto skiplist; // shouldn't happen but just in case
+			memset(p + 5, ' ', 7); // ignore body+legs
+		}
+
 		level.player_num++;
 	}
 
+skiplist:
 	for (i=1; i<=maxclients->value; i++)
 	{
 		if (!g_edicts[i].inuse)
@@ -3044,8 +3091,10 @@ void ClientDisconnect (edict_t *ent)
 	ent->classname = "disconnected";
 	ent->client->pers.connected = false;
 
-	playernum = ent-g_edicts-1;
-	gi.configstring (CS_PLAYERSKINS+playernum, "");
+	//MH:
+	//playernum = ent-g_edicts-1;
+	//gi.configstring (CS_PLAYERSKINS+playernum, "");
+	playerskin(playernum, "");
 }
 
 //==============================================================
@@ -3703,7 +3752,7 @@ chasing:
 	
 		// find the nearest pull-enabled object 
 		trav = best = NULL;
-		while (trav = findradius( trav, ent->s.origin, 48 ))
+		while ((trav = findradius(trav, ent->s.origin, 48)) != 0)
 		{
 			if (!trav->pullable)
 				continue;
@@ -3960,7 +4009,7 @@ void ClientBeginServerFrame (edict_t *ent)
 				client->latched_buttons = 0;
 			}
 		}
-		return;
+		goto checks; //return; //hypo cheat checks stop when ur dead
 	}
 
 // BEGIN: Xatrix/Ridah/Navigator/16-apr-1998
@@ -4025,47 +4074,50 @@ checks:
 		if (level.framenum > ent->client->resp.checkdelta) {
 			ent->client->resp.checkdelta = level.framenum + 70;
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(no_shadows->value ? "cl_nodelta 0\ngl_shadows 0\n" : "cl_nodelta 0\n");
+			gi.WriteString(no_shadows->value ? "set cl_nodelta 0;set gl_shadows 0\n" : "set cl_nodelta 0\n");
 			gi.unicast(ent, true);
 		}
 		else if (level.framenum > ent->client->resp.checkpvs) {
-			char buf[40];
 			ent->client->resp.checkpvs = level.framenum + 90;
-			sprintf(buf, "%s $gl_clear $r_drawworld\n", lockpvs);
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(buf);
-			gi.unicast(ent, true);
+			gi.WriteString(va("cmd %s $gl_clear $r_drawworld\n", lockpvs));
+			gi.unicast(ent, false);
 		}
 		else if (level.framenum > ent->client->resp.checkfoot) {
-			char buf[40];
 			ent->client->resp.checkfoot = level.framenum + 50;
-			sprintf(buf, "%s $cl_forwardspeed $cl_sidespeed\n", lockfoot);
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(buf);
-			gi.unicast(ent, true);
+			gi.WriteString(va("cmd %s $cl_forwardspeed $cl_sidespeed\n", lockfoot));
+			gi.unicast(ent, false);
 		}
 		else if (level.framenum > ent->client->resp.checktime) {
-			char buf[32];
 			ent->client->resp.checktime = level.framenum + 130;
-			sprintf(buf, "%s $timescale $fixedtime\n", scaletime);
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(buf);
-			gi.unicast(ent, true);
+			gi.WriteString(va("cmd %s $timescale $fixedtime\n", scaletime));
+			gi.unicast(ent, false);
 		}
 		else if (level.framenum > ent->client->resp.checktex) {
-			char buf[48];
 			ent->client->resp.checktex = level.framenum + 120;  //120
-			sprintf(buf, "%s $gl_picmip $gl_maxtexsize $gl_polyblend\n", locktex);
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(buf);
-			gi.unicast(ent, true);
+			gi.WriteString(va("cmd %s $gl_picmip $gl_maxtexsize $gl_polyblend\n", locktex));
+			gi.unicast(ent, false);
 		}
-		else if (level.framenum>ent->client->resp.checkmouse) {
-			char buf[32];
-			ent->client->resp.checkmouse = level.framenum + 30;  //120
-			sprintf(buf, "%s $m_pitch\n", lockmouse);
+		else if (level.framenum > ent->client->resp.checktex2) {
+			ent->client->resp.checktex2 = level.framenum + 40;
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(buf);
+			gi.WriteString(va("cmd %s $vid_gamma\n", gammatex));
+			gi.unicast(ent, false);
+		}
+		else if (level.framenum > ent->client->resp.checktex3) {
+			ent->client->resp.checktex3 = level.framenum + 60;
+			gi.WriteByte(svc_stufftext);
+			gi.WriteString(va("cmd %s $intensity\n", intensity));
+			gi.unicast(ent, false);
+		}
+
+		else if (level.framenum>ent->client->resp.checkmouse) {
+			ent->client->resp.checkmouse = level.framenum + 30;
+			gi.WriteByte(svc_stufftext);
+			gi.WriteString(va("cmd %s $m_pitch\n", lockmouse));
 			gi.unicast(ent, true);
 		}
 	}

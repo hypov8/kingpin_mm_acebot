@@ -135,9 +135,9 @@ cvar_t	*hours;
 cvar_t	*minutes;
 cvar_t	*seconds;
 
-void (*_GeoIP_delete)(void* gi); //hypov8 add MH:
-const char *(*_GeoIP_country_name_by_addr)(void* gi, const char *addr); //hypov8 add MH:
-void *geoip=NULL; //hypov8 add MH:
+void		(*_GeoIP_delete)(void* gi); //hypov8 add MH:
+const char	*(*_GeoIP_country_name_by_addr)(void* gi, const char *addr); //hypov8 add MH:
+void		*geoip=NULL; //hypov8 add MH:
 
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint);
 void ClientThink (edict_t *ent, usercmd_t *cmd);
@@ -535,6 +535,8 @@ void EndDMLevel (void)
 	num_bots = 0;
 // ACEBOT_END
 
+	level.modeset = MATCHEND;
+	level.startframe = level.framenum;
 
 //	gi.cvar_set("password",default_password);
 
@@ -548,7 +550,7 @@ void EndDMLevel (void)
 		goto done;
 	}
 
-	if (nextmap = MapCycleNext( level.mapname ))
+	if ((nextmap = MapCycleNext( level.mapname ))!=0)
 	{
 		ent = G_Spawn ();
 		ent->classname = "target_changelevel";
@@ -594,6 +596,7 @@ done:
 			player->client->flashlight = false;
 	}
 
+
 	// Ridah, play a random music clip
 	gi.WriteByte( svc_stufftext );
 	gi.WriteString( va("play world/cypress%i.wav", 2+(rand()%4)) );
@@ -626,14 +629,12 @@ void CheckEndDM(void)
 		count++;
 	}
 // ACEBOT_ADD
-#ifndef SPAWNBOTS
 	if (count && !level.bots_spawned)
 	{
 		ACEND_InitNodes();
 		ACEND_LoadNodes();
 		ACESP_LoadBots();
 	}
-#endif
 // ACEBOT_END
 
 	if ((count == 0) && (level.framenum > 12000))
@@ -644,13 +645,10 @@ void CheckEndDM(void)
 		if (level.framenum > (level.startframe + ((int)timelimit->value) * 600 - 1))
 		{
 			safe_bprintf(PRINT_HIGH, "Timelimit hit.\n");
-			if (count == 0)
-				ResetServer();
+			if (!allow_map_voting)
+				EndDMLevel(); //hypo MatchEnd(); // 
 			else
-				if (!allow_map_voting)
-					EndDMLevel(); //hypo MatchEnd(); // 
-				else
-					SetupMapVote();
+				SetupMapVote();
 			return;
 		}
 	}
@@ -1223,20 +1221,20 @@ void G_RunFrame (void)
 	if (level.modeset == TEAM_PRE_MATCH)
 		CheckStartTeamMatch();
 
-	/* game is ready to spawn players */
 	if ((level.modeset == TEAM_MATCH_SPAWNING) || (level.modeset == DM_MATCH_SPAWNING))
 		CheckAllPlayersSpawned ();
 
-	/* team game in progress */
 	if (level.modeset == TEAM_MATCH_RUNNING)
 		CheckEndTeamMatch();
 
-	/*deathmatch game in progress */
 	if (level.modeset == DM_MATCH_RUNNING)
 		CheckEndDM ();
 
 	if (level.modeset == ENDMATCHVOTING) 
-		CheckEndVoteTime ();
+		CheckEndVoteTime();
+
+	if (level.modeset == MATCHEND) 
+		CheckEndMatchTime();
 
 	if (level.voteset != NO_VOTES)
 		CheckVote();

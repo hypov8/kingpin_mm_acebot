@@ -1028,18 +1028,16 @@ void ACESP_SpawnRandomBot(char *team, char *name, char *skin, char *userinfo)
 					if (countArray[l] == false)
 						break;
 
+					//run out of names. spawn generic
 					if (l == numBotCFGs-1)
-					// break;
-					goto defaultBot; //all bot names in use
+						ACESP_SpawnBot(team, name, skin, userinfo);
 				}
 			}
 		}
 
 	}
-
-defaultBot:
+	//no bot cfg
 	ACESP_SpawnBot(team, name, skin, userinfo);
-
 }
 
 

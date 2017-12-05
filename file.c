@@ -185,231 +185,238 @@ int proccess_ini_file()
 
 	Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"comp.ini",dir);
 	infile = fopen(filename, "r");
-	if (infile == NULL)	return FILE_OPEN_ERROR;
-	
-	// Read first line of the file
-	fgetline(infile, buffer);
-
-	while (!feof(infile))	// while there's still stuff
+	if (infile == NULL)	
+		return FILE_OPEN_ERROR;
+	else
 	{
-		switch (proccess_line(buffer))	// Determine what to do with the line, based offa what's in it
-		{
-		case ADMIN_CODE_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(admincode, map, 16);
-			break;
-		case COMMENT_LINE:	// do nothing
-			break;
-		case MAP_ROTATION_KEYWORD:	// add maps to map rotation
-			mode = ADD_ROTATION;
-			break;
-		case DEFAULT_MOTD_KEYWORD:	// add MOTD line
-			mode = ADD_MOTD_LINE;
-			break;
-		case FOUND_STRING:	// Found a string
-			if (mode == ADD_CUSTOM)
-				add_to_custom_maps(buffer);
-			if (mode == ADD_MOTD_LINE)
-				add_to_MOTD(buffer);
-			break;
-		case DEFAULT_MAP_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_map, map, 32);
-			break;
-		case DEFAULT_TEAMPLAY_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_teamplay, map, 16);
-			break;
-		case DEFAULT_DMFLAGS_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_dmflags, map, 16);
-			break;
-		case DEFAULT_PASSWORD_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_password, map, 16);
-			break;
-		case DEFAULT_TIME_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_timelimit, map, 16);
-			break;
-		case DEFAULT_CASH_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_cashlimit, map, 16);
-			break;
-		case DEFAULT_FRAG_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_fraglimit, map, 16);
-			break;
-		case CUSTOM_MAP_KEYWORD: // add maps to custom map list
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(custom_map_filename, map, 32);
-			break;
-		case MAP_VOTING_KEYWORD: 
-			allow_map_voting = true;
-			break;
-		case BAN_NAME_KEYWORD: 
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(ban_name_filename, map, 32);
-			break;
-		case BAN_IP_KEYWORD: 
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(ban_ip_filename, map, 32);
-			break;
-		case SCOREBOARD_FIRST_KEYWORD: 
-			scoreboard_first = true;
-			break;
-		case FPH_SCOREBOARD_KEYWORD: 
-			fph_scoreboard = true;
-			break;
-		case DISABLE_ADMIN_KEYWORD: 
-			disable_admin_voting = true;
-			break;
-		case DEFAULT_REAL_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(default_dm_realmode, map, 16);
-			break;
-		case FIXED_GAMETYPE_KEYWORD:
-			fixed_gametype = true;
-			break;
-		case ENABLE_PASSWORD_KEYWORD:
-			enable_password = true;
-			break;
-		case RCONX_FILE_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(rconx_file, map, 32);
-			break;
- /*       case URL_KEYWORD:
-			sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
-			strncpy(server_url, map, 64);
-			break;*/
-		case KEEP_ADMIN_KEYWORD:
-			keep_admin_status = true;
-			break;
-		case DEFAULT_RANDOM_MAP_KEYWORD:
-			default_random_map = true;
-			break;
-		case DISABLE_ANON_TEXT_KEYWORD:
-			disable_anon_text = true;
-			break;
-	    case DISABLE_CURSE_KEYWORD:
-			disable_curse = true;
-			break;
-        case UNLIMITED_CURSE_KEYWORD:
-			unlimited_curse = true;
-			break;
-			/* hypo disabled with bots. alow longer grace time because bots dont care :)*/
-        case DISABLE_ASC_KEYWORD:
-		//	enable_asc = true;
-            gi.cvar_set("anti_spawncamp", "1");
-			break;
-      /*  case ENABLE_NOFLAMEHACK_CHECK_KEYWORD:
-			//noflamehackcheck = true;
-            gi.cvar_set("kick_flamehack", "1");
-			break;*/
-		case ENABLE_SEE_KILLER_HEALTH_KEYWORD:
-			enable_killerhealth = true;
-			break;
-		
-		default:	// wtf is this?
-			gi.dprintf("Unhandled line!\n");
-		}
-		fgetline(infile, buffer);		// Retrieve next line from the input file
-	}
-
-	// close the ini file
-	fclose(infile);
-
-	if (ban_name_filename[0]) {
-	Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, ban_name_filename);
-	infile = fopen(filename, "r");
-	if (infile != NULL)	
-	{
-	// Read first line of the file
+		// Read first line of the file
 		fgetline(infile, buffer);
-		num_netnames = 0;
+
 		while (!feof(infile))	// while there's still stuff
 		{
-			int i;
-			if (strlen(buffer) == 0 || buffer[0] == '\n')
+			switch (proccess_line(buffer))	// Determine what to do with the line, based offa what's in it
 			{
-				fgetline(infile, buffer);
-				continue;
+			case ADMIN_CODE_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(admincode, map, 16);
+				break;
+			case COMMENT_LINE:	// do nothing
+				break;
+			case MAP_ROTATION_KEYWORD:	// add maps to map rotation
+				mode = ADD_ROTATION;
+				break;
+			case DEFAULT_MOTD_KEYWORD:	// add MOTD line
+				mode = ADD_MOTD_LINE;
+				break;
+			case FOUND_STRING:	// Found a string
+				if (mode == ADD_CUSTOM)
+					add_to_custom_maps(buffer);
+				if (mode == ADD_MOTD_LINE)
+					add_to_MOTD(buffer);
+				break;
+			case DEFAULT_MAP_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_map, map, 32);
+				break;
+			case DEFAULT_TEAMPLAY_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_teamplay, map, 16);
+				break;
+			case DEFAULT_DMFLAGS_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_dmflags, map, 16);
+				break;
+			case DEFAULT_PASSWORD_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_password, map, 16);
+				break;
+			case DEFAULT_TIME_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_timelimit, map, 16);
+				break;
+			case DEFAULT_CASH_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_cashlimit, map, 16);
+				break;
+			case DEFAULT_FRAG_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_fraglimit, map, 16);
+				break;
+			case CUSTOM_MAP_KEYWORD: // add maps to custom map list
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(custom_map_filename, map, 32);
+				break;
+			case MAP_VOTING_KEYWORD:
+				allow_map_voting = true;
+				break;
+			case BAN_NAME_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(ban_name_filename, map, 32);
+				break;
+			case BAN_IP_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(ban_ip_filename, map, 32);
+				break;
+			case SCOREBOARD_FIRST_KEYWORD:
+				scoreboard_first = true;
+				break;
+			case FPH_SCOREBOARD_KEYWORD:
+				fph_scoreboard = true;
+				break;
+			case DISABLE_ADMIN_KEYWORD:
+				disable_admin_voting = true;
+				break;
+			case DEFAULT_REAL_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(default_dm_realmode, map, 16);
+				break;
+			case FIXED_GAMETYPE_KEYWORD:
+				fixed_gametype = true;
+				break;
+			case ENABLE_PASSWORD_KEYWORD:
+				enable_password = true;
+				break;
+			case RCONX_FILE_KEYWORD:
+				sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+				strncpy(rconx_file, map, 32);
+				break;
+				/*       case URL_KEYWORD:
+						   sscanf(buffer, "%s %s", dummy, map);	// Quick ugly hack :)
+						   strncpy(server_url, map, 64);
+						   break;*/
+			case KEEP_ADMIN_KEYWORD:
+				keep_admin_status = true;
+				break;
+			case DEFAULT_RANDOM_MAP_KEYWORD:
+				default_random_map = true;
+				break;
+			case DISABLE_ANON_TEXT_KEYWORD:
+				disable_anon_text = true;
+				break;
+			case DISABLE_CURSE_KEYWORD:
+				disable_curse = true;
+				break;
+			case UNLIMITED_CURSE_KEYWORD:
+				unlimited_curse = true;
+				break;
+				/* hypo disabled with bots. alow longer grace time because bots dont care :)*/
+			case DISABLE_ASC_KEYWORD:
+				//	enable_asc = true;
+				gi.cvar_set("anti_spawncamp", "1");
+				break;
+				/*  case ENABLE_NOFLAMEHACK_CHECK_KEYWORD:
+					  //noflamehackcheck = true;
+					  gi.cvar_set("kick_flamehack", "1");
+					  break;*/
+			case ENABLE_SEE_KILLER_HEALTH_KEYWORD:
+				enable_killerhealth = true;
+				break;
+
+			default:	// wtf is this?
+				gi.dprintf("Unhandled line!\n");
 			}
-		// Check to see if this is a comment line
-			if (buffer[0] == '/' && buffer[1] == '/')
-			{
-				fgetline(infile, buffer);
-				continue;
-			}
-			for (i=0;i<strlen(buffer);i++) buffer[i]=tolower(buffer[i]);
-			strncpy(netname[num_netnames].value,buffer,16);
-			fgetline(infile, buffer);
-			num_netnames++;
-			if (num_netnames==100) break;
+			fgetline(infile, buffer);		// Retrieve next line from the input file
 		}
+
+		// close the ini file
 		fclose(infile);
-	}
 	}
 
-	if (ban_ip_filename[0]) {
-	Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, ban_ip_filename);
-	infile = fopen(filename, "r");
-	if (infile != NULL)	
+
+	if (ban_name_filename[0]) 
 	{
-	// Read first line of the file
-		fgetline(infile, buffer);
-		num_ips = 0;
-		while (!feof(infile))	// while there's still stuff
+		Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, ban_name_filename);
+		infile = fopen(filename, "r");
+		if (infile != NULL)	
 		{
-			if (strlen(buffer) == 0 || buffer[0] == '\n')
-			{
-				fgetline(infile, buffer);
-				continue;
-			}
-		// Check to see if this is a comment line
-			if (buffer[0] == '/' && buffer[1] == '/')
-			{
-				fgetline(infile, buffer);
-				continue;
-			}
-			strncpy(ip[num_ips].value,buffer,16);
+		// Read first line of the file
 			fgetline(infile, buffer);
-			num_ips++;
-			if (num_ips==100) break;
+			num_netnames = 0;
+			while (!feof(infile))	// while there's still stuff
+			{
+				int i;
+				if (strlen(buffer) == 0 || buffer[0] == '\n')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+			// Check to see if this is a comment line
+				if (buffer[0] == '/' && buffer[1] == '/')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+				for (i=0;i<strlen(buffer);i++) buffer[i]=tolower(buffer[i]);
+				strncpy(netname[num_netnames].value,buffer,16);
+				fgetline(infile, buffer);
+				num_netnames++;
+				if (num_netnames==100) break;
+			}
+			fclose(infile);
 		}
-		fclose(infile);
-	}
 	}
 
-	if (rconx_file[0]) {
-	Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, rconx_file);
-	infile = fopen(filename, "r");
-	if (infile != NULL)	
+	if (ban_ip_filename[0]) 
 	{
-	// Read first line of the file
-		fgetline(infile, buffer);
-		num_rconx_pass = 0;
-		while (!feof(infile))	// while there's still stuff
+		Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, ban_ip_filename);
+		infile = fopen(filename, "r");
+		if (infile != NULL)	
 		{
-			if (strlen(buffer) == 0 || buffer[0] == '\n')
-			{
-				fgetline(infile, buffer);
-				continue;
-			}
-		// Check to see if this is a comment line
-			if (buffer[0] == '/' && buffer[1] == '/')
-			{
-				fgetline(infile, buffer);
-				continue;
-			}
-			strncpy(rconx_pass[num_rconx_pass].value,buffer,32);
-			rconx_pass[num_rconx_pass].value[31]=0;
+		// Read first line of the file
 			fgetline(infile, buffer);
-			num_rconx_pass++;
-			if (num_rconx_pass==100) break;
+			num_ips = 0;
+			while (!feof(infile))	// while there's still stuff
+			{
+				if (strlen(buffer) == 0 || buffer[0] == '\n')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+			// Check to see if this is a comment line
+				if (buffer[0] == '/' && buffer[1] == '/')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+				strncpy(ip[num_ips].value,buffer,16);
+				fgetline(infile, buffer);
+				num_ips++;
+				if (num_ips==100) break;
+			}
+			fclose(infile);
 		}
-		fclose(infile);
 	}
+
+	if (rconx_file[0]) 
+	{
+		Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, rconx_file);
+		infile = fopen(filename, "r");
+		if (infile != NULL)	
+		{
+		// Read first line of the file
+			fgetline(infile, buffer);
+			num_rconx_pass = 0;
+			while (!feof(infile))	// while there's still stuff
+			{
+				if (strlen(buffer) == 0 || buffer[0] == '\n')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+			// Check to see if this is a comment line
+				if (buffer[0] == '/' && buffer[1] == '/')
+				{
+					fgetline(infile, buffer);
+					continue;
+				}
+				strncpy(rconx_pass[num_rconx_pass].value,buffer,32);
+				rconx_pass[num_rconx_pass].value[31]=0;
+				fgetline(infile, buffer);
+				num_rconx_pass++;
+				if (num_rconx_pass==100) break;
+			}
+			fclose(infile);
+		}
 	}
 
 	return OK;
@@ -430,49 +437,53 @@ int read_map_file()
 	else
 		strcpy(dir, game_dir->string);
 
-	if (custom_map_filename[0]) 
+	if (custom_map_filename[0])
 	{
-		Com_sprintf (filename, sizeof(filename), "%s"DIR_SLASH"%s",dir, custom_map_filename);
+		Com_sprintf(filename, sizeof(filename), "%s"DIR_SLASH"%s", dir, custom_map_filename);
 		infile = fopen(filename, "r");
-		if (infile == NULL)	return FILE_OPEN_ERROR;
+		if (infile == NULL)	
+			return FILE_OPEN_ERROR;
 
 		num_custom_maps = 0;
 
 		// Read first line of the file
 		fgetline(infile, buffer);
 		while (!feof(infile))	// while there's still stuff
+		{
+			if (strlen(buffer) == 0 || buffer[0] == '\n')
 			{
-				if (strlen(buffer) == 0 || buffer[0] == '\n')
-				{
-					fgetline(infile, buffer);
-					continue;
-				}
-			// Check to see if this is a comment line
-				if (buffer[0] == '/' && buffer[1] == '/')
-				{
-					fgetline(infile, buffer);
-					continue;
-				}
-
-				sscanf(buffer, "%s %s", rank, map);	
-				
-				if (rank[0] == '0' || rank[0]== '\0') //hypov8 fix map rank set to 0 or null
-					rank[0] = '1';
-
-				//hypov8 renames list to lowercase.
-				//when called at map vote. causing ram to sky rocket untill max_gltextures reached
-				// strlwr(map); hypov8 now placed in client view
-
-				strncpy(custom_list[num_custom_maps].custom_map, map, 32);
-				custom_list[num_custom_maps].rank = atoi(rank);
-				total_rank += custom_list[num_custom_maps].rank;
-				num_custom_maps++;
 				fgetline(infile, buffer);
+				continue;
 			}
+			// Check to see if this is a comment line
+			if (buffer[0] == '/' && buffer[1] == '/')
+			{
+				fgetline(infile, buffer);
+				continue;
+			}
+
+			sscanf(buffer, "%s %s", rank, map);
+
+			if (rank[0] == '0' || rank[0] == '\0') //hypov8 fix map rank set to 0 or null
+				rank[0] = '1';
+
+			//hypov8 renames list to lowercase.
+			//when called at map vote. causing ram to sky rocket untill max_gltextures reached
+			// strlwr(map); hypov8 now placed in client view
+
+			strncpy(custom_list[num_custom_maps].custom_map, map, 32);
+			custom_list[num_custom_maps].rank = atoi(rank);
+			total_rank += custom_list[num_custom_maps].rank;
+			num_custom_maps++;
+			fgetline(infile, buffer);
+		}
+		// MH: fix for leak
+		if (infile)
+			fclose(infile);
+
 	}
-	// MH: fix for leak
-	if (infile)
-		fclose(infile);
+	else
+		return	FILE_OPEN_ERROR;
 
 	return OK;
 }

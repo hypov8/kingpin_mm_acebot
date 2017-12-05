@@ -259,6 +259,7 @@ typedef struct //bot->acebot->xxx
 	int randomWeapon; //hypov8 select a random weapon to be there poirity, reset per level
 
 	vec3_t oldOrigin; //hypov8 store last position for calculating velocity
+	vec3_t oldAngles;
 
 	qboolean hunted; //bot will attack this persone with brute force:)
 

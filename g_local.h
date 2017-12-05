@@ -40,16 +40,30 @@
 // Papa 10.6.99 
 #if 1
 #define for_each_player_inc_bot(JOE_BLOGGS,INDEX)\
-for(INDEX=1;INDEX<=maxclients->value;INDEX++)\
-	if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse &&\
+for(INDEX=1;INDEX<=(int)maxclients->value;INDEX++ )\
+	if((JOE_BLOGGS=&g_edicts[INDEX])!=0 &&JOE_BLOGGS->inuse &&\
 	JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected)
 
 #define for_each_player_not_bot(JOE_BLOGGS,INDEX)\
-for(INDEX=1;INDEX<=maxclients->value;INDEX++)\
-	if((JOE_BLOGGS=&g_edicts[INDEX]) && JOE_BLOGGS->inuse &&\
-	JOE_BLOGGS->client && JOE_BLOGGS->client->pers.connected && !JOE_BLOGGS->acebot.is_bot)
+for(INDEX=1;INDEX<=(int)maxclients->value;INDEX++)\
+	if((JOE_BLOGGS=&g_edicts[INDEX])!=0 && JOE_BLOGGS->inuse && JOE_BLOGGS->client &&\
+	JOE_BLOGGS->client->pers.connected && !JOE_BLOGGS->acebot.is_bot)
 
-//#else
+#else
+
+qboolean for_each_player_inc_bot(edict_t *JOE_BLOGGS, int INDEX)
+{
+	for (INDEX = 1; INDEX <= (int)maxclients->value; INDEX++)
+		if ((JOE_BLOGGS == &g_edicts[INDEX]) &&
+			JOE_BLOGGS->inuse &&
+			JOE_BLOGGS->client &&
+			JOE_BLOGGS->client->pers.connected &&
+			!JOE_BLOGGS->acebot.is_bot)
+			return true;
+		else
+			return false;
+}
+//#define for_each_player_inc_bot(JOE_BLOGGS,INDEX) for_each_player1(JOE_BLOGGS,INDEX)
 //qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #endif //hypo for_each_player
 // Theses are the various mode a server can be in
@@ -67,7 +81,7 @@ for(INDEX=1;INDEX<=maxclients->value;INDEX++)\
 #ifdef HYPODEBUG
 #define PRE_MATCH_TIME 20
 #else
-#define PRE_MATCH_TIME 250 //hypov8 global match count down timmer 250. 5 sec cache and 20 sec prematch
+#define PRE_MATCH_TIME 250 //hypov8 global match count down timmer 250. 5sec cache and 20 sec prematch
 #endif
 
 // admin types
@@ -547,10 +561,10 @@ typedef struct
 	int		is_spawn;  
 	int		player_num; 
 
-// acebot
+// ACEBOT_ADD
 	qboolean bots_spawned; //hypov8 load bots once only while loading players
 	qboolean customSkinsUsed; // will not save to bot temp file if per map was loaded//hypo todo: add option to keep bots between levels while players??
-//end
+// ACEBOT_END
 
 // NET_ANTILAG	//et-xreal antilag
 	int RealTimeMSec; //hypov8 trying to capture every millisec for lag compensation
@@ -559,6 +573,8 @@ typedef struct
     // snap - team tags
 	int		manual_tagset;
 
+
+	char playerskins[MAX_CLIENTS][MAX_QPATH]; // player skin configstrings //MH:
 } level_locals_t;
 
 
@@ -1334,6 +1350,7 @@ void CheckIdleMatchSetup ();
 void CheckEndTeamMatch ();
 void CheckVote();
 void CheckEndVoteTime ();
+void CheckEndMatchTime();
 void MatchEnd();
 void ResetServer();
 int	CheckNameBan (char *name);
@@ -1465,7 +1482,7 @@ typedef struct
 
 	int			accshot,acchit,fav[8];
 
-	int			checkdelta, checkpvs, checktime, checktex, checkfoot, checkmouse;
+	int			checkdelta, checkpvs, checktime, checktex, checktex2, checktex3, checkfoot, checkmouse;
 
 #ifdef NOT_ZOID
 	qboolean	spectator;			// client is a spectator
@@ -2003,13 +2020,14 @@ struct edict_s
 
     int         name_change_frame;
 
-//	Snap, bunnyhop
+	//	Snap, bunnyhop
 	int			jump_framenum;
 	int			land_framenum;
 	int			strafejump_count;
 	int			firstjump_frame;
-	//hypov8 check last command
-	//usercmd_t *last_cmd_num;
+
+	//hypov8 new options menu
+	int			menu;
 };
 
 // RAFAEL
@@ -2120,7 +2138,8 @@ extern MOTD_t	MOTD[20];
 
 typedef struct // stores player info if they disconnect
 {
-	char netname[16];
+	//char player[MAX_QPATH]; //MH:
+	char netname[MAX_QPATH]; //hypo was 16
 	int frags;
 	int	deposits;
 	int	team;
@@ -2158,7 +2177,7 @@ extern ban_t	rconx_pass[100];
 #define TIMENAME " time remaining"
 
 
-extern char lockpvs[8], scaletime[8], locktex[8], lockfoot[8], lockmouse[8];
+extern char lockpvs[8], scaletime[8], locktex[8], gammatex[8], intensity[8], lockfoot[8], lockmouse[8];
 
 void cprintf(edict_t *ent, int printlevel, char *fmt, ...);
 
