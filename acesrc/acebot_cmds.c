@@ -127,6 +127,10 @@ qboolean ACECM_Commands(edict_t *ent)
 	else if (Q_stricmp(cmd, "movenode") == 0)
 	{
 		int cmd2, cmd3, cmd4;
+
+		if (stopNodeUpdate)
+			return true;
+
 		node = atoi(gi.argv(1));
 
 		cmd2 = atof(gi.argv(2));
@@ -151,6 +155,8 @@ qboolean ACECM_Commands(edict_t *ent)
 		}
 
 	}
+	else if (Q_stricmp(cmd, "clearnode") == 0) //add hypov8 clear all paths to a node(cant be removed?)
+		ACEND_RemovePaths(ent, atoi(gi.argv(1)));
 
 	else if (Q_stricmp(cmd, "nodefinal") == 0) //add hypov8 finalise node table
 		stopNodeUpdate = 1;

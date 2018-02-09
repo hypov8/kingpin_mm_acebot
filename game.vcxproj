@@ -262,6 +262,11 @@
     <ClCompile Include="g_cmds.c" />
     <ClCompile Include="g_combat.c" />
     <ClCompile Include="g_func.c" />
+    <ClCompile Include="g_hitmen_utils.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DDebug2|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug lan game|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="g_items.c" />
     <ClCompile Include="g_joe_misc.c" />
     <ClCompile Include="g_main.c" />
@@ -279,6 +284,7 @@
     <ClCompile Include="m_bbox.c" />
     <ClCompile Include="m_move.c" />
     <ClCompile Include="p_client.c" />
+    <ClCompile Include="p_hook.c" />
     <ClCompile Include="p_hud.c" />
     <ClCompile Include="p_view.c" />
     <ClCompile Include="p_weapon.c" />
@@ -324,6 +330,11 @@
     <ClInclude Include="gslog.h" />
     <ClInclude Include="g_ai.h" />
     <ClInclude Include="g_func.h" />
+    <ClInclude Include="g_hitmen.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DDebug2|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debug lan game|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="g_local.h" />
     <ClInclude Include="g_nav.h" />
     <ClInclude Include="g_teamplay.h" />

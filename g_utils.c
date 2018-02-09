@@ -112,6 +112,7 @@ edict_t *findradius (edict_t *from, vec3_t org, float rad)
 }
 
 /*
+// ACEBOT_ADD 
 if (teamplay->value != 1)
 continue;
 
@@ -492,7 +493,7 @@ void G_FreeEdict (edict_t *ed)
 	if (ed->character_index)
 		level.characters[ed->character_index] = NULL;
 
-	//hypo allready unlinked!!! kpded2 caught error from  droptofloor()
+	// ACEBOT_ADD allready unlinked!!! kpded2 caught error from  droptofloor()
 	if (ed->area.prev) //!(ed->area.next == NULL && ed->area.prev == NULL)
 		gi.unlinkentity (ed);		// unlink from world
 

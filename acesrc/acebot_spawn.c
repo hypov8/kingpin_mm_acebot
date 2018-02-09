@@ -61,6 +61,10 @@
 #include "..\m_player.h"
 #include "acebot.h"
 
+// BEGIN HITMEN
+#include "..\g_hitmen.h"
+// END
+
 //bot_skin_t randomBotSkins[64];
 
 ///////////////////////////////////////////////////////////////////////
@@ -151,8 +155,6 @@ void ACESP_LoadBots()
 	//hypo mod folder for bots dir
 	map_name = gi.cvar("mapname", "", 0);
 	game_dir = gi.cvar("game", "", 0);
-
-
 
 
 	//check for individual bot config
@@ -617,9 +619,7 @@ client->pers.spectator = PLAYING;
     if(!respawn)
 	{
 		bot->think = ACESP_HoldSpawn; //hypov8 ToDo: causing telfrag of waiting at spawn?
-		//bot->nextthink = level.time + 0.1;
-		//bot->nextthink = level.time + random()*3.0; // up to three seconds
-		bot->nextthink = level.time +0.1 + (rand()%3); // up to three seconds
+		bot->nextthink = level.time +0.1 + (rand()%4); // up to three seconds
 	}
 	else
 	{
@@ -637,7 +637,33 @@ client->pers.spectator = PLAYING;
 		bot->think = ACEAI_Think;
 		bot->nextthink = level.time + FRAMETIME;
 
+		// BEGIN HITMEN
+		if (enable_hitmen)
+		{
+			float timediff;
+			// this should only work once we've been killed once and respawned
+			timediff = 0;
+			if (bot->client->resp.spawntime != 0)
+				timediff = level.framenum - bot->client->resp.spawntime;
+
+			// Once we've respawned set the players time alive.
+			timediff /= 10;
+			if ((timediff > 0) && timediff > (bot->client->resp.timealive))
+				bot->client->resp.timealive = timediff;
+
+			bot->client->resp.spawntime = level.framenum;
+
+			//hypove todo. needed??
+			// force the current weapon up
+			client->newweapon = client->pers.weapon;
+			ChangeWeapon (bot);
+			//hypove todo. needed??
+			Hm_Set_Timers(client);
+		}
+		// END
 	}
+
+
 	
 }
 

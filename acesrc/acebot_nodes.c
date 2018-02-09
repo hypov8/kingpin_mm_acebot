@@ -358,8 +358,8 @@ qboolean ACEND_FollowPath(edict_t *self)
 ///////////////////////////////////////////////////////////////////////
 // Capture when the grappling hook has been fired for mapping purposes.
 ///////////////////////////////////////////////////////////////////////
-#if 0
-void ACEND_GrapFired(edict_t *self)
+#if 1
+void ACEND_GrapFired(edict_t *self) //hypo todo: hitmen
 {
 	//int closest_node;
 	
@@ -607,28 +607,27 @@ void ACEND_ShowNode(short node, int isTmpNode)
 	ent->movetype = MOVETYPE_NONE;
 	ent->solid = SOLID_NOT;
 
-	if (nodes[node].type == BOTNODE_MOVE)
-	{
-		ent->s.effects |= EF_COLOR_SHELL;
-		ent->s.renderfx |= RF_SHELL_GREEN;
+	ent->s.effects = EF_COLOR_SHELL;
+	ent->s.renderfx2 = RF2_NOSHADOW;
+	ent->s.renderfx = RF_FULLBRIGHT;
 
-		//ent->s.renderfx = RF_SHELL_BLUE;
-	}
+	if (nodes[node].type == BOTNODE_MOVE)
+		ent->s.renderfx |= RF_SHELL_GREEN;
 	else if (nodes[node].type == BOTNODE_LADDER)
-	{
-		ent->s.effects |= EF_COLOR_SHELL;
-		ent->s.renderfx = RF_SHELL_RED;
-	}
+		ent->s.renderfx |= RF_SHELL_RED;
 	else if (nodes[node].type == BOTNODE_JUMP)
-	{
-		ent->s.effects |= EF_COLOR_SHELL;
-		ent->s.renderfx = RF_SHELL_BLUE; // action nodes
-	}
-	else
-		ent->s.renderfx = RF_FULLBRIGHT;
+		ent->s.renderfx |= RF_SHELL_BLUE;
+	else if (nodes[node].type == BOTNODE_MOVE)
+		ent->s.renderfx &= (RF_SHELL_RED | RF_SHELL_GREEN);
+	else if (nodes[node].type == BOTNODE_PLATFORM)
+		ent->s.renderfx |= (RF_SHELL_BLUE | RF_SHELL_GREEN);
+	else 
+		ent->s.renderfx |= (RF_SHELL_RED | RF_SHELL_GREEN);
+
 
 	//ent->s.modelindex = gi.modelindex ("models/items/ammo/grenades/medium/tris.md2");
 	ent->s.modelindex = gi.modelindex("models/props/cash/tris.md2");
+	//ent->s.modelindex = gi.modelindex("models/weapons/e_pistol/tris.md2");
 	//ent->s.modelindex = gi.modelindex("models/props/crate/stillcrate32_1.mdx");
 
 	ent->owner = ent;
@@ -638,6 +637,7 @@ void ACEND_ShowNode(short node, int isTmpNode)
 		ent->nextthink = level.time + 0.1;
 	else
 		ent->nextthink = level.time + 200;
+
 	ent->think = G_FreeEdict;                
 	ent->dmg = 0;
 
@@ -698,7 +698,10 @@ short ACEND_AddNode(edict_t *self, short type)
 	// Block if we exceed maximum
 	if (numnodes + (short)1 > MAX_BOTNODES)
 		return false;
-	
+
+	if (stopNodeUpdate)
+		return self->acebot.last_node;
+
 	// Set location
 	VectorCopy(self->s.origin, nodes[numnodes - (short)1].origin);
 
@@ -805,6 +808,9 @@ void ACEND_UpdateNodeEdge(short from, short to, qboolean check)
 	float distToTarget;
 	trace_t tr;
 
+	if (stopNodeUpdate)
+		return;
+
 	if (from == INVALID || to == INVALID || from == to)
 		return; // safety
 
@@ -910,6 +916,9 @@ void ACEND_RemoveNodeEdge(edict_t *self, short from, short to)
 {
 	short i;
 
+	if (stopNodeUpdate)
+		return;
+
 	if(debug_mode) 
 		debug_printf("%s: Removing Edge %d -> %d\n", self->client->pers.netname, from, to);
 		
@@ -920,6 +929,27 @@ void ACEND_RemoveNodeEdge(edict_t *self, short from, short to)
 		if(path_table[from][i] == to)
 			path_table[from][i] = INVALID;
 }
+
+///////////////////////////////////////////////////////////////////////
+// Remove a node edge
+///////////////////////////////////////////////////////////////////////
+void ACEND_RemovePaths(edict_t *self, short from)
+{
+	short i;
+	
+	if (stopNodeUpdate)
+		return;
+
+	if(debug_mode) 
+		debug_printf("%s: Removing paths %d\n", self->client->pers.netname, from);
+		
+	//path_table[from][to] = INVALID; // set to invalid			
+
+	// Make sure this gets updated in our path array
+	for (i = NODE0; i<numnodes; i++)
+		path_table[from][i] = INVALID;
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 // This function will resolve all paths that are incomplete
@@ -1400,7 +1430,7 @@ void ACEND_DebugNodesLocal(void)
 					{
 						ACEND_ShowNode(j, 2); //hypov8 show closest node
 						k++;
-						if (k == 15) //only do 50 nodes
+						if (k == 15) //only do 15 nodes
 						{
 							safe_cprintf(firstPlayer, PRINT_MEDIUM, "*ERROR* more than 15 nodes in your area\n");
 							break;

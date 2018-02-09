@@ -737,6 +737,15 @@ void ED_CallSpawn (edict_t *ent)
 		return;
 	}
 
+
+	// BEGIN Hitmen
+	if (enable_hitmen){
+		// Remove all weapons and ammo from the game.
+		if ((!strncmp(ent->classname, "weapon_", 7)) || (!strncmp(ent->classname, "ammo_", 5))
+			|| (!strncmp(ent->classname, "item_health_", 12)))
+			return;
+	}
+	// END
 	if (!Q_stricmp( ent->classname, "weapon_barmachinegun" ))
 	{
 	gi.dprintf("Hacking old BAR machine gun to grenade launcher for KPDM1-cash.bsp\n" );
@@ -781,9 +790,8 @@ void ED_CallSpawn (edict_t *ent)
 				ent->s.renderfx2 &= ~RF2_DIR_LIGHTS;
 				ent->s.renderfx2 |= RF2_PASSLIGHT;
 				ent->s.renderfx2 |= ent->lightit;
-			}			
-
-			props = gi.cvar("props", "1", CVAR_ARCHIVE);
+			}
+			gi.cvar("props", "1", CVAR_ARCHIVE);
 			
 			// JOSEPH 13-APR-99
 			ent->savesolid = ent->solid;				
@@ -1052,6 +1060,7 @@ parsing textual entity definitions out of an ent file.
 char	last_changelevel[64];
 extern void LightConfigstrings ();
 
+// HYPOV8_ADD
 vec3_t spawnvecs[] = {
 	{ 992, 1088, -40 },		//#0	//kpdm5 removed spawn
 	{ 480, -1824, 24 },		//#1	//kpdm4 removed spawn
@@ -1078,7 +1087,7 @@ vec3_t spawnvecs[] = {
 	{ -45, 285, 0, },	//#22	//stdm5 jump pad speed	
 	{ -90, 270, 0, },	//#23	//stdm5	jump pad angle
 };
-
+//// HYPOV8_END
 void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 {
 	edict_t		*ent;
@@ -1185,9 +1194,10 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
                     continue;
                 }
             }
-            
+
             if (deathmatch->value)
 			{
+// ACEBOT_ADD
 				//fix for bots only
 				if (!_strcmpi(level.mapname, "stdm5"))
 				{
@@ -1224,6 +1234,7 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 						ent->dmg = 9999;
 				}
 				//end bot fix
+// ACEBOT_END
 
 				if (!strcmp(ent->classname, "info_player_deathmatch"))
 				{
@@ -1313,7 +1324,6 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 						}
 					}
 //#endif
-
 
 				}
 				if ( ent->spawnflags & SPAWNFLAG_NOT_DEATHMATCH )
@@ -1436,6 +1446,9 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 
 	G_FindTeams ();
 
+	// BEGIN HITMEN
+	//sl_GameStart( &gi, level );     // StdLog
+	// END
 		//current map
 	gi.dprintf("Loading map: %s\n", mapname);
 
@@ -1446,7 +1459,7 @@ void SpawnEntities (char *mapname, char *entities, char *spawnpoint)
 	// RAFAEL
 	MDX_Bbox_Init ();
 
-//    sl_GameStart( &gi, level );	// Standard Logging
+    //sl_GameStart( &gi, level );	// Standard Logging
 
 }
 
@@ -1624,7 +1637,7 @@ char *dm_statusbar =
 
 "yb	-50 "
 
-// picked up item
+// picked up item 
 "if 17 "
 "	xv	0 "
 "	pic 7 "
@@ -1650,6 +1663,24 @@ char *dm_statusbar =
 "	xv	148 "
 "	pic	11 "
 "endif "
+
+
+// BEGIN HITMEN //hypo todo
+#if 0 //hypo disabled
+"xr -52 "
+"yb -115 "
+"string \"of \" "
+
+"xr -98 "
+"yb -125 "
+"num 2 21 "	// 21 = STAT_POSITION
+
+"xr -40 "
+"yb -125 "
+"num 2 22 "	// 22 = STAT_PLAYERS
+#endif
+// END
+
 ;
 
 char *teamplay_statusbar =

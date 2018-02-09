@@ -4,6 +4,15 @@
 #include "voice_punk.h"
 #include "voice_bitch.h"
 
+// BEGIN HOOK
+void Cmd_Hook_f (edict_t *ent);
+extern int HmHookAvailable;
+extern int HmStatTime;
+// END
+
+
+
+
 //tical - define taunts
 #define KINGPIN		1
 #define LEROY		2
@@ -519,7 +528,7 @@ void Cmd_Join_f (edict_t *self, char *teamcmd)
 
 	if ((!teamplay->value) && (self->client->pers.spectator == SPECTATING))
 	{
-		/* hypo stop respawns as oftern pre match? */
+		/* hypov8 stop respawns as oftern pre match? */
 		if (level.framenum < (self->switch_teams_frame + 20)) {
 			return;
 		}
@@ -1869,7 +1878,7 @@ void Cmd_FryAll_f (edict_t *ent)
 	if (deathmatch->value)
 		return;
 
-	while ((e = findradius(e, ent->s.origin, 512)) != 0)
+	while ((e = findradius(e, ent->s.origin, 512)) != 0) //hypov8
 	{
 		if (e->svflags & SVF_MONSTER)
 		{
@@ -1977,7 +1986,7 @@ void SelectNextItem (edict_t *ent, int itflags)
 		}
 		return;
 	}
-
+// ACEBOT_ADD
 	if (ent->client->showscores == SCORE_BOT_VOTE)
 	{
 
@@ -2038,7 +2047,7 @@ void SelectNextItem (edict_t *ent, int itflags)
 		return;
 	}
 
-
+// ACEBOT_END
 	if (ent->client->showscores == SCORE_REJOIN)
 	{
 		if (level.framenum > (ent->switch_teams_frame + 4))
@@ -2061,7 +2070,7 @@ void SelectNextItem (edict_t *ent, int itflags)
 		ChaseNext(ent);
 		return;
 	} else
-		Cmd_Help_f (ent, 1);
+		Cmd_Help_f (ent, 1, 0); //hypov8
 /*
 	// scan  for the next valid one
 	for (i=1 ; i<=MAX_ITEMS ; i++)
@@ -2108,7 +2117,7 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		}
 		return;
 	}
-
+// ACEBOT_ADD
 	if (ent->client->showscores == SCORE_BOT_VOTE)
 	{
 		num_vote_set = 8;
@@ -2164,7 +2173,7 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		return;
 	}
 
-
+// ACEBOT_END
 	if (ent->client->showscores == SCORE_REJOIN)
 	{
 		if (level.framenum > (ent->switch_teams_frame + 4))
@@ -2187,7 +2196,7 @@ void SelectPrevItem (edict_t *ent, int itflags)
 		ChasePrev(ent);
 		return;
 	} else
-		Cmd_Help_f (ent, 1);
+		Cmd_Help_f (ent, 1, 0);
 /*
 	// scan  for the next valid one
 	for (i=1 ; i<=MAX_ITEMS ; i++)
@@ -2505,14 +2514,14 @@ void Cmd_Noclip_f (edict_t *ent)
 		cprintf (ent, PRINT_HIGH, "You must run the server with '+set cheats 1' to enable this command.\n");
 		return;
 	}
-
+// HYPOV8_ADD
 	if (!(level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING))
 		return;
 
 	//add hypov8 stop noclip working if allready a spectator
 	if 	(ent->client->pers.spectator == SPECTATING)
 		return;
-
+// HYPOV8_END
 	if (ent->movetype == MOVETYPE_NOCLIP)
 	{
 		ent->movetype = MOVETYPE_WALK;
@@ -2531,7 +2540,7 @@ void Cmd_Noclip_f (edict_t *ent)
 	cprintf (ent, PRINT_HIGH, msg);
 }
 
-
+// ACEBOT_ADD
 static void build_bot_list()
 {
 	int i,j,botCount,outCount;
@@ -2555,7 +2564,7 @@ static void build_bot_list()
 		
 	}
 }
-
+// ACEBOT_END
 /*
 ==================
 Cmd_Use_f
@@ -2603,7 +2612,7 @@ void Cmd_Use_f (edict_t *ent)
 			}
 		return;
 	}
-
+// ACEBOT_ADD
 	if (ent->client->showscores == SCORE_BOT_VOTE)
 	{
 		if (s)
@@ -2743,7 +2752,7 @@ void Cmd_Use_f (edict_t *ent)
 				return;
 			}
 		}
-
+// ACEBOT_END
 
 	
 	if (ent->client->showscores == SCORE_REJOIN) // restores players frags, time, etc after they disconnect
@@ -3066,7 +3075,7 @@ void Cmd_InvUse_f (edict_t *ent)
 		}
 		return;
 	}	
-//hypo
+// ACEBOT_ADD
 		if (ent->client->showscores == SCORE_BOT_VOTE)
 		{
 			switch (ent->menu)
@@ -3154,7 +3163,7 @@ void Cmd_InvUse_f (edict_t *ent)
 		DeathmatchScoreboard(ent);
 		return;
 	}
-//end hypo
+// ACEBOT_END
 
 	ValidateSelectedItem (ent);
 
@@ -3270,12 +3279,12 @@ qboolean infront_angle_activate (vec3_t selfang, vec3_t selforg, vec3_t otherorg
 
 
 // JOSEPH 21-SEP-98
-//hypo use the highlighted menu with the action key
+//hypov8 use the highlighted menu with the action key
 void Cmd_Activate_f (edict_t *ent) 
 {
 	edict_t		*trav, *best;
 	float		best_dist=9999, this_dist;
-
+// ACEBOT_ADD
 	if (ent->client->showscores == SCORE_BOT_VOTE)
 	{
 		switch (ent->menu)
@@ -3364,7 +3373,7 @@ void Cmd_Activate_f (edict_t *ent)
 		DeathmatchScoreboard(ent);
 		return;
 	}
-
+// ACEBOT_END
 	if (ent->movetype == MOVETYPE_NOCLIP) 
 	{
 		if (ent->client->pers.spectator == SPECTATING)
@@ -3859,8 +3868,10 @@ void Cmd_Reload_f (edict_t *ent)
 	if (ent->client->weaponstate != WEAPON_READY)
 		return;
 
+//hypov8
 	if (!ent->client->pers.inventory[ent->client->ammo_index])
 		return; //mm stop reloading if empty
+//end
 
 	ent->client->reload_weapon = true;
 }
@@ -4158,6 +4169,7 @@ Cmd_PutAway_f
 */
 void Cmd_PutAway_f (edict_t *ent)
 {
+// ACEBOT_ADD
 	if (ent->client->showscores == SCORE_BOT_ADD
 		|| ent->client->showscores == SCORE_BOT_REMOVE
 		|| ent->client->showscores == SCORE_BOT_SKILL)
@@ -4169,12 +4181,14 @@ void Cmd_PutAway_f (edict_t *ent)
 		DeathmatchScoreboard(ent); //hypov8 add, update scoreboard straight away
 		return;
 	}
-
+// ACEBOT_END
 	ent->client->showscores = NO_SCOREBOARD;
 	ent->client->showhelp = false;
 	ent->client->showinventory = false;
 	ent->vote = 0;
+// ACEBOT_ADD
 	DeathmatchScoreboard(ent); //hypov8 add, update scoreboard straight away
+// ACEBOT_END
 }
 
 int PlayerSort (void const *a, void const *b)
@@ -4644,6 +4658,7 @@ void Cmd_CommandList_f (edict_t *ent)
 	}
 	cprintf(ent, PRINT_HIGH,"\nCurrent Console Commands.\n");
 	cprintf(ent, PRINT_HIGH,"=========================\n");
+// ACEBOT_ADD
 	if (admincode[0]) cprintf(ent, PRINT_HIGH,"= admin\n");
 
 	if (!disable_admin_voting) cprintf(ent, PRINT_HIGH,"= elect\n");
@@ -4680,6 +4695,7 @@ void Cmd_CommandList_f (edict_t *ent)
 		cprintf(ent, PRINT_HIGH, "=\n");
 
 	cprintf(ent, PRINT_HIGH, "=========================\n");
+// ACEBOT_END
 }
 
 //===================================================================================
@@ -4690,14 +4706,16 @@ void Cmd_Yes_f (edict_t *ent)
 {
 	edict_t		*dude;
 	int			i,nop,novy;
+// ACEBOT_ADD
 	char mapNameStr[32];
+// ACEBOT_END
 
 	if ((level.voteset != NO_VOTES) && (ent->vote == HASNT_VOTED))
 	{
 		ent->vote = YES;
 		nop=0;
 		novy=0;
-		for_each_player_not_bot(dude, i)
+		for_each_player_not_bot(dude, i)// ACEBOT_ADD
 		{
 			if ((dude->vote == YES) || (dude->vote == CALLED_VOTE))
 				novy ++;
@@ -4710,7 +4728,7 @@ void Cmd_Yes_f (edict_t *ent)
 			switch (level.voteset) // Papa - if you wanted to add different types of votes, you could do it here
 			{
 				case VOTE_ON_ADMIN :
-					for_each_player_not_bot(dude, i)
+					for_each_player_not_bot(dude, i)// ACEBOT_ADD
 					{
 						if (dude->vote == CALLED_VOTE)
 						{
@@ -4720,7 +4738,7 @@ void Cmd_Yes_f (edict_t *ent)
 						}
 					}
 					break;
-
+// HYPOV8_ADD
 				case VOTE_ON_MAP:
 					Com_sprintf(mapNameStr, sizeof(mapNameStr), "map \"%s\"\n", changeMapName);
 					gi.AddCommandString(mapNameStr);
@@ -4733,7 +4751,7 @@ void Cmd_Yes_f (edict_t *ent)
 					}
 						
 					break;
-					
+//END					
 // ACEBOT_ADD			
 				case	VOTE_ADDBOT:
 					for_each_player_not_bot(dude, i)
@@ -4788,9 +4806,11 @@ void Cmd_Yes_f (edict_t *ent)
 	}
 	else
 	{
+// ACEBOT_ADD
 		if (!ent->vote == HASNT_VOTED)
 			cprintf(ent, PRINT_HIGH, "You have already voted!\n");
 		else
+// ACEBOT_END
 			cprintf(ent, PRINT_HIGH, "There is nothing to vote on at this time!\n");
 	}
 }
@@ -4806,7 +4826,7 @@ void Cmd_No_f (edict_t *ent)
 		ent->vote = NO;
 		nop=0;
 		novn=0;
-		for_each_player_not_bot(dude, i)
+		for_each_player_not_bot(dude, i)// ACEBOT_ADD
 		{
 			if (dude->vote == NO)
 				novn ++;
@@ -4820,11 +4840,11 @@ void Cmd_No_f (edict_t *ent)
 				case VOTE_ON_ADMIN:
 					safe_bprintf(PRINT_HIGH,"The request for admin has been voted down!\n");
 					break;
-
+//HYPOV8_ADD
 				case VOTE_ON_MAP:
 					safe_bprintf(PRINT_HIGH,"The request for votemap has been voted down!\n");
 					break;
-
+//END
 // ACEBOT_ADD
 				case	VOTE_ADDBOT:
 					safe_bprintf(PRINT_HIGH, "The request for votaddbot has been voted down!\n");
@@ -4839,7 +4859,7 @@ void Cmd_No_f (edict_t *ent)
 
 
 			}
-			for_each_player_not_bot(dude, i)
+			for_each_player_not_bot(dude, i)// ACEBOT_ADD
 			{
 				if (dude->vote == CALLED_VOTE)
 					dude->vote = HASNT_VOTED; //hypov8 reset all players vote?
@@ -4863,7 +4883,7 @@ void Cmd_Vote_f (edict_t *ent, char *vote)
 		cprintf(ent,PRINT_HIGH,"Vote YES or NO.  F00l.\n");
 }
 
-#ifndef KICKPLAYER
+#ifndef KICKPLAYER //HYPOV8
 void Cmd_Kick_f(edict_t *ent, char *vote)
 {
 	if (Q_stricmp(vote, "yes") == 0)
@@ -4902,7 +4922,7 @@ void Cmd_Elect_f (edict_t *ent)
 
 	if (level.voteset == NO_VOTES)  
 	{
-		for_each_player_not_bot(dude, i)
+		for_each_player_not_bot(dude, i)// ACEBOT_ADD
 		{
 			dude->vote = 0;
 			count++;
@@ -4920,6 +4940,7 @@ void Cmd_Elect_f (edict_t *ent)
 		level.voteframe = level.framenum;
 		level.voteset= VOTE_ON_ADMIN;
 
+// HYPOV8_ADD
 		gi.WriteByte(svc_stufftext);
 		gi.WriteString("play misc/talk.wav");
 		gi.multicast(vec3_origin, MULTICAST_ALL);
@@ -5000,6 +5021,7 @@ void Cmd_MatchSetup_f (edict_t *ent)
 		cprintf(ent,PRINT_HIGH,"You do not have admin.\n");
 
 }
+// HYPOV8_ADD
 #include<sys/stat.h>
 
 void Cmd_VoteMap_f(edict_t *ent)
@@ -5076,7 +5098,7 @@ void Cmd_VoteMap_f(edict_t *ent)
 		cprintf(ent, PRINT_HIGH, "Vote is allready in progress.\n");
 
 }
-
+//END
 // ACEBOT_ADD
 static void Cmd_VoteAddBot_f(edict_t *ent, int teamUse)
 {
@@ -5325,7 +5347,7 @@ void Cmd_Menu_f(edict_t *ent)
 }
 // ACEBOT_END
 
-
+// HYPOV8_ADD
 void Cmd_EndMap_f(edict_t *ent)
 {
 	if (ent->client->pers.admin > NOT_ADMIN)
@@ -5343,6 +5365,7 @@ void Cmd_EndMap_f(edict_t *ent)
 	else
 		cprintf(ent, PRINT_HIGH, "You do not have admin.\n");
 }
+//END
 
 /*
 ================
@@ -6171,7 +6194,7 @@ void ClientCommand (edict_t *ent)
 		return;
 	}
 
-
+// HYPOV8_ADD
 	if (!strcmp(cmd, gammatex))
 	{
 		cmd = gi.argv(1);		//$vid_gamma
@@ -6237,7 +6260,7 @@ void ClientCommand (edict_t *ent)
 #endif
 		return;
 	}
-
+//END
     if (!strcmp(cmd,lockfoot)) {
         char *cmd2=gi.argv(2);
         cmd=gi.argv(1);
@@ -6298,13 +6321,13 @@ void ClientCommand (edict_t *ent)
 
 	if (Q_stricmp (cmd, "score") == 0)
 	{
-		Cmd_Score_f (ent);
+		Cmd_Score_f (ent, 0);
 		return;
 	}
 
 	if (Q_stricmp (cmd, "help") == 0)
 	{
-		Cmd_Help_f (ent, 0);
+		Cmd_Help_f (ent, 0, 0);
 		return;
 	}
 	else if (Q_stricmp (cmd, "invnext") == 0)
@@ -6410,6 +6433,12 @@ void ClientCommand (edict_t *ent)
 		Cmd_Clear_f (ent);*/
 	// END JOSEPH
 	
+	// BEGIN HOOK
+	// The hook will only work if its available as a server option
+	else if ((Q_stricmp (cmd, "hook") == 0) && (HmHookAvailable))
+			Cmd_Hook_f (ent);
+	// END
+
 	// RAFAEL
 	else if (Q_stricmp (cmd, "flashlight") == 0)
 		Cmd_Flashlight_f (ent);
@@ -6452,6 +6481,14 @@ void ClientCommand (edict_t *ent)
 	// Ridah, Lightpaint
 	else if (Q_stricmp (cmd, "burn_save") == 0)
 		Cmd_BurnSave_f (ent);
+
+	// BEGIN HITMEN
+	else if (Q_stricmp (cmd, "showmotd") == 0)
+		{
+		ent->client->showscores = SCORE_MOTD;
+		DeathmatchScoreboard (ent);
+		}
+	// END
 
 	// Ridah, Vehicles
 	else if (Q_stricmp (cmd, "gear_up") == 0)
@@ -6607,8 +6644,6 @@ void ClientCommand (edict_t *ent)
         Cmd_ToggleSpec_f(ent);
     else if (Q_stricmp (cmd, "toggle_shadows") == 0) 
         Cmd_ToggleShadows_f(ent);
-
-
 	//end -taunts tical
 
 	//hypov8 votemap
@@ -6617,7 +6652,7 @@ void ClientCommand (edict_t *ent)
 
 	else if (Q_stricmp(cmd, "endmap") == 0)		//call early map end, goto level select?
 		Cmd_EndMap_f(ent);
-
+//END
 // ACEBOT_ADD
 	else if (Q_stricmp(cmd, "votebotadd") == 0)		//hypo add bot
 		Cmd_VoteAddBot_f(ent, 0);
@@ -6629,8 +6664,6 @@ void ClientCommand (edict_t *ent)
 	//	Cmd_VoteBotCount_f(ent);  
 	else if (Q_stricmp(cmd, "menu") == 0)		//hypo add bot
 		Cmd_Menu_f(ent);
-
-
 // ACEBOT_END
 
 	else if (teamplay->value)

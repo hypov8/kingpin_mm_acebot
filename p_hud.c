@@ -102,7 +102,7 @@ void MoveClientToIntermission (edict_t *ent)
 	ent->s.sound = 0;
 	ent->solid = SOLID_NOT;
 
-	ent->flags &= ~FL_CHASECAM; //hypov8 turn off togglecam
+	ent->flags &= ~FL_CHASECAM; // HYPOV8_ADD turn off togglecam
 
 	// add the layout
 
@@ -314,7 +314,7 @@ void SpectatorScoreboardMessage (edict_t *ent)
 
 	if (level.modeset != MATCHSETUP && level.modeset != TEAM_PRE_MATCH 
 		&& level.modeset != DM_PRE_MATCH && ent->client->pers.spectator == SPECTATING
-		&& ent->client->showscores != NO_SCOREBOARD) //add hypov8 esc bug fix
+		&& ent->client->showscores != NO_SCOREBOARD) // HYPOV8_ADD esc bug fix
 	{
 		SHOWCHASENAME
 		CHASEMESSAGE
@@ -385,7 +385,7 @@ static void VoteMapScoreboardMessage (edict_t *ent) //SCORE_MAP_VOTE
 		num_vote_set = 8;
 
 	memset (&count, 0, sizeof(count));
-	for_each_player_not_bot(player, i)
+	for_each_player_not_bot(player, i)// ACEBOT_ADD
 	{
 		count[player->vote]++;
 	}
@@ -1161,7 +1161,7 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 		stringlength += j;
 	}
 
-	if (ent->client->showscores != NO_SCOREBOARD) //add hypov8. fix for esc bug
+	if (ent->client->showscores != NO_SCOREBOARD) // HYPOV8_ADD fix for esc bug
 	SHOWCHASENAME
 
 	if (!ent->client->showscores)
@@ -1227,7 +1227,7 @@ void GrabDaLootScoreboardMessage (edict_t *ent)
 		}
 		yofs += 15;
 
-		if (ent->client->showscores != NO_SCOREBOARD)
+		if (ent->client->showscores != NO_SCOREBOARD) // HYPOV8_ADD
 		CHASEMESSAGE
 
 	}
@@ -1713,12 +1713,13 @@ skipscores:
 	gi.WriteString (string);
 }
 
+// HYPOV8_ADD
 #if 1 //esc fix
 
 /*
 ==================
 SpecInitalScoreboard
-fix for spec bug with esc
+hypov8 fix for spec bug with esc
 ==================
 */
 void SpecInitalScoreboard(edict_t *ent)
@@ -1750,7 +1751,7 @@ void SpecInitalScoreboard(edict_t *ent)
 
 
 #endif
-
+// HYPOV8_END
 
 /*
 ==================
@@ -1783,9 +1784,9 @@ void DeathmatchScoreboardMessage (edict_t *ent)
 	if (!ent->client->showscores)
 		goto skipscores;
 
-	SHOWCHASENAME //moved hypov8, fix for esc bug != NO_SCOREBOARD
+	SHOWCHASENAME //hypov8 moved below skip scores, fix for esc bug != NO_SCOREBOARD
 		
-	if (ent->client->pers.spectator == SPECTATING) //add hypov8, fix for esc bug
+	if (ent->client->pers.spectator == SPECTATING)
 		CHASEMESSAGE
 
 	// sort the clients by score
@@ -2052,6 +2053,13 @@ Note that it isn't that hard to overflow the 1400 byte message limit!
 ==================
 */
 
+// BEGIN HITMEN
+extern void MOTDScoreboardMessage(edict_t *ent);
+extern void ShowHitmenConfig(edict_t *ent);
+extern void ShowHitmenStats(edict_t *ent);
+extern void RejoinScoreboardMessage(edict_t *ent);
+// END
+
 // Papa - Here is where i determine what scoreboard to display
 
 void DeathmatchScoreboard (edict_t *ent)
@@ -2070,6 +2078,7 @@ void DeathmatchScoreboard (edict_t *ent)
 		SpectatorScoreboardMessage (ent);
 	else if (ent->client->showscores == SCORE_MAP_VOTE)
 		VoteMapScoreboardMessage(ent);
+// ACEBOT_ADD
 #if 1 //def HYPODEBUG
 	else if (ent->client->showscores == SCORE_BOT_VOTE)
 		BotScoreboardVote(ent);
@@ -2083,7 +2092,16 @@ void DeathmatchScoreboard (edict_t *ent)
 		SpecInitalScoreboard(ent); //hyopv8 spec/esc fix
 
 #endif
+// ACEBOT_END
+	// BEGIN HITMEN
+	else if (ent->client->showscores == SCORE_CFG)
+		ShowHitmenConfig(ent);
+	else if (ent->client->showscores == SCORE_STATS)
+		ShowHitmenStats(ent);
+	// END
+// HYPOV8_ADD
 	else //(ent->client->showscores == SCOREBOARD ||ent->client->showscores == NO_SCOREBOARD )
+// HYPOV8_END
 	{
 		if (teamplay->value)
 			if (level.modeset == MATCHSETUP || level.modeset == TEAM_PRE_MATCH || level.modeset == DM_PRE_MATCH)
@@ -2096,12 +2114,12 @@ void DeathmatchScoreboard (edict_t *ent)
 
 
 	if (level.intermissiontime)
-		gi.unicast (ent, true); //true stops client using menu?
+		gi.unicast (ent, true); //HYPOV8 true stops client using menu?
 	else
 		gi.unicast (ent, false);//true);
 }
 
-#if 0 //not used
+#if 0 // HYPOV8_ADD not used
 
 void NoScoreboardMessage (edict_t *ent)
 {
@@ -2113,14 +2131,18 @@ void NoScoreboardMessage (edict_t *ent)
 	string[0] = 0;
 	stringlength = 0;
 
+
+#if 0 // HYPOV8_ADD
 	//hypov8 stop esc working when "string" exists
 
-	//if (level.modeset != MATCHSETUP && level.modeset != TEAM_PRE_MATCH//SNAP
-	//	&& ent->client->pers.spectator == SPECTATING) 
-	//{
-	//	SHOWCHASENAME
-	//	CHASEMESSAGE
-	//}
+	if (level.modeset != MATCHSETUP && level.modeset != TEAM_PRE_MATCH//SNAP
+		&& ent->client->pers.spectator == SPECTATING) 
+	{
+		SHOWCHASENAME
+		CHASEMESSAGE
+	}
+#endif // HYPOV8_END
+
 
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
@@ -2164,7 +2186,7 @@ void DeathmatchScoreboardNew (edict_t *ent)
 	else
 		gi.unicast (ent, false);//true);
 }
-#endif // not used
+#endif // HYPOV8_ADD not used
 
 
 /*
@@ -2177,7 +2199,7 @@ Display the scoreboard
 
 // Papa - This is the start of the scoreboard command, this sets the showscores value
   
-void Cmd_Score_f (edict_t *ent)
+void Cmd_Score_f (edict_t *ent, int death)
 {
 	int		i,found;
 	edict_t	*dood;
@@ -2187,12 +2209,15 @@ void Cmd_Score_f (edict_t *ent)
 
 	if (!deathmatch->value && !coop->value)
 		return;
-#if 1 // add hypo esc bug
+// HYPOV8_ADD
+	//add hypo: goto first scoreboard when you die
+	if (death)
+		ent->client->showscores = NO_SCOREBOARD;
+
+	// add hypo: esc bug
 	if (ent->client->showscores == SCORE_INITAL_SPEC)
 		ent->client->showscores = SCOREBOARD;
-	else
-#endif
-	     if (ent->client->showscores == SCOREBOARD)
+	else if (ent->client->showscores == SCOREBOARD)
 		ent->client->showscores = SCOREBOARD2;
 	else if (level.modeset == ENDMATCHVOTING)
 		if (ent->client->showscores == SCORE_MAP_VOTE)
@@ -2203,10 +2228,20 @@ void Cmd_Score_f (edict_t *ent)
 		ent->client->showscores = SCOREBOARD;
 	else if (ent->client->showscores == SCORE_MOTD)
 		ent->client->showscores = SCOREBOARD;
-	else if (ent->client->showscores == SCOREBOARD2)
+// HYPOV8_END
+	// BEGIN HITMEN
+	else if ((ent->client->showscores == SCOREBOARD2 && enable_hitmen)
+			||(ent->client->showscores == SCORE_CFG) )
+			ent->client->showscores = SCORE_STATS;
+	else if (ent->client->showscores == SCORE_STATS 
+			||(ent->client->showscores == SCOREBOARD2 && !(enable_hitmen))
+			)
+	// END
+
+	//else if (ent->client->showscores == SCOREBOARD2)
 	{
 		found = false;
-		for_each_player_inc_bot(dood, i)
+		for_each_player_inc_bot(dood, i) // HYPOV8_ADD
 		{
 		if (dood->client->pers.spectator == SPECTATING)
 			{
@@ -2217,9 +2252,11 @@ void Cmd_Score_f (edict_t *ent)
 		if (found)
 			ent->client->showscores = SPECTATORS;
 		else
+// HYPOV8_ADD
 			if (ent->client->pers.spectator == SPECTATING /*&& ent->client->chase_target != NULL*/)
 				ent->client->showscores = SCORE_INITAL_SPEC;
 			else
+// HYPOV8_END
 				ent->client->showscores = NO_SCOREBOARD;
 	}
 	else if (ent->client->showscores == SPECTATORS)
@@ -2227,9 +2264,11 @@ void Cmd_Score_f (edict_t *ent)
 		if (level.intermissiontime)
 			ent->client->showscores = SCOREBOARD;
 		else
+// HYPOV8_ADD
 			if (ent->client->pers.spectator == SPECTATING /*&& ent->client->chase_target != NULL*/)
 				ent->client->showscores = SCORE_INITAL_SPEC;
 			else
+
 				ent->client->showscores = NO_SCOREBOARD;
 	}
 #if 1 //def HYPODEBUG //death, resets scoreboard
@@ -2243,6 +2282,7 @@ void Cmd_Score_f (edict_t *ent)
 	}	
 #endif
 	else
+// HYPOV8_END
 		ent->client->showscores = SCOREBOARD;
 
 		
@@ -2361,7 +2401,7 @@ Cmd_Help_f
 Display the current help message
 ==================
 */
-void Cmd_Help_f (edict_t *ent, int page)
+void Cmd_Help_f (edict_t *ent, int page, int death)
 {
 // ACEBOT_ADD //new kpded.exe
 	if (ent->acebot.is_bot) return;
@@ -2370,8 +2410,8 @@ void Cmd_Help_f (edict_t *ent, int page)
 	// this is for backwards compatability
 	if (deathmatch->value)
 	{
-		///help
-		Cmd_Score_f (ent);
+		// HYPOV8_ADD reset scoreboar on death
+		Cmd_Score_f(ent, death);
 		return;
 	}
 
@@ -2404,15 +2444,24 @@ void G_SetStats (edict_t *ent)
 	int			index, cells;
 	int			power_armor_type;
 
+	// BEGIN HITMEN
+	int		i, j, k, Position;
+	int		sorted[MAX_CLIENTS];
+	int		sortedscores[MAX_CLIENTS];
+	int		score, total, len;
+	edict_t		*cl_ent;
+	gclient_t	*cl;
+ 	// END
+
 	// if chasecam, show stats of player we are following
 	if (ent->client->chase_target && ent->client->chase_target->client)
 	{
 		memcpy( ent->client->ps.stats, ent->client->chase_target->client->ps.stats, sizeof( ent->client->ps.stats ) );
-		//ent->client->ps.stats[STAT_LAYOUTS] = true; //hypo commented out
+		//ent->client->ps.stats[STAT_LAYOUTS] = true; // HYPOV8 commented out
 
-		//add hypov8 esc/spec bug fix. staus should only show when scores are up. 
+		// HYPOV8_ADD esc/spec bug fix. staus should only show when scores are up. 
 		ent->client->ps.stats[STAT_LAYOUTS] = 0; //hypo was commented out
-
+		// HYPOV8_END
 		if (deathmatch->value) 
 		{
 // ACEBOT_ADD
@@ -2426,9 +2475,6 @@ void G_SetStats (edict_t *ent)
 					ent->client->ps.stats[STAT_LAYOUTS] |= 1;
 				if (ent->client->showinventory && ent->client->pers.health > 0)
 					ent->client->ps.stats[STAT_LAYOUTS] |= 2;
-
-
-
 
 			}
 		} 
@@ -2832,43 +2878,50 @@ void G_SetStats (edict_t *ent)
 	}	
 	*/
 
-// Papa - Here is the Timer for the hud
+// BEGIN HITMEN
+	if (!enable_hitmen){
+// END
+		// Papa - Here is the Timer for the hud
+		if ((int)timelimit->value)
+		{
+			if (level.modeset == DM_PRE_MATCH)
+				ent->client->ps.stats[STAT_TIMER] = ((PRE_MATCH_TIME - level.framenum) / 10); //hypov8 begin dm spawn timmer. was 350
 
-	if ((int)timelimit->value)
-	{
-		if (level.modeset == DM_PRE_MATCH)
-			ent->client->ps.stats[STAT_TIMER] = ((PRE_MATCH_TIME - level.framenum) / 10); //hypov8 begin dm spawn timmer. was 350
+			//	else if ((level.modeset == DM_PRE_MATCH) && (timelimit->value))
+			//		if (level.framenum > ((timelimit->value * 600) - 605))  
+			//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
+			//		else
+			//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
+			//	else if ((level.modeset == DM_MATCH_RUNNING) && (timelimit->value))
+			//		if (level.framenum > ((timelimit->value * 600) - 605))  
+			//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
+			//		else
+			//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
 
-//	else if ((level.modeset == DM_PRE_MATCH) && (timelimit->value))
-//		if (level.framenum > ((timelimit->value * 600) - 605))  
-//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
-//		else
-//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
-//	else if ((level.modeset == DM_MATCH_RUNNING) && (timelimit->value))
-//		if (level.framenum > ((timelimit->value * 600) - 605))  
-//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 10);
-//		else
-//			ent->client->ps.stats[STAT_TIMER] = (((timelimit->value * 600) - level.framenum ) / 600);
+			else if (level.modeset == TEAM_PRE_MATCH)
+				ent->client->ps.stats[STAT_TIMER] = ((PRE_MATCH_TIME - (level.framenum - level.startframe)) / 10); //hypov8 begin team spawn timmer. was 150
 
-		else if (level.modeset == TEAM_PRE_MATCH)
-			ent->client->ps.stats[STAT_TIMER] = ((PRE_MATCH_TIME - (level.framenum - level.startframe)) / 10); //hypov8 begin team spawn timmer. was 150
+			else if (level.modeset == ENDMATCHVOTING)
+				ent->client->ps.stats[STAT_TIMER] = ((300 - (level.framenum - level.startframe)) / 10);
 
-		else if (level.modeset == ENDMATCHVOTING)
-			ent->client->ps.stats[STAT_TIMER] =	((300 - (level.framenum - level.startframe)) / 10);
-
-		else if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
-			if (level.framenum > (level.startframe + (((int)timelimit->value  * 600) - 605)))  
-				ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 10);
+			else if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
+				if (level.framenum > (level.startframe + (((int)timelimit->value * 600) - 605)))
+					ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum) / 10);
+				else
+					ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum) / 600);
 			else
-				ent->client->ps.stats[STAT_TIMER] = ((((int)timelimit->value * 600) + level.startframe - level.framenum ) / 600);
-		else 
-			ent->client->ps.stats[STAT_TIMER] = 0;
+				ent->client->ps.stats[STAT_TIMER] = 0;
 
-		if (ent->client->ps.stats[STAT_TIMER] < 0 )
+			if (ent->client->ps.stats[STAT_TIMER] < 0)
+				ent->client->ps.stats[STAT_TIMER] = 0;
+		}
+		else
 			ent->client->ps.stats[STAT_TIMER] = 0;
 	}
+// BEGIN HITMEN
 	else
-		ent->client->ps.stats[STAT_TIMER] = 0;
+		ent->client->ps.stats[STAT_TIMER] = game.Weapon_Timer - level.time;
+// END
 	
 	// END JOSEPH
 
@@ -2914,6 +2967,64 @@ void G_SetStats (edict_t *ent)
 	//
 	ent->client->ps.stats[STAT_FRAGS] = ent->client->resp.score;
 	ent->client->ps.stats[STAT_DEPOSITED] = ent->client->resp.deposited;
+// BEGIN HITMEN
+	////////////////////////////////////////////////////////////////
+	// BEGIN HITMEN hypo todo: not displayed in hud atm
+	//
+	// Sort the clients by score so we can display everyones position
+	// in the game
+	if (enable_hitmen) //hypov8 bagman below(uses same slot) ovewrites
+	{
+		total = 0;
+		for (i = 0; i < game.maxclients; i++)
+		{
+			cl_ent = g_edicts + 1 + i;
+
+			if (!cl_ent->inuse)
+				continue;
+
+			score = game.clients[i].resp.score;
+
+			for (j = 0; j < total; j++)
+			{
+				if (score > sortedscores[j])
+					break;
+			}
+
+			for (k = total; k > j; k--)
+			{
+				sorted[k] = sorted[k - 1];
+				sortedscores[k] = sortedscores[k - 1];
+			}
+
+			sorted[j] = i;
+			sortedscores[j] = score;
+			total++;
+		}
+
+		for (len = 0; len < 16; len++)
+		{
+			if ((game.clients[sorted[0]].pers.netname[len]) == 0)
+				break;
+		}
+
+		Position = 0;
+		for (i = 0; i < total; i++)
+		{
+			cl = &game.clients[sorted[i]];
+			cl_ent = g_edicts + 1 + sorted[i];
+
+			if (cl_ent == ent)
+			{
+				Position = i + 1;
+				break;
+			}
+		}
+
+		ent->client->ps.stats[STAT_POSITION] = Position;
+		ent->client->ps.stats[STAT_PLAYERS] = total;
+	}
+// END
 
 	//
 	// help icon / current weapon if not shown

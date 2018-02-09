@@ -170,9 +170,9 @@ void cashspawn_think( edict_t *self )
 		VectorSet( cash->maxs,  4,  4, -13 );
 
 		cash->item = FindItem("Cash");
-
+// ACEBOT_ADD
 		cash->classname = "item_cashroll";//hypov8 add to make bots search for item
-
+// ACEBOT_END
 		cash->currentcash = CASH_ROLL;
 		cash->touch = cash_touch;
 
@@ -190,15 +190,15 @@ void cashspawn_think( edict_t *self )
 		VectorSet( cash->maxs,  12,  12,  10 );
 
 		cash->item = FindItem("Small Cash Bag");
-
+// ACEBOT_ADD
 		cash->classname = "item_cashbagsmall"; //hypov8 add to make bots search for item
-
+// ACEBOT_END
 
 		cash->currentcash = CASH_BAG;
 		cash->touch = cash_touch;
-
+// ACEBOT_ADD
 		cash->timestamp = level.time + 60; //added hypov8?? stop bots collecting falling cash
-
+// ACEBOT_END
 		cash->think = cash_kill;
 		cash->nextthink = level.time + 60;
 	}
@@ -695,7 +695,7 @@ void Teamplay_AutoJoinTeam( edict_t *self )
 	team_count[0] = 0;
 	team_count[1] = 0;
 
-	for (i=1; i<=maxclients->value; i++)
+	for (i=1; i<=maxclients->value; i++) //HYPOV8_ADD <=
 	{
 		if (g_edicts[i].client && g_edicts[i].client->pers.team && g_edicts[i].inuse) //add hypov8 check for players that have left
 			team_count[g_edicts[i].client->pers.team - 1]++;

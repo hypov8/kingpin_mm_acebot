@@ -24,6 +24,9 @@
 #define		DEFAULT_RANDOM_MAP_STRING	"default_random_map"
 #define		DISABLE_ANON_TEXT_STRING	"disable_anon_text"
 #define		DISABLE_CURSE_STRING	"disable_curse"
+// BEGIN HITMEN
+#define		ENABLE_HITMEN_STRING	"enable_hitmen"
+//END
 #define		UNLIMITED_CURSE_STRING	"unlimited_curse"
 #define		DISABLE_ASC_STRING	    "disable_asc"
 //#define		ENABLE_NOFLAMEHACK_CHECK_STRING	    "kick_flamehack"
@@ -69,6 +72,9 @@
 #define     DISABLE_ASC_KEYWORD          32
 //#define     ENABLE_NOFLAMEHACK_CHECK_KEYWORD  33
 
+// BEGIN HITMEN
+#define		ENABLE_HITMEN_KEYWORD		33
+//END
 #define		STANDBY					0
 #define		ADD_CUSTOM				1
 #define		ADD_ROTATION			2

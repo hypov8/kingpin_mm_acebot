@@ -9,8 +9,14 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DDebug2|Win32 = DDebug2|Win32
 		DDebug2|x64 = DDebug2|x64
+		Debug Alpha|Win32 = Debug Alpha|Win32
+		Debug Alpha|x64 = Debug Alpha|x64
 		debug lan game|Win32 = debug lan game|Win32
 		debug lan game|x64 = debug lan game|x64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release Alpha|Win32 = Release Alpha|Win32
+		Release Alpha|x64 = Release Alpha|x64
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 	EndGlobalSection
@@ -18,9 +24,15 @@ Global
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.DDebug2|Win32.ActiveCfg = DDebug2|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.DDebug2|Win32.Build.0 = DDebug2|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.DDebug2|x64.ActiveCfg = DDebug2|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Debug Alpha|Win32.ActiveCfg = debug lan game|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Debug Alpha|x64.ActiveCfg = debug lan game|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.debug lan game|Win32.ActiveCfg = debug lan game|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.debug lan game|Win32.Build.0 = debug lan game|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.debug lan game|x64.ActiveCfg = debug lan game|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Debug|Win32.ActiveCfg = debug lan game|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Debug|x64.ActiveCfg = debug lan game|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release Alpha|Win32.ActiveCfg = Release|Win32
+		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release Alpha|x64.ActiveCfg = Release|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release|Win32.ActiveCfg = Release|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release|Win32.Build.0 = Release|Win32
 		{3649168B-B316-48D5-B88F-1B393C0FA349}.Release|x64.ActiveCfg = Release|Win32

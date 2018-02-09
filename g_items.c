@@ -2064,10 +2064,10 @@ model="models/weapons/g_shotgun/tris.md2"
 		"misc/w_pkup.wav",
 		"models/weapons/g_shotgun/tris.md2", EF_REFL,
 		"models/weapons/shotgun/shotgun.mdx",
-/* icon */		"/pics/h_shotgun.tga",
-/* pickup */	"Shotgun",
+		"/pics/h_shotgun.tga",	/* icon */	
+		"Shotgun",				/* pickup */
 		0,
-		1,
+		1,						//hypov8 ammo clip model
 		"Shells",
 		IT_WEAPON|IT_STAY_COOP,
 		NULL,
@@ -3868,7 +3868,7 @@ void SetItemNames (void)
 	int		i;
 	gitem_t	*it;
 
-	for (i=1 ; i<game.num_items ; i++)
+	for (i=1 ; i<game.num_items ; i++) //HYPOV8 WAS I=0
 	{
 		it = &itemlist[i];
 		gi.configstring (CS_ITEMS+i, it->pickup_name);

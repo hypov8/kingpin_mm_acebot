@@ -115,6 +115,11 @@ static void ACEAI_ChooseWeapon(edict_t *self)
 	if (!self->enemy)
 		return;
 
+	// BEGIN HITMEN
+	if (enable_hitmen)
+		return;
+	// END
+
 	// Base selection on distance.
 	VectorSubtract(self->s.origin, self->enemy->s.origin, v);
 	range = VectorLength(v);
@@ -126,7 +131,7 @@ static void ACEAI_ChooseWeapon(edict_t *self)
 		//HMG.
 		if (ACEIT_ChangeWeapon(self, FindItem("Heavy machinegun")))
 			return;
-		//
+		//RL.
 		/*if (range > 80)*/// Longer range 
 		if (ACEAI_CheckShot(self)  //check if fence infront
 			&& ACEIT_ChangeWeapon(self, FindItem("Bazooka")))
@@ -141,7 +146,7 @@ static void ACEAI_ChooseWeapon(edict_t *self)
 			if (ACEAI_CheckShot(self)  //check if fence infront
 				&& ACEIT_ChangeWeapon(self, FindItem("FlameThrower")))
 				return;
-		//Tommy
+		//Tommy.
 		if (ACEIT_ChangeWeapon(self, FindItem("Tommygun")))
 			return;
 	}
@@ -219,6 +224,44 @@ static void ACEAI_ChooseWeapon(edict_t *self)
 
 }
 
+// BEGIN HITMEN
+///////////////////////////////////////////////////////////////////////
+// Choose weapon for hitmen
+// used when ammo runs out then bot selects crow bar
+// will select gun when ammo topes back up
+///////////////////////////////////////////////////////////////////////
+static void ACEAI_ChooseWeaponHM(edict_t *self)
+{
+	//(!strcmp(ent->client->pers.weapon->pickup_name, "Crowbar")))
+
+	if (self->client->pers.weapon != FindItem("Crowbar"))
+		return;
+
+	switch (game.Current_Weapon)
+	{
+	default:
+	case 1: // "pistol"
+		ACEIT_ChangeWeapon(self, FindItem("Pistol"));			break;
+	case 2: // "shotgun"
+		ACEIT_ChangeWeapon(self, FindItem("Shotgun"));			break;
+	case 3: // "tommygun"
+		ACEIT_ChangeWeapon(self, FindItem("Tommygun"));			break;
+	case 4: // "Heavy machinegun"
+		ACEIT_ChangeWeapon(self, FindItem("Heavy machinegun")); break;
+	case 5: // "Grenade Launcher"
+		ACEIT_ChangeWeapon(self, FindItem("Grenade Launcher"));	break;
+	case 6: // "Bazooka"
+		ACEIT_ChangeWeapon(self, FindItem("Bazooka")); break;
+	case 7: // "FlameThrower"
+		ACEIT_ChangeWeapon(self, FindItem("FlameThrower"));		break;
+	}
+
+	//ACEIT_ChangeWeapon(self, FindItem("Crowbar"));		break;
+	//ACEIT_ChangeWeapon(self, FindItem("Pipe"));			break;
+}
+
+// END
+
 
 /*
 =============
@@ -253,7 +296,50 @@ qboolean ACEAI_InfrontBot(edict_t *self, edict_t *other)
 }
 
 
+static void ACEAI_PickShortRangeGoal_HM(edict_t *self)
+{
+	edict_t *target;
+	float weight, best_weight = 0.0;
+	edict_t *best = NULL;
+	int index;
 
+	// look for a target (should make more efficent later)
+	target = findradius(NULL, self->s.origin, 200);
+	while (target)
+	{
+		if (target->classname == NULL)
+			return;
+
+		// Missle avoidance code
+		// Set our movetarget to be the rocket or grenade fired at us. 
+		if (strcmp(target->classname, "rocket") == 0 || strcmp(target->classname, "grenade") == 0)
+		{
+			self->movetarget = target;//hypov8 todo: timeout loop
+			return;
+		}
+
+		if (ACEIT_IsReachable(self, target->s.origin) && target->solid != SOLID_NOT)
+		{
+			//if (ACEAI_InfrontBot(self, target))
+			{
+				index = ACEIT_ClassnameToIndex(target->classname, target->style); //hypov8 add safe styles
+				weight = ACEIT_ItemNeed(self, index, target->timestamp, target->spawnflags);
+
+				if (weight > best_weight)
+				{
+					best_weight = weight;
+					best = target;
+				}
+			}
+		}
+
+		// next target
+		target = findradius(target, self->s.origin, 200); //true=bot
+	}
+
+
+
+}
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -512,7 +598,11 @@ void ACEAI_PickLongRangeGoal(edict_t *self)
 		  weight = 2.0;
 		else
 #endif
-		  weight = 0.3; 
+		// BEGIN HITMEN
+		if (enable_hitmen)
+			weight = 2.5; 
+		else
+			 weight = 0.3; 
 		
 		weight *= random(); // Allow random variations
 		weight /= cost; // Check against cost of getting there
@@ -678,6 +768,37 @@ qboolean ACEAI_InfrontEnemy(edict_t *self, edict_t *other)
 	return false;
 }
 
+
+// BEGIN HITMEN
+static qboolean ACEAI_Enemy_ToFarHM(edict_t *self,edict_t *enemy )
+{
+	vec3_t v;
+	float range;
+
+	//if (self->client->pers.weapon == FindItem("Crowbar"))
+		//return;
+
+	//distance.
+	VectorSubtract(self->s.origin, enemy->s.origin, v);
+	range = VectorLength(v);
+
+	// Crowbar
+	if (!strcmp(self->client->pers.weapon->pickup_name, "Crowbar"))
+		if (range > 48)	
+			return true;
+	// "Grenade Launcher"
+	if (game.Current_Weapon == 5)
+		if (range < 50 || range >720)	
+			return true;
+	// "FlameThrower"
+	if (game.Current_Weapon == 7)			
+		if (range < 25|| range >980)	
+			return true;	
+
+	return false;
+
+}
+
 ///////////////////////////////////////////////////////////////////////
 // Scan for enemy (simplifed for now to just pick any visible enemy)
 ///////////////////////////////////////////////////////////////////////
@@ -707,7 +828,8 @@ static qboolean ACEAI_FindEnemy(edict_t *self)
 			|| players[i]->solid == SOLID_NOT
 			|| players[i]->movetype == MOVETYPE_NOCLIP
 			|| players[i]->flags & FL_GODMODE //addhypov8
-			|| players[i]->client->invincible_framenum > level.framenum)
+			|| players[i]->client->invincible_framenum > level.framenum
+			|| ACEAI_Enemy_ToFarHM(self, players[i])) // BEGIN HITMEN
 		   continue;
 
 		//on same team
@@ -723,8 +845,7 @@ static qboolean ACEAI_FindEnemy(edict_t *self)
 
 		if(!players[i]->deadflag 
 			&& ACEAI_VisibleBot(self, players[i])
-			&& gi.inPVS(self->s.origin, players[i]->s.origin)
-			)
+			&& gi.inPVS(self->s.origin, players[i]->s.origin))
 		{
 			if (players[i]->acebot.is_bot == 0 && ACEAI_PickOnBestPlayer(i)) //hypov8 add. stop top players :)
 			{
@@ -861,6 +982,8 @@ void ACEAI_Think(edict_t *self)
 	vec3_t		v;
 	float		tmpTimeout, velo;
 
+	VectorCopy(self->s.angles, self->acebot.deathAngles);
+
 	VectorCopy(self->client->ps.viewangles, self->s.angles);
 	VectorSet(self->client->ps.pmove.delta_angles, 0, 0, 0);
 	memset(&ucmd, 0, sizeof(ucmd));
@@ -955,13 +1078,18 @@ void ACEAI_Think(edict_t *self)
 
 	if (tmpTimeout < 6 && self->acebot.isOnLadder)
 	{
-		self->acebot.suicide_timeout = level.time + 10.0;
-		self->s.angles[YAW] += 180.0;
+		//self->acebot.suicide_timeout = level.time + 10.0;
+		if (self->s.angles[YAW]>0) //hypov8 todo: ladder issue
+			self->s.angles[YAW] -= 180.0;
+		else
+			self->s.angles[YAW] += 180.0;
+
 		ucmd.forwardmove = BOT_FORWARD_VEL;
 		self->acebot.isOnLadder = false;
 
+		ucmd.angles[YAW] = ANGLE2SHORT(self->s.angles[YAW]);
 		ClientThink(self, &ucmd);
-		self->nextthink = level.time + BOTFRAMETIME;
+		self->nextthink = level.time + BOTFRAMETIME+1;//hypo add a frame between think
 		return;
 	}
 	// Kill the bot if completely stuck somewhere
@@ -979,28 +1107,38 @@ void ACEAI_Think(edict_t *self)
 	if (!self->acebot.isMovingUpPushed)
 		ACEAI_PickShortRangeGoal(self);
 
+	// BEGIN HITMEN
+	if (enable_hitmen)
+		//select wep if it has ammo
+		ACEAI_ChooseWeaponHM(self);
+	else
+	// END
+		//select a weapon b4 we find enamy
+		if (ACEAI_WeaponCount(self) /*self->client->pers.inventory != self->acebot.num_weps*/)
+			ACEAI_PreChooseWeapon(self);
+	
 
-	if (ACEAI_WeaponCount(self) /*self->client->pers.inventory != self->acebot.num_weps*/)
-		ACEAI_PreChooseWeapon(self);
-
-
-	//allow some extra time to serch for a better wep
-	if (strcmp(self->client->pers.weapon->classname,"weapon_pistol") == 0 
-		&& self->acebot.spawnedTime >level.framenum
-		&& !self->acebot.isMovingUpPushed)
-	{
-		if (/*self->client->pers.inventory[ITEMLIST_SPISTOL] == 0
-			|| */self->client->pers.inventory[ITEMLIST_SHOTGUN] == 0
-			&& self->client->pers.inventory[ITEMLIST_TOMMYGUN] == 0
-			&& self->client->pers.inventory[ITEMLIST_GRENADELAUNCHER] == 0
-			&& self->client->pers.inventory[ITEMLIST_FLAMETHROWER] == 0
-			&& self->client->pers.inventory[ITEMLIST_BAZOOKA] == 0
-			&& self->client->pers.inventory[ITEMLIST_HEAVYMACHINEGUN] == 0
-			)
+	// BEGIN HITMEN
+	if (!enable_hitmen){
+	// END
+		//allow some extra time to serch for a better wep
+		if (strcmp(self->client->pers.weapon->classname, "weapon_pistol") == 0
+			&& self->acebot.spawnedTime > level.framenum
+			&& !self->acebot.isMovingUpPushed)
 		{
-			if (ACEAI_PickShortRangeGoalSpawned(self))
+			if (/*self->client->pers.inventory[ITEMLIST_SPISTOL] == 0
+				|| */self->client->pers.inventory[ITEMLIST_SHOTGUN] == 0
+				&& self->client->pers.inventory[ITEMLIST_TOMMYGUN] == 0
+				&& self->client->pers.inventory[ITEMLIST_GRENADELAUNCHER] == 0
+				&& self->client->pers.inventory[ITEMLIST_FLAMETHROWER] == 0
+				&& self->client->pers.inventory[ITEMLIST_BAZOOKA] == 0
+				&& self->client->pers.inventory[ITEMLIST_HEAVYMACHINEGUN] == 0
+				)
 			{
-				self->acebot.botNewTargetTime = level.time + .1;
+				if (ACEAI_PickShortRangeGoalSpawned(self))
+				{
+					self->acebot.botNewTargetTime = level.time + .1;
+				}
 			}
 		}
 	}

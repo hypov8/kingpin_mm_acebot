@@ -785,7 +785,7 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		dmg *= 4;
 	}
 
-	if (targ->client)
+	if (targ->client) //HYPOV8_ADD
 		client = targ->client;
 
 	// JOSEPH 11-APR-99
@@ -1375,7 +1375,7 @@ static void SpawnGib (edict_t *self, int mdx_part, int mdx_subobject, vec3_t dir
 
 	gib->solid = SOLID_NOT;
 	gib->s.renderfx2 |= RF2_NOSHADOW;
-	gib->s.renderfx2 |= RF2_DIR_LIGHTS;
+	//gib->s.renderfx2 |= RF2_DIR_LIGHTS; //hypov8 disable dir light on gib
 
 	gib->s.effects |= EF_GIB;
 

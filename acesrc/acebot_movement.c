@@ -310,7 +310,7 @@ static qboolean ACEMV_SpecialMove(edict_t *self, usercmd_t *ucmd)
 				self->groundentity = NULL;
 
 			self->acebot.is_crate = true;
-			self->acebot.crate_time = level.framenum + 5;
+			self->acebot.crate_time = level.framenum + 4;
 
 			return true;
 		}
@@ -335,7 +335,7 @@ static qboolean ACEMV_SpecialMove(edict_t *self, usercmd_t *ucmd)
 				self->groundentity = NULL;
 
 			self->acebot.is_crate = true;
-			self->acebot.crate_time = level.framenum + 5;
+			self->acebot.crate_time = level.framenum + 3;
 
 			return true;
 		}
@@ -360,7 +360,7 @@ static qboolean ACEMV_SpecialMove(edict_t *self, usercmd_t *ucmd)
 				self->groundentity = NULL;
 
 			self->acebot.is_crate = true;
-			self->acebot.crate_time = level.framenum + 5;
+			self->acebot.crate_time = level.framenum + 2;
 
 			return true;
 		}
@@ -459,7 +459,7 @@ static qboolean ACEMV_SpecialMove(edict_t *self, usercmd_t *ucmd)
 				self->groundentity = NULL;
 
 			self->acebot.is_crate = true;
-			self->acebot.crate_time = level.framenum + 5;
+			self->acebot.crate_time = level.framenum + 4;
 
 			return true;
 		}
@@ -484,7 +484,7 @@ static qboolean ACEMV_SpecialMove(edict_t *self, usercmd_t *ucmd)
 				self->groundentity = NULL;
 
 			self->acebot.is_crate = true;
-			self->acebot.crate_time = level.framenum + 5;
+			self->acebot.crate_time = level.framenum + 3;
 
 			return true;
 		}
@@ -513,10 +513,7 @@ static qboolean ACEMV_SpecialMove(edict_t *self, usercmd_t *ucmd)
 
 			return true;
 		}
-
-
 	}
-	
 	return false; // We did not resolve a move here
 }
 
@@ -871,7 +868,7 @@ static qboolean ACEMV_MoveToGoal(edict_t *self, usercmd_t *ucmd)
 			//debug_printf("%s: Oh crap a rocket!\n",self->client->pers.netname);
 		
 		// strafe left/right
-		if (rand() % 1 && ACEMV_CanMove(self, MOVE_LEFT) && ACEMV_CanMove_Simple(self, MOVE_LEFT))
+		if (rand() % 2 && ACEMV_CanMove(self, MOVE_LEFT) && ACEMV_CanMove_Simple(self, MOVE_LEFT))
 			ucmd->sidemove = -BOT_SIDE_VEL;
 		else if (ACEMV_CanMove(self, MOVE_RIGHT) && ACEMV_CanMove_Simple(self, MOVE_RIGHT))
 			ucmd->sidemove = BOT_SIDE_VEL;
@@ -895,7 +892,7 @@ static qboolean ACEMV_MoveToGoal(edict_t *self, usercmd_t *ucmd)
 		//	debug_printf("%s: Oh crap a rocket!\n", self->client->pers.netname);
 
 		// strafe left/right
-		if (rand() % 1 && ACEMV_CanMove(self, MOVE_BACK) && ACEMV_CanMove_Simple(self, MOVE_BACK))
+		if (rand() % 2 && ACEMV_CanMove(self, MOVE_BACK) && ACEMV_CanMove_Simple(self, MOVE_BACK))
 		{
 			ucmd->forwardmove = -BOT_FORWARD_VEL;
 			ucmd->sidemove = 0;
@@ -956,12 +953,12 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	qboolean isExplosive = 0;
 
 
-	//hypov8 jumping upto crate timmer
-	if (self->acebot.is_crate)
+	//hypov8 jumping upto crate timmer //todo check this
+/*	if (self->acebot.is_crate)
 	{
 		if (level.framenum > self->acebot.crate_time)
 			self->acebot.is_crate = false;
-	}
+	}*/
 		
 	// Get current and next node back from nav code.
 	if(!ACEND_FollowPath(self))
@@ -1025,12 +1022,17 @@ void ACEMV_Move(edict_t *self, usercmd_t *ucmd)
 	////////////////////////////////////////////////////////
 	// Jumpto Nodes
 	///////////////////////////////////////////////////////
-	if(next_node_type == BOTNODE_JUMP || 
-		(current_node_type == BOTNODE_JUMP && next_node_type != BOTNODE_ITEM && nodes[self->acebot.next_node].origin[2] > self->s.origin[2]))
+	if ((next_node_type == BOTNODE_JUMP && self->groundentity) ||
+		(current_node_type == BOTNODE_JUMP 
+		&& next_node_type != BOTNODE_ITEM 
+		&& nodes[self->acebot.next_node].origin[2] > self->s.origin[2]
+		&& self->groundentity))
 	{
 		// Set up a jump move
 		ucmd->forwardmove = BOT_FORWARD_VEL;
 		ucmd->upmove = BOT_JUMP_VEL;
+
+		self->groundentity = NULL;//hypov8 add new
 
 		ACEMV_ChangeBotAngle(self);
 
@@ -1217,12 +1219,12 @@ void ACEMV_Wander(edict_t *self, usercmd_t *ucmd)
 			return;
 	}
 
-	//hypov8 jumping upto crate timmer
-	if (self->acebot.is_crate)
+	//hypov8 jumping upto crate timmer //todo: check this
+	/*if (self->acebot.is_crate)
 	{
 		if (level.framenum > self->acebot.crate_time)
 			self->acebot.is_crate = false;
-	}
+	}*/
 
 	self->s.angles[PITCH] = 0; //hypov8 reset pitch
 

@@ -448,6 +448,7 @@ COLLISION DETECTION
 #define MASK_ALPHA				(CONTENTS_ALPHA)
 // END JOSEPH
 
+// ACEBOT_ADD
 // CONTENTS_TRANSLUCENT??
 #define	MASK_BOT_SOLID_FENCE	 (CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_WINDOW|CONTENTS_PLAYERCLIP|CONTENTS_ALPHA)
 #define	MASK_BOT_SOLID_FENCE_MON (CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_WINDOW|CONTENTS_PLAYERCLIP|CONTENTS_ALPHA|CONTENTS_MONSTER)
@@ -459,6 +460,7 @@ COLLISION DETECTION
 
 #define MASK_BOT_DROP_SKY (CONTENTS_LAVA | CONTENTS_SLIME | CONTENTS_SOLID | CONTENTS_TRANSLUCENT)
 #define MASK_BOT_DROP_ANY ( CONTENTS_WINDOW | CONTENTS_SOLID | CONTENTS_TRANSLUCENT)
+// ACEBOT_END
 
 // gi.BoxEdicts() can return a list of either solid or trigger entities
 // FIXME: eliminate AREA_ distinction?
@@ -1074,6 +1076,9 @@ typedef enum
 #define	CHAN_NO_PHS_ADD			8	// send to all clients, not just ones in PHS (ATTN 0 will also do this)
 #define	CHAN_RELIABLE			16	// send by reliable message, not datagram
 
+// BEGIN HITMEN
+#define CHAN_HOOK				1
+// END
 
 // sound attenuation values
 #define	ATTN_NONE               0	// full volume the entire level
@@ -1129,8 +1134,8 @@ typedef enum
 #define STAT_HUD_HIRE2_CMD		 29
 
 // Ridah, duplicated these for use in teamplay, since they aren't used at all in multiplay
-#define STAT_BAGCASH		      21
-#define STAT_DEPOSITED        22
+#define STAT_BAGCASH		     21
+#define STAT_DEPOSITED			 22
 //#define STAT_HUD_ENEMY_TALK_TIME 23
 //#define STAT_HUD_SELF_TALK_TIME  24
 #define STAT_BAG_CASH            24
@@ -1141,6 +1146,10 @@ typedef enum
 #define STAT_TEAM2_FLASH		 29		// 0 - no flash, 1 - green, 2 - red
 // done.
 
+// BEGIN HITMEN //hypov8 todo: teamlay?? teamplay overwrites this displaying
+#define STAT_POSITION		 21
+#define STAT_PLAYERS		 22
+// END
 
 #define STAT_HIDE_HUD           30
 #define STAT_SWITCH_CAMERA      31

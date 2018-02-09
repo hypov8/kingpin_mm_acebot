@@ -29,7 +29,7 @@ void UpdateChaseCam(edict_t *ent)
 	{
 		if(ent->client->update_cam > 0)
 		{
-			//hypo copy old player delta
+			//hypov8 copy old player delta
 			delta_anglesOld[0] = ent->client->ps.pmove.delta_angles[0];
 			delta_anglesOld[1] = ent->client->ps.pmove.delta_angles[1];
 			delta_anglesOld[2] = ent->client->ps.pmove.delta_angles[2];
@@ -37,7 +37,7 @@ void UpdateChaseCam(edict_t *ent)
 
 			memcpy(&ent->client->ps, &ent->client->temp_ps, sizeof(player_state_t));
 
-			//hypo paste old player delta
+			//hypov8 paste old player delta
 			ent->client->ps.pmove.delta_angles[0] = delta_anglesOld[0];
 			ent->client->ps.pmove.delta_angles[1] = delta_anglesOld[1];
 			ent->client->ps.pmove.delta_angles[2] = delta_anglesOld[2];
@@ -56,7 +56,7 @@ void UpdateChaseCam(edict_t *ent)
 		ent->movetype = MOVETYPE_NOCLIP;
 
 		ent->client->newweapon = NULL;
-		ChangeWeapon(ent);
+		ChangeWeapon(ent); //hypov8 add
 
 	//end
 		return;
@@ -225,6 +225,7 @@ void ChaseNext(edict_t *ent)
 	ent->client->chase_target = e;
 	ent->client->update_chase = true;
 
+	//hypov8 spec scoreboard fix
 	if (ent->client->showscores == NO_SCOREBOARD)
 	{
 		ent->client->showscores = SCORE_INITAL_SPEC;
@@ -276,7 +277,7 @@ void ChasePrev(edict_t *ent)
 
 	ent->client->chase_target = e;
 	ent->client->update_chase = true;
-
+	//hypov8 spec scoreboard fix
 	if (ent->client->showscores == NO_SCOREBOARD)
 	{
 		ent->client->showscores = SCORE_INITAL_SPEC;

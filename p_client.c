@@ -4,6 +4,13 @@
 //#include "stdlog.h"	//	Standard Logging
 //#include "gslog.h"	//	Standard Logging
 
+// BEGIN HITMEN
+//#include "stdlog.h"    // StdLog
+//#include "gslog.h"    // StdLog
+#include "g_hitmen.h"
+// END
+
+
 #include "voice_bitch.h"
 #include "voice_punk.h"
 
@@ -264,18 +271,16 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 		if (mod!=MOD_RESTART && mod!=MOD_TELEFRAG && (teamplay->value==4 || (dm_realmode->value && !teamplay->value))) //todo hypov8 self->client->resp.deaths++
 			self->client->resp.deposited++;
 
-		//if (!strcmp(self->client->pers.netname, attacker->client->pers.netname))
-		//	Com_Printf("same bot killed\n"); //hypov8 console report
-
-
 		switch (mod)
 			{
 			case MOD_SUICIDE:
 				message = "suicides";
 				break;
+// ACEBOT_ADD
 			case MOD_BOT_SUICIDE: //added hypov8 console write bot death
 				message = "bot stuck, suicides";
 				break;
+// ACEBOT_END
 			case MOD_FALLING:
 				message = "cratered";
 				break;
@@ -382,6 +387,22 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
                 //safe_bprintf(PRINT_MEDIUM,"Subtract 1\n");
 				self->client->resp.score--;
 
+				// BEGIN HITMEN
+				if (enable_hitmen)
+				{
+					// Increase the suicide counter.
+					self->client->resp.suicides++;
+
+					// Because we killed ourselves we want to end our kill streak so
+					// we have to check if we had a better streak than before.
+					if (self->client->resp.killstreak > self->client->resp.maxkillstreak)
+						self->client->resp.maxkillstreak = self->client->resp.killstreak;
+
+					// Reset the kill streak.
+					self->client->resp.killstreak = 0;
+				}
+				// END
+
 				if ((int)teamplay->value == TM_GANGBANG) {
 					team_cash[self->client->pers.team]--;
 					UPDATESCORE
@@ -455,37 +476,68 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 			case MOD_BARMACHINEGUN:
 				message = "was maimed by";
 				message2 = "'s H.M.G.";
+			// BEGIN HITMEN
+				break;
 			// END JOSEPH
+
+			case MOD_HOOK_DAMAGE1:
+				message = "was gutted by";
+				message2 = "'s hook";
+				break;
+			case MOD_HOOK_VAMPIRE1:
+				message = "was vampired1 by";
+				message2 = "'s hook";
+				break;
+			case MOD_HOOK_VAMPIRE2:
+				message = "was vampired2 by";
+				message2 = "'s hook";
+				break;
+			// END
 			}
+
 			if (message)
 			{
-				safe_bprintf(PRINT_MEDIUM,"%s %s %s%s\n", self->client->pers.netname, message, attacker->client->pers.netname, message2);
-                if(enable_killerhealth)
-                {   
+				safe_bprintf(PRINT_MEDIUM, "%s %s %s%s\n", self->client->pers.netname, message, attacker->client->pers.netname, message2);
+
+				 if(enable_killerhealth)
 					safe_cprintf(self, PRINT_HIGH, "%s had %i health!\n", attacker->client->pers.netname, attacker->health);
-                }
-				if ((deathmatch->value) && (mod != MOD_RESTART) && (mod != MOD_TELEFRAG))
-				{
-					if (ff)
-					{
-                        //safe_bprintf(PRINT_MEDIUM,"Subtract 2\n");
-						attacker->client->resp.score--;
 
-						if ((int)teamplay->value == TM_GANGBANG) {
-							team_cash[attacker->client->pers.team]--;
-							UPDATESCORE
+				 if ((deathmatch->value) && (mod != MOD_RESTART) && (mod != MOD_TELEFRAG))
+					{
+						if (ff) //friendly fire
+						{
+							//safe_bprintf(PRINT_MEDIUM,"Subtract 2\n");
+							attacker->client->resp.score--;
+
+							if ((int)teamplay->value == TM_GANGBANG) {
+								team_cash[attacker->client->pers.team]--;
+								UPDATESCORE
+							}
+						}
+						else
+						{
+							attacker->client->resp.score++;
+
+							// BEGIN HITMEN
+							if (enable_hitmen)
+							{
+								attacker->client->resp.killstreak++;
+								self->client->resp.deaths++;
+
+								// Oh dear we were just killed so that ends our kill streak.
+								if (self->client->resp.killstreak > self->client->resp.maxkillstreak)
+									self->client->resp.maxkillstreak = self->client->resp.killstreak;
+
+								self->client->resp.killstreak = 0;
+							}
+							// END
+
+							if ((int)teamplay->value == TM_GANGBANG) {
+								team_cash[attacker->client->pers.team]++;
+								UPDATESCORE
+							}
 						}
 					}
-					else
-					{
-						attacker->client->resp.score++;
-
-						if ((int)teamplay->value == TM_GANGBANG) {
-							team_cash[attacker->client->pers.team]++;
-							UPDATESCORE
-						}
-					}
-				}
 				return;
 			}
 		}
@@ -516,9 +568,14 @@ void TossClientWeapon (edict_t *self)
 	// RAFAEL
 	qboolean	quadfire;
 	float		spread;
-
-	if (!deathmatch->value)
+	
+	// BEGIN HITMEN - We never want to drop weapons in Hitmen when we die.
+	if (enable_hitmen)
 		return;
+	// END
+
+ 	if (!deathmatch->value)
+	 	return;
 
 	item = self->client->pers.weapon;
 	if (! self->client->pers.inventory[self->client->ammo_index] )
@@ -652,8 +709,15 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 
 		self->client->ps.pmove.pm_type = PM_DEAD;
 		ClientObituary (self, inflictor, attacker);
-		
+	
+		// BEGIN HITMEN
+		//sl_WriteStdLogDeath( &gi, level, self, inflictor, attacker);    // StdLog
+		// END
+
 /*		if (enable_killerhealth)
+
+
+
 		{
 			if(attacker->client && attacker!=self)
 			{
@@ -667,7 +731,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 		if (meansOfDeath!=MOD_RESTART)
 			TossClientWeapon (self);
 		if (deathmatch->value && meansOfDeath!=MOD_RESTART)
-			Cmd_Help_f (self, 0);		// show scores
+			Cmd_Help_f (self, 0, 1);		// show scores
 
 		// clear inventory
 		// this is kind of ugly, but it's how we want to handle keys in coop
@@ -881,22 +945,47 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.selected_item = ITEM_INDEX(item);
 	client->pers.inventory[client->pers.selected_item] = 1;
 
+	// BEGIN HITMEN
+	if (enable_hitmen)
+	{
+		item = FindItem("Crowbar");
+		client->pers.inventory[ITEM_INDEX(item)] = 1;
+	}
+	// END
+
 	// Ridah, start with Pistol in deathmatch
 	if (deathmatch->value)
 	{
-		item = FindItem("pistol");
-		client->pers.selected_item = ITEM_INDEX(item);
-		client->pers.inventory[client->pers.selected_item] = 1;
+		// BEGIN HITMEN
+		if (!enable_hitmen)
+		// END
+		{
+			item = FindItem("pistol");
+			client->pers.selected_item = ITEM_INDEX(item);
+			client->pers.inventory[client->pers.selected_item] = 1;
 
-		client->ammo_index = ITEM_INDEX(FindItem(item->ammo));
-		client->pers.inventory[client->ammo_index] = 50;
+			client->ammo_index = ITEM_INDEX(FindItem(item->ammo));
+			client->pers.inventory[client->ammo_index] = 50;
 
-		client->pers.weapon = item;
+			client->pers.weapon = item;
 
-		// Ridah, start with the pistol loaded
-		ammo = FindItem (item->ammo);
+			// Ridah, start with the pistol loaded
+			ammo = FindItem(item->ammo);
 
-		AutoLoadWeapon( client, item, ammo );
+			AutoLoadWeapon(client, item, ammo);
+		}
+		// BEGIN HITMEN
+		else
+		{
+			// BEGIN HITMEN
+			// We want the magnum instead of the pistol.
+			client->pers.pistol_mods |= WEAPON_MOD_DAMAGE;
+
+			// Set the players initial weapon to whatever the current game one is so
+			// they don't feel left out using a pistol against HMG's
+			Hm_Setcurrentweapon(client, false);
+		}
+		// END
 	}
 	else	// start holstered in single player
 	{
@@ -960,10 +1049,10 @@ void InitClientResp (gclient_t *client)
 	client->resp.checkpvs=level.framenum+23;
 	client->resp.checktime=level.framenum+11;
 	client->resp.checktex=level.framenum+30;
-	client->resp.checktex2=level.framenum+32;
-	client->resp.checktex3=level.framenum+35;
+	client->resp.checktex2=level.framenum+32;// ACEBOT_ADD
+	client->resp.checktex3=level.framenum+35;// ACEBOT_ADD
     client->resp.checkfoot=level.framenum+25;
-	client->resp.checkmouse=level.framenum+37;
+	client->resp.checkmouse=level.framenum+37;// ACEBOT
 
 #ifdef DOUBLECHECK
 	client->resp.checked=0;
@@ -981,9 +1070,9 @@ void InitClientRespClear (gclient_t *client)
     client->resp.checkfoot=level.framenum+25;
 	client->resp.checktime=level.framenum+11;
 	client->resp.checktex=level.framenum+30;
-	client->resp.checktex2=level.framenum+32;
-	client->resp.checktex3=level.framenum+35;
-	client->resp.checkmouse = level.framenum + 37;
+	client->resp.checktex2=level.framenum+32;// ACEBOT_ADD
+	client->resp.checktex3=level.framenum+35;// ACEBOT_ADD
+	client->resp.checkmouse = level.framenum + 37;// ACEBOT
 
 #ifdef DOUBLECHECK
 	client->resp.checked=0;
@@ -1479,6 +1568,11 @@ void CopyToBodyQue (edict_t *ent)
 	body->s.renderfx2 |= RF2_NOSHADOW;
 	body->s.effects = 0;
 	body->s.angles[PITCH] = 0;
+	// ACEBOT_ADD
+	if (ent->acebot.is_bot)
+		VectorCopy(ent->acebot.deathAngles, body->s.angles);
+
+	// ACEBOT_END
 
 	body->gender = ent->gender;
 	body->deadflag = ent->deadflag;
@@ -1559,8 +1653,11 @@ void PutClientInServer (edict_t *ent)
 	int		i;
 	client_persistant_t	saved;
 	client_respawn_t	resp;
-	qboolean isUsingSpec = false;
+	qboolean isUsingSpec = false;// HYPOV8_ADD
 	short		delta_anglesOld[3];
+	// BEGIN HITMEN
+	float	timediff;
+	// END
 
 	//add hypov8 stop player moving to a spawnpoint
 // ACEBOT_ADD
@@ -1675,6 +1772,10 @@ void PutClientInServer (edict_t *ent)
 	ent->s.renderfx2 = 0;
 	ent->onfiretime = 0;
 
+	// BEGIN HITMEN - Make sure no spawn campers can twat us.
+	//ent->client->invincible_framenum = level.framenum + 10;
+	// END
+
 	ent->cast_info.aiflags |= AI_GOAL_RUN;	// make AI run towards us if in pursuit
 
 // ACEBOT_ADD
@@ -1683,7 +1784,7 @@ void PutClientInServer (edict_t *ent)
 	ent->acebot.is_jumping = false;
 // ACEBOT_END
 
-	ent->hasSelectedPistol = false;
+	ent->hasSelectedPistol = false; // HYPOV8_ADD
 	ent->flags &= ~FL_CHASECAM; //hypov8 turn off togglecam
 
 	VectorCopy (mins, ent->mins);
@@ -1843,17 +1944,17 @@ ent->bikestate = 0;
 	// set the delta angle
 	for (i = 0; i < 3; i++)
 	{
+// HYPOV8_ADD
 		if (!isUsingSpec)
 			client->ps.pmove.delta_angles[i] = ANGLE2SHORT(spawn_angles[i] - client->resp.cmd_angles[i]);
 		else
+// HYPOV8_END
 			client->ps.pmove.delta_angles[i] = delta_anglesOld[i];
 
 	}
 	
 	ent->s.angles[PITCH] = 0;
 	ent->s.angles[YAW] = spawn_angles[YAW];
-	//if (!isUsingSpec)
-		//ent->s.angles[YAW] = vectoyaw(spawn_angles); //hypov8 view_angle spawn_angles[YAW] 
 	ent->s.angles[ROLL] = 0;
 	VectorCopy (ent->s.angles, client->ps.viewangles);
 	VectorCopy (ent->s.angles, client->v_angle);
@@ -1869,11 +1970,34 @@ ent->bikestate = 0;
 
 	gi.linkentity (ent);
     
-    VectorCopy(ent->s.origin,ent->check_moved_origin );
+	// ACEBOT_ADD 
+    VectorCopy(ent->s.origin,ent->check_moved_origin ); //hypo
+	// ACEBOT_END
+
+	// BEGIN HITMEN
+	if (enable_hitmen)
+	{
+		// this should only work once we've been killed once and respawned
+		timediff = 0;
+		if (ent->client->resp.spawntime != 0)
+			timediff = level.framenum - ent->client->resp.spawntime;
+
+		// Once we've respawned set the players time alive.
+		timediff /= 10;
+		if ((timediff > 0) && timediff > (ent->client->resp.timealive))
+			ent->client->resp.timealive = timediff;
+
+		ent->client->resp.spawntime = level.framenum;
+
+		Hm_Set_Timers(client);
+
+	}
+	// END
 
 	// force the current weapon up
 	client->newweapon = client->pers.weapon;
 	ChangeWeapon (ent);
+
 }
 
 // Papa - Here is where I control how a player enters the game 
@@ -1900,7 +2024,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 	save = ent->client->showscores;
 	G_InitEdict (ent);
 
-//hypo	//if ((level.modeset == DM_PRE_MATCH) || (level.modeset == DM_MATCH_RUNNING))
+// HYPOV8_ADD	//if ((level.modeset == DM_PRE_MATCH) || (level.modeset == DM_MATCH_RUNNING))
 	//hypov8 could be used to rejoin and use old stats? or cleared on exit?
 	if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 	{
@@ -1938,6 +2062,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
+// HYPOV8_ADD
 		else if (level.modeset == MATCHEND)
 		{
 			//add hypo matchend
@@ -1947,6 +2072,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
+// HYPOV8_END
 		else if (ent->client->pers.team) 
 		{
 			// so we don't KillBox() ourselves
@@ -1987,6 +2113,7 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
+// HYPOV8_ADD
 		else if (level.modeset == MATCHEND)
 		{
 			//add hypo
@@ -1996,11 +2123,16 @@ void ClientBeginDeathmatch (edict_t *ent)
 			ent->client->pers.weapon = NULL;
 			ent->client->pers.spectator = SPECTATING;
 		}
+// HYPOV8_END
 		else if (level.modeset != DM_MATCH_SPAWNING)
 		{
 			safe_bprintf(PRINT_HIGH, "%s entered the game\n", ent->client->pers.netname);
 //			sl_WriteStdLogPlayerEntered( &gi, level, ent );	// Standard Logging
 		}
+			// BEGIN HITMEN
+			//sl_WriteStdLogPlayerEntered( &gi, level, ent );     // StdLog
+//			}
+			// END
 	}
 	ent->client->showscores = save;
  
@@ -2671,7 +2803,7 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo)
 
 	// combine name and skin into a configstring
 	//gi.configstring (CS_PLAYERSKINS+playernum, va("%s\\%s %s", ent->client->pers.netname, s, extras) );
-	playerskin(ent - g_edicts - 1, va("%s\\%s %s", ent->client->pers.netname, s, extras));
+	playerskin(ent - g_edicts - 1, va("%s\\%s %s", ent->client->pers.netname, s, extras)); // HYPOV8_ADD
 
 	// fov
 	if (deathmatch->value && ((int)dmflags->value & DF_FIXED_FOV))
@@ -2900,7 +3032,7 @@ qboolean ClientConnect(edict_t *ent, char *userinfo)
 
 
 
-	for_each_player_not_bot(doot, i)
+	for_each_player_not_bot(doot, i)// ACEBOT_ADD
 	{
 		if ((doot->client->pers.admin == ADMIN) || (doot->client->pers.rconx[0]))
 		{
@@ -2941,7 +3073,7 @@ skipplayerconnected:
 				(Q_stricmp(skinvalue, playerlist[i].skin) == 0))
 			{
 				ent->client->showscores = SCORE_REJOIN;
-				ent->client->pers.spectator = SPECTATING;
+				ent->client->pers.spectator = SPECTATING; //hypov8
 			}
 			else
 				; //??
@@ -3011,7 +3143,7 @@ void ClientDisconnect (edict_t *ent)
 
 	if (!ent->client)
 		return;
-	playernum = ent - g_edicts - 1;
+	playernum = ent - g_edicts - 1; // HYPOV8_ADD
 
 //	sl_LogPlayerDisconnect( &gi, level, ent );	// Standard Logging
 	ent->client->pers.fakeThief = 0;
@@ -3150,7 +3282,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 //	vec3_t	bike_premove_vel;
 
-	ent->client->pers.lastpacket = Sys_Milliseconds(); // MH: get packet's time  hypo ToDo:
+	ent->client->pers.lastpacket = Sys_Milliseconds(); // MH: get packet's time  hypov8 ToDo:
 
 	if (ucmd->forwardmove|ucmd->sidemove|ucmd->upmove)
 		ent->move_frame=level.framenum;//(ent->move_frame>>3)|ucmd->buttons|ucmd->forwardmove|ucmd->sidemove|ucmd->upmove;
@@ -3205,7 +3337,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			level.exitintermission = true;
 		return;
 	}
-
+// HYPOV8_ADD
 	if (level.modeset == ENDMATCHVOTING)
 	{
 		int frames;
@@ -3217,7 +3349,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		}
 
 	}
-
+// HYPOV8_END
 	
 
 	// RAFAEL
@@ -3252,6 +3384,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 	if (ent->client->chase_target)
 	{	
+// HYPOV8_ADD
 		if (ent->client->chase_target->client->pers.spectator == SPECTATING
 				|| ent->client->chase_target->inuse == false )
 		{ //hypo release chasecam when player leaves or enters spec
@@ -3268,7 +3401,9 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			*/
 		}
 		else
-		{		// snap, for alternate chase modes...
+// HYPOV8_END
+		{	
+	// snap, for alternate chase modes...
 			if (ucmd->upmove && 10 < (level.framenum - ent->client->chase_check))
 			{
 				ent->client->chase_check = level.framenum;
@@ -3314,7 +3449,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 	if (ent->movetype == MOVETYPE_NOCLIP)
 		client->ps.pmove.pm_type = PM_SPECTATOR;
-#if 0
+#if 0 // HYPOV8_ADD
 	// Ridah, Hovercars
 	else if (ent->flags & FL_HOVERCAR)
 	{
@@ -3380,7 +3515,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		goto car_resume;
 	}
 	// done.
-#endif
+#endif // HYPOV8_ADD
 
 	else if (ent->s.modelindex != 255)
 		client->ps.pmove.pm_type = PM_GIB;
@@ -3509,7 +3644,7 @@ chasing:
 	}
 // END Snap
 
-	if (!VectorCompare(ent->s.origin, ent->check_moved_origin))
+	if (!VectorCompare(ent->s.origin, ent->check_moved_origin)) // HYPOV8 check_moved_origin
         ent->check_idle = level.framenum;
     
 
@@ -3922,9 +4057,16 @@ car_resume:
 			UpdateChaseCam(other);
 	}
 
+	// BEGIN HITMEN
+	// Do we need to add some health or ammo ?
+	if (enable_hitmen)
+		Hm_Check_Timers(ent);
+	// END
+
+	// ACEBOT_ADD
 	//hypov8 copy TO game origin??
    VectorCopy(ent->s.origin,ent->check_moved_origin);
-
+   // ACEBOT_END
 }
 
 
@@ -4009,7 +4151,9 @@ void ClientBeginServerFrame (edict_t *ent)
 				client->latched_buttons = 0;
 			}
 		}
+// HYPOV8_ADD
 		goto checks; //return; //hypo cheat checks stop when ur dead
+// HYPOV8_END
 	}
 
 // BEGIN: Xatrix/Ridah/Navigator/16-apr-1998
@@ -4080,27 +4224,28 @@ checks:
 		else if (level.framenum > ent->client->resp.checkpvs) {
 			ent->client->resp.checkpvs = level.framenum + 90;
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(va("cmd %s $gl_clear $r_drawworld\n", lockpvs));
+			gi.WriteString(va("cmd %s $gl_clear $r_drawworld\n", lockpvs)); // HYPOV8_ADD
 			gi.unicast(ent, false);
 		}
 		else if (level.framenum > ent->client->resp.checkfoot) {
 			ent->client->resp.checkfoot = level.framenum + 50;
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(va("cmd %s $cl_forwardspeed $cl_sidespeed\n", lockfoot));
+			gi.WriteString(va("cmd %s $cl_forwardspeed $cl_sidespeed\n", lockfoot)); // HYPOV8_ADD
 			gi.unicast(ent, false);
 		}
 		else if (level.framenum > ent->client->resp.checktime) {
 			ent->client->resp.checktime = level.framenum + 130;
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(va("cmd %s $timescale $fixedtime\n", scaletime));
+			gi.WriteString(va("cmd %s $timescale $fixedtime\n", scaletime)); // HYPOV8_ADD
 			gi.unicast(ent, false);
 		}
 		else if (level.framenum > ent->client->resp.checktex) {
 			ent->client->resp.checktex = level.framenum + 120;  //120
 			gi.WriteByte(svc_stufftext);
-			gi.WriteString(va("cmd %s $gl_picmip $gl_maxtexsize $gl_polyblend\n", locktex));
+			gi.WriteString(va("cmd %s $gl_picmip $gl_maxtexsize $gl_polyblend\n", locktex)); // HYPOV8_ADD
 			gi.unicast(ent, false);
 		}
+// HYPOV8_ADD
 		else if (level.framenum > ent->client->resp.checktex2) {
 			ent->client->resp.checktex2 = level.framenum + 40;
 			gi.WriteByte(svc_stufftext);
@@ -4113,6 +4258,7 @@ checks:
 			gi.WriteString(va("cmd %s $intensity\n", intensity));
 			gi.unicast(ent, false);
 		}
+// HYPOV8_END
 
 		else if (level.framenum>ent->client->resp.checkmouse) {
 			ent->client->resp.checkmouse = level.framenum + 30;

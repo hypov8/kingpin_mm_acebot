@@ -826,10 +826,10 @@ void AddLightSource(edict_t *self)
 		gi.dprintf("Warning: MAX_LIGHT_SOURCES exceeded\n");
 		return;
 	}
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// END
 	if (self->dmg_radius <= 0.0)
 		self->dmg_radius = 1.0;
 
@@ -996,10 +996,10 @@ static void junior_use (edict_t *self, edict_t *other, edict_t *activator)
 
 void SP_junior (edict_t *self )
 {
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 	if (self->style >= 32)
 	{
 		self->use = junior_use;
@@ -1073,10 +1073,10 @@ static void light_use (edict_t *self, edict_t *other, edict_t *activator)
 
 void SP_light (edict_t *self)
 {
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 	if (self->style >= 32)
 	{
 		self->use = light_use;
@@ -1211,10 +1211,10 @@ void SP_light_sconce (edict_t *self)
 	self->solid = SOLID_NOT;
 	self->movetype = MOVETYPE_NONE;
 	self->svflags |= SVF_PROP;
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 	if (self->style >= 32)
 	{
 		self->use = light_use;
@@ -1299,10 +1299,10 @@ void SP_light_bulb (edict_t *self)
 	self->solid = SOLID_NOT;
 	self->movetype = MOVETYPE_NONE;
 	self->svflags |= SVF_PROP;
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 	if (self->style >= 32)
 	{
 		self->use = light_use;
@@ -1369,10 +1369,10 @@ void SP_light_deco_sconce (edict_t *self)
 	self->solid = SOLID_NOT;
 	self->movetype = MOVETYPE_NONE;
 	self->svflags |= SVF_PROP;
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 	if (self->style >= 32)
 	{
 		self->use = light_use;
@@ -1438,10 +1438,10 @@ void SP_light_chandelier (edict_t *self)
 	self->solid = SOLID_NOT;
 	self->movetype = MOVETYPE_NONE;
 	self->svflags |= SVF_PROP;
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 	if (self->style >= 32)
 	{
 		self->use = light_use;
@@ -1507,10 +1507,10 @@ void SP_light_pendant (edict_t *self)
 	self->solid = SOLID_NOT;
 	self->movetype = MOVETYPE_NONE;
 	self->svflags |= SVF_PROP;
-
+// HYPOV8_ADD
 	if (self->style >= 20) //hypo was 32 bug? eg.. nycdm3_kp
 		self->style = 20; //20 max?
-
+// HYPOV8_END
 
 	if (self->style >= 32)
 	{

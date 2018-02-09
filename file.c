@@ -112,9 +112,14 @@ int proccess_line(char*	buffer)
 	if (strstr(buffer, DISABLE_ANON_TEXT_STRING))
 		return DISABLE_ANON_TEXT_KEYWORD;
 
+
 	if (strstr(buffer, DISABLE_CURSE_STRING))
 		return DISABLE_CURSE_KEYWORD;
 
+// BEGIN HITMEN
+	if (strstr(buffer, ENABLE_HITMEN_STRING))
+		return ENABLE_HITMEN_KEYWORD;
+//END
     if (strstr(buffer, UNLIMITED_CURSE_STRING))
 		return UNLIMITED_CURSE_KEYWORD;
 
@@ -172,6 +177,9 @@ int proccess_ini_file()
 	disable_anon_text = false;
 	disable_curse = false;
     unlimited_curse = false;
+	// BEGIN HITMEN
+	enable_hitmen = false;
+	//END
 //    enable_asc = false;
  	enable_killerhealth = false;
 
@@ -296,6 +304,12 @@ int proccess_ini_file()
 			case DISABLE_CURSE_KEYWORD:
 				disable_curse = true;
 				break;
+			// BEGIN HITMEN
+			case ENABLE_HITMEN_KEYWORD:
+				 enable_hitmen= true;
+				break;
+			//END
+
 			case UNLIMITED_CURSE_KEYWORD:
 				unlimited_curse = true;
 				break;

@@ -32,6 +32,9 @@ int keep_admin_status;
 int default_random_map;
 int disable_anon_text;
 int disable_curse;
+// BEGIN HITMEN
+int enable_hitmen;
+// END
 //int enable_asc;
 int unlimited_curse;
 int enable_killerhealth;
@@ -45,20 +48,20 @@ ban_t	ip[100];
 
 ban_t	rconx_pass[100];
 
-
+// HYPOV8_ADD??
 edict_t *GetAdmin()
 {
 	int		i;
 	edict_t	*doot;
 
-	for_each_player_not_bot(doot, i)
+	for_each_player_not_bot(doot, i)// ACEBOT_ADD
 	{
 		if (doot->client->pers.admin > NOT_ADMIN)
 			return doot;
 	}
 	return NULL;
 }
-
+// HYPOV8_END
 
 //==============================================================
 //
@@ -68,7 +71,7 @@ edict_t *GetAdmin()
 //===============================================================
 
 
-//hypo added, seems to cause issues
+// HYPOV8_ADD seems to cause issues
 qboolean for_each_player(edict_t *JOE_BLOGGS)
 {
 	if (JOE_BLOGGS->inuse
@@ -78,7 +81,7 @@ qboolean for_each_player(edict_t *JOE_BLOGGS)
 
 	return false;
 }
-
+// HYPOV8_END
 /*
 ================
 PublicSetup
@@ -90,7 +93,7 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 	edict_t		*self;
 	int			i;
 
-	gi.dprintf("--== PublicSetup ==-- command has been used\n"); //add hypo
+	gi.dprintf("--== PublicSetup ==-- command has been used\n"); // HYPOV8_ADD
 
 // ACEBOT_ADD
 	//ACEND_SaveNodes(); //save file nodes
@@ -100,10 +103,21 @@ void PublicSetup ()  // returns the server into ffa mode and resets all the cvar
 	level.bots_spawned = false;
 // ACEBOT_END
 
-	level.modeset = DM_PRE_MATCH; 
+	level.modeset = DM_PRE_MATCH;  // HYPOV8 FFA
 	gi.cvar_set("dmflags",default_dmflags);
+	// BEGIN HITMEN
+#if 0
+	if (enable_hitmen && (int)dmflags->value & DF_INFINITE_AMMO)
+	{
+		int flagTmp;
+		flagTmp = (int)dmflags->value;
+		flagTmp &= ~(DF_INFINITE_AMMO);
+		gi.cvar_set("dmflags", va("%i", flagTmp));
+	}
+#endif
+	// END
 	//gi.cvar_set("teamplay",default_teamplay);
-	gi.cvar_set("teamplay", "0"); //hypo
+	gi.cvar_set("teamplay", "0"); // HYPOV8_ADD
 	gi.cvar_set("password",default_password);
 	gi.cvar_set("timelimit",default_timelimit);
 	gi.cvar_set("fraglimit",default_fraglimit);
@@ -144,7 +158,7 @@ void MatchSetup ()
 	edict_t		*self;
 	int			i;
 
-	gi.dprintf("--== MatchSetup ==-- command has been used\n"); //add hypo
+	gi.dprintf("--== MatchSetup ==-- command has been used\n"); // HYPOV8_ADD
 
 // ACEBOT_ADD
 	//ACEND_SaveNodes(); //save file nodes
@@ -169,7 +183,7 @@ void MatchSetup ()
 		if (self->client->pers.spectator == SPECTATING)
 			continue;
 		meansOfDeath = MOD_RESTART;
-		// self->client->pers.spectator = SPECTATING;
+		// self->client->pers.spectator = SPECTATING;// HYPOV8_DISABLED
 		self->flags &= ~FL_GODMODE;
 		self->health = 0;
 //		player_die (self, self, self, 1, vec3_origin, 0, 0);
@@ -183,13 +197,24 @@ void MatchSetup ()
 }
 int memalloced[3] = {0,0,0};
 
-void ResetServer () // completely resets the server including map
+void ResetServer() // completely resets the server including map
 {
 	char command[64];
 
-	gi.dprintf("--== ResetServer ==-- command has been used\n"); //add hypo
+	gi.dprintf("--== ResetServer ==-- command has been used\n"); // HYPOV8_ADD
 
-	gi.cvar_set("dmflags",default_dmflags);
+	gi.cvar_set("dmflags", default_dmflags);
+	// BEGIN HITMEN
+#if 0
+	if (enable_hitmen && (int)dmflags->value & DF_INFINITE_AMMO)
+	{
+		int flagTmp;
+		flagTmp = (int)dmflags->value;
+		flagTmp &= ~(DF_INFINITE_AMMO);
+		gi.cvar_set("dmflags", va("%i", flagTmp));
+	}
+#endif
+	// END
 	gi.cvar_set("teamplay",default_teamplay);
 	gi.cvar_set("password",default_password);
 	gi.cvar_set("timelimit",default_timelimit);
@@ -309,7 +334,7 @@ void SpawnPlayer () // Here I spawn players - 1 per server frame in hopes of red
 
 
 
-void SpawnTeamPlayers ()  // Same idea but 1 player per team
+void SpawnTeamPlayers ()  //HYPOV8 team.. Same idea but 1 player per team
 {
 	edict_t		*self;
 	int			i;
@@ -367,7 +392,7 @@ level.modeset = TEAM_MATCH_SPAWNING;
 game will now load clients as active
 ================
 */
-void Start_TeamMatch () // Starts the match
+void Start_TeamMatch () // HYPOV8 team.. Starts the match
 {
 	edict_t		*self;
 	int			i;
@@ -442,6 +467,7 @@ void SetupMapVote () // at the end of a level - starts the vote for the next map
 	level.modeset = ENDMATCHVOTING;
 	level.startframe = level.framenum;
 
+// HYPOV8_ADD LOTS of differneces
 	{
 		// find an intermission spot
 		intermision = G_Find(NULL, FOFS(classname), "info_player_intermission");
@@ -649,7 +675,7 @@ calls Start_DM()
 15 second countdown before server starts
 ================
 */
-void CheckStartDM ()
+void CheckStartDM () // HYPOV8_ADD dm... PRE_MATCH_TIME
 {
 	if (teamplay->value) //hypov8 make teamplay games use corect varables
 	{
@@ -680,7 +706,7 @@ void CheckStartDM ()
 
 
 void getTeamTags();
-void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in a match
+void CheckEndTeamMatch() // HYPOV8_ADD team... check if time,frag,cash limits have been reached in a match
 {
 	int			i;
 	int		count = 0;
@@ -723,7 +749,7 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 		if (team_cash[1] >= (int)fraglimit->value || team_cash[2] >= (int)fraglimit->value) {
 			safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 			if (!allow_map_voting)
-				EndDMLevel(); //hypo MatchEnd(); // 
+				EndDMLevel(); //hypov8 MatchEnd(); // 
 			else
 				SetupMapVote();
 			return;
@@ -737,7 +763,7 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 		{
 			safe_bprintf(PRINT_HIGH, "Cashlimit hit.\n");
 			if (!allow_map_voting)
-				EndDMLevel(); //hypo MatchEnd(); // 
+				EndDMLevel(); //hypov8 MatchEnd(); // 
 			else
 				SetupMapVote();
 			return;
@@ -750,7 +776,7 @@ void CheckEndTeamMatch() // check if time,frag,cash limits have been reached in 
 		{
 			safe_bprintf(PRINT_HIGH, "Timelimit hit.\n");
 			if (!allow_map_voting)
-				EndDMLevel(); //hypo MatchEnd(); // 
+				EndDMLevel(); //hypov8 MatchEnd(); // 
 			else
 				SetupMapVote();
 			return;
@@ -782,7 +808,7 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 
 	if (level.framenum == (level.startframe + 10))
 	{
-	for_each_player_not_bot(player,i)
+	for_each_player_not_bot(player,i)// ACEBOT_ADD
 		{
 			if (scoreboard_first)
 				player->client->showscores = SCOREBOARD;
@@ -796,7 +822,7 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 	{
 		memset (&count, 0, sizeof(count));
 
-		for_each_player_not_bot(player,i)
+		for_each_player_not_bot(player,i)// ACEBOT_ADD
 		{
 			count[player->vote]++;
 		}
@@ -818,7 +844,7 @@ void CheckEndVoteTime () // check the timelimit for voting next level/start next
 	}
 }
 
-//hypo add
+// HYPOV8_ADD
 void CheckEndMatchTime() // check the timelimit for voting next level/start next map
 {
 	int		i;
@@ -854,7 +880,7 @@ void CheckEndMatchTime() // check the timelimit for voting next level/start next
 
 	}
 }
-
+// HYPOV8_END
 
 void CheckVote() // check the timelimit for an admin vote
 {

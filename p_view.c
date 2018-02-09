@@ -213,8 +213,8 @@ void SV_CalcViewOffset (edict_t *ent)
 	float		ratio;
 	float		delta;
 	vec3_t		v; 
-
-	//add hypov8 stop vie bob when spectating
+// HYPOV8_ADD
+	//add hypov8 stop view bob when spectating
 	if (ent->client->pers.spectator == SPECTATING && ent->client->chase_target == NULL)
 	{
 		//if (ent->client->chase_target == NULL)
@@ -226,7 +226,7 @@ void SV_CalcViewOffset (edict_t *ent)
 		VectorCopy(v , ent->client->ps.viewoffset);
 		return;
 	}
-
+// HYPOV8_END
 
 //===================================
 
@@ -959,6 +959,7 @@ void G_SetClientEffects (edict_t *ent)
 	
 	if (ent->client->invincible_framenum > level.framenum - 10)
 	{
+// HYPOV8_ADD
 		remaining = ent->client->invincible_framenum - level.framenum;
 		if (remaining < 2 /*|| (remaining & 4)*/ ) 
 		{
@@ -971,6 +972,7 @@ void G_SetClientEffects (edict_t *ent)
 			ent->s.effects |= EF_COLOR_SHELL;
 			ent->s.renderfx |= RF_SHELL_RED;
 		}
+// HYPOV8_END
 	}
 
 	// show cheaters!!!
@@ -1093,6 +1095,8 @@ void G_SetClientFrame (edict_t *ent)
 	int			weapontype;
 	int	oldframe, oldend;
 
+
+
 // Ridah, Hovercars
 	if (ent->flags & (FL_HOVERCAR | FL_HOVERCAR_GROUND | FL_BIKE))
 	{	// always frame 0, use visiblity for model_parts to represent damage
@@ -1105,7 +1109,10 @@ void G_SetClientFrame (edict_t *ent)
 //		return;		// not in the player model
 
 	client = ent->client;
-
+// HYPOV8_ADD
+	if (client->pers.spectator == SPECTATING)//add hypov8
+		return;
+// HYPOV8_END
 	if (client->ps.pmove.pm_flags & PMF_DUCKED)
 		duck = true;
 	else

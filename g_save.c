@@ -3,12 +3,18 @@
 //#include "stdlog.h"	//	Standard Logging
 //#include "gslog.h"	//	Standard Logging
 
+
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <dlfcn.h>
 #endif
 
+// BEGIN HITMEN
+#include "g_hitmen.h"
+#include "stdlog.h"    // StdLog
+#include "gslog.h"    // StdLog
+// END
 #define Function(f) {#f, f}
 
 mmove_t mmove_reloc;
@@ -298,7 +304,7 @@ field_t		castmemoryfields[] =
 	{NULL, 0, F_INT}
 };
 
-
+// HYPOV8_ADD gammatex/intensity
 char lockpvs[8], scaletime[8], locktex[8], gammatex[8], intensity[8], lockfoot[8], lockmouse[8];
 
 
@@ -334,6 +340,10 @@ void InitGame (void)
 //	sl_Logging( &gi, NULL );	// Standard Logging
 	
 	gi.dprintf ("==== InitGame ====\n");
+
+	// BEGIN HITMEN
+	//sl_Logging( &gi, GAMEVERSION );	// StdLog 
+	// END
 
 	srand( (unsigned)time( NULL ) );
 
@@ -382,22 +392,82 @@ void InitGame (void)
 
 	maxclients = gi.cvar ("maxclients", "4", CVAR_SERVERINFO | CVAR_LATCH);
 	deathmatch = gi.cvar ("deathmatch", "0", CVAR_LATCH);
+
+	// BEGIN HITMEN
+	if (enable_hitmen)
+		deathmatch->value = true;	// Force deathmatch.
+	//gi.cvar_set("dmflags", va("%i", flagTmp)); //hypo todo??
+	// END	
+
 	coop = gi.cvar ("coop", "0", CVAR_LATCH);
 	skill = gi.cvar ("skill", "1", CVAR_LATCH);
 
 	// JOSEPH 16-OCT-98
 	maxentities = gi.cvar ("maxentities", /*"1024"*/"2048", CVAR_LATCH);
 
+	// BEGIN HITMEN
+/*	HmRandomWeapon = gi.cvar ("randweapon", "1", CVAR_SERVERINFO | CVAR_LATCH);
+	HmSoundWarn = gi.cvar ("soundwarn", "1", CVAR_SERVERINFO | CVAR_LATCH);
+	HmWeaponTime = gi.cvar ("weapontime", "60", CVAR_SERVERINFO | CVAR_LATCH);
+
+	if (HmWeaponTime->value < 30)	// Lets make sure no-ones trying to be clever.
+		HmWeaponTime->value = 30;
+
+	if (HmWeaponTime->value > 300)
+		HmWeaponTime->value = 300;*/
+	// END
+
 	// RAFAEL
 //	marines = gi.cvar ("marines", "0", CVAR_ARCHIVE);
 
 	// change anytime vars
 	dmflags = gi.cvar ("dmflags", "0", CVAR_SERVERINFO|CVAR_ARCHIVE);
+	// BEGIN HITMEN
+#if 0
+	if (enable_hitmen && (int)dmflags->value & DF_INFINITE_AMMO)
+	{
+		int flagTmp;
+		flagTmp = (int)dmflags->value;
+		flagTmp &= ~(DF_INFINITE_AMMO);
+		gi.cvar_set("dmflags", va("%i", flagTmp));
+	}
+#endif
+	// END
+
+	// BEGIN HITMEN //hypov8 disable unlimited ammo etc??
+	//if (enable_hitmen){
+		// 4 + 8 + 32 + 128 + 256 + 512 + 1024 + 2048 + 4096 + 32768
+	//	(int)dmflags->value &= 40876;	// Lets make sure we don't get some crap deathmatch flags
+	//}
+	// END
+
 	fraglimit = gi.cvar ("fraglimit", "0", CVAR_SERVERINFO);
 	timelimit = gi.cvar ("timelimit", "0", CVAR_SERVERINFO);
 	cashlimit = gi.cvar ("cashlimit", "0", CVAR_SERVERINFO);
 	password = gi.cvar ("password", "", CVAR_USERINFO);
 	filterban = gi.cvar ("filterban", "1", 0);
+
+	// BEGIN HOOK
+	hook_is_homing     = gi.cvar ("hook_is_homing", "0", 0);
+	hook_homing_radius = gi.cvar ("hook_homing_radius", "200", 0);
+	hook_homing_factor = gi.cvar ("hook_homing_factor", "5", 0);
+	hook_players       = gi.cvar ("hook_players", "0", 0);
+	hook_sky           = gi.cvar ("hook_sky", "0", 0);
+	hook_min_length    = gi.cvar ("hook_min_length", "20", 0);
+	hook_max_length    = gi.cvar ("hook_max_length", "2000", 0);
+	hook_pull_speed    = gi.cvar ("hook_pull_speed", "40", 0);
+	hook_fire_speed    = gi.cvar ("hook_fire_speed", "1000", 0);
+	hook_messages      = gi.cvar ("hook_messages", "0", 0);
+	hook_vampirism     = gi.cvar ("hook_vampirism", "0", 0);
+	hook_vampire_ratio = gi.cvar ("hook_vampire_ratio", "0.5", 0);
+	hook_hold_time     = gi.cvar ("hook_hold_time", "20", 0);
+
+	if (hook_hold_time->value < 5)
+		hook_hold_time->value = 15;
+
+	if (hook_hold_time->value > 60)
+		hook_hold_time->value = 30;
+	// END
 
 	// snap, new uptime cvar
 	gi.cvar ("uptime", "", CVAR_SERVERINFO);
@@ -434,7 +504,7 @@ void InitGame (void)
 
     kick_flamehack = gi.cvar ("kick_flamehack","1",0/*CVAR_SERVERINFO*/); //hypov8
     anti_spawncamp = gi.cvar ("anti_spawncamp","1", 0/*CVAR_SERVERINFO*/); //hypov8
-    idle_client	= gi.cvar("idle_client", "240", 0); //hypo was 120
+    idle_client	= gi.cvar("idle_client", "240", 0); //hypov8 was 120
 
 // Ridah, new cvar's
 	developer = gi.cvar ("developer", "0", 0);
@@ -510,6 +580,10 @@ void InitGame (void)
 	game.clients = gi.TagMalloc (game.maxclients * sizeof(game.clients[0]), TAG_GAME);
 	globals.num_edicts = game.maxclients+1;
 
+
+
+
+
 // Papa 10.6.99	
 
 
@@ -543,14 +617,23 @@ void InitGame (void)
 		scaletime[i]=0;
 	for (i=0;i<7;i++) locktex[i]='a'+(rand()%26);
 		locktex[i]=0;
+// HYPOV8_ADD
 	for (i=0;i<7;i++) gammatex[i]='a'+(rand()%26);
 		gammatex[i]=0;
 	for (i = 0; i<7; i++) intensity[i] = 'a' + (rand() % 26);
 		intensity[i] = 0;
+// HYPOV8_END
     for (i=0;i<7;i++) lockfoot[i]='a'+(rand()%26);
 		lockfoot[i]=0;
 	for (i = 0; i<7; i++) lockmouse[i] = 'a' + (rand() % 26);
 		lockmouse[i] = 0;
+
+
+		// BEGIN HITMEN
+		if (enable_hitmen)
+			hm_Initialise();
+		// END
+
 
 	{ // load & initialize GeoIP library
 #ifdef _WIN32

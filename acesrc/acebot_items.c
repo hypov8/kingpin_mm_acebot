@@ -214,8 +214,8 @@ qboolean ACEIT_IsReachable(edict_t *self, vec3_t goal)
 	VectorCopy(self->maxs, maxx);
 	minx[2] += 18; // Stepsize //hypov8 jump height
 	minx[0] = minx[1] = -15; //catching on walls, failed trace
-	maxx[0] = maxx[1] = 15;
-
+	maxx[0] = maxx[1] = 15; //hypov8 was 15?
+	
 	//hypov8 calculate jumping
 	//jumpv[0] = self->maxs[0];
 	//jumpv[1] = self->maxs[1];
@@ -228,12 +228,12 @@ qboolean ACEIT_IsReachable(edict_t *self, vec3_t goal)
 		return true;
 
 	//hypov8 also check ledges for items?
-	//move items down 15 units
+
 	jump_height = goal[2] - self->s.origin[2];
 	if (jump_height >= 16 && jump_height <= 52 /*&& !self->acebot.is_crate*/)
 	{
 		VectorCopy(goal, goal_move_dn);
-		goal_move_dn[2] -= 15;
+		goal_move_dn[2] -= 15;	//move items down 15 units
 		VectorCopy(self->s.origin, player_move_up);
 		player_move_up[2] = goal_move_dn[2];
 
@@ -475,7 +475,7 @@ float ACEIT_ItemNeed(edict_t *self, int item, float timestamp, int spawnflags)
 	case ITEMLIST_CYLINDER: if (self->client->pers.inventory[ITEM_INDEX(FindItem("Bullets"))] < self->client->pers.max_bullets) return 1.4; break;
 	case ITEMLIST_FLAMETANK: if (self->client->pers.inventory[ITEM_INDEX(FindItem("Gas"))] < self->client->pers.max_cells) return 0.6; break;
 
-
+		// Armor
 	case ITEMLIST_ARMORHELMET:	
 		if (self->client->ps.stats[STAT_ARMOR1] < 100) 	return 0.4; 
 		else if (self->client->ps.stats[STAT_ARMOR1] > 100
@@ -483,14 +483,12 @@ float ACEIT_ItemNeed(edict_t *self, int item, float timestamp, int spawnflags)
 	case ITEMLIST_ARMORHELMETHEAVY:	
 		if (self->client->pers.inventory[ITEMLIST_ARMORHELMETHEAVY] < 100) return 0.8; break;
 
-
 	case ITEMLIST_ARMORJACKET:
 		if (self->client->ps.stats[STAT_ARMOR2] < 100) 	return 0.4;
 		else if (self->client->ps.stats[STAT_ARMOR2] > 100 &&
 			self->client->pers.inventory[ITEMLIST_ARMORJACKETHEAVY] < 100) return 0.4;	break;
 	case ITEMLIST_ARMORJACKETHEAVY:
 		if (self->client->pers.inventory[ITEMLIST_ARMORJACKETHEAVY] < 100) return 0.8; break;
-
 
 	case ITEMLIST_ARMORLEGS:
 		if (self->client->ps.stats[STAT_ARMOR3] < 100) 	return 0.4;
@@ -514,7 +512,7 @@ float ACEIT_ItemNeed(edict_t *self, int item, float timestamp, int spawnflags)
 				return 0.0;
 		*/
 
-	//self->client->ps.stats[STAT_BAGCASH] = self->client->pers.bagcash; //STAT_BAG_CASH
+		// Bagman
 	case ITEMLIST_SAFEBAG1:
 		if (teamplay->value == 1)
 		{	//deposit cash
@@ -548,12 +546,11 @@ float ACEIT_ItemNeed(edict_t *self, int item, float timestamp, int spawnflags)
 		}
 		break;
 
+		// Mods
 	case ITEMLIST_HMG_COOL_MOD:
 		if (!(self->client->pers.pistol_mods & WEAPON_MOD_COOLING_JACKET)) 
 			return 1.2; 
 		break;
-
-
 	case ITEMLIST_PISTOLMOD_DAMAGE:
 		if (!(self->client->pers.pistol_mods & WEAPON_MOD_DAMAGE))
 			return 0.5;

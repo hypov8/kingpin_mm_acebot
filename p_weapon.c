@@ -97,7 +97,7 @@ void AutoLoadWeapon( gclient_t *client, gitem_t *weapon, gitem_t *ammo )
 		}
 	}
 }
-
+// HYPOV8_ADD
 qboolean HasBigWeps(int inventory[MAX_ITEMS])
 {
 	int i;
@@ -120,13 +120,13 @@ qboolean HasBigWeps(int inventory[MAX_ITEMS])
 	return false;
 
 }
-
+// HYPOV8_END
 qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 {
 	int			index;
 	gitem_t		*ammo;
 	int			auto_reload=false;
-	qboolean	hasBigWeps=false;
+	qboolean	hasBigWeps=false; // HYPOV8_ADD
 
 	index = ITEM_INDEX(ent->item);
 
@@ -140,14 +140,14 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 	// Ridah, start with gun loaded
 	if (!(other->client->pers.inventory[index]))
 		auto_reload = true;
-	
+// HYPOV8_ADD	
 	//hypov8 stop us changing guns if we selected pistol
 	if (sv_keeppistol->value)
 	{
 		if (other->hasSelectedPistol == true && HasBigWeps(other->client->pers.inventory))
 			hasBigWeps = true;
 	}
-
+// HYPOV8_END
 	//other->client->pers.inventory[index]++;
 	other->client->pers.inventory[index] = 1;
 
@@ -211,7 +211,7 @@ qboolean Pickup_Weapon (edict_t *ent, edict_t *other)
 			&& auto_reload 
 			&& strcmp(ent->item->classname, "weapon_crowbar") != 0 //hypov8 stop player auto switch to crowbar
 			&& (other->client->pers.weapon == FindItem ("Pistol") || other->client->pers.weapon == FindItem ("Pipe"))
-			&& !hasBigWeps)
+			&& !hasBigWeps) //add hypov8
 			other->client->newweapon = ent->item;
 	}
 	else
@@ -868,12 +868,12 @@ void Use_Weapon2 (edict_t *ent, gitem_t *item)
 		}
 	}
 
-	//hypov8 everything ok, if the user selected pistol manualy. store it in client
+// HYPOV8_ADD everything ok, if the user selected pistol manualy. store it in client
 	if (strcmp(item->pickup_name, "Pistol") == 0 || strcmp(item->pickup_name, "SPistol") == 0)
 		ent->hasSelectedPistol = true;
 	else
 		ent->hasSelectedPistol = false;
-
+// HYPOV8_END
 	// change to this weapon when down
 	ent->client->newweapon = item;
 	
@@ -888,6 +888,11 @@ Drop_Weapon
 void Drop_Weapon (edict_t *ent, gitem_t *item)
 {
 	int		index;
+
+	// BEGIN HITMEN
+	if (enable_hitmen)
+		return;
+	// END
 
 	if ((int)(dmflags->value) & DF_WEAPONS_STAY)
 		return;
@@ -913,15 +918,15 @@ A generic function to handle the basics of weapon thinking
 ================
 */
 #define FRAME_FIRE_FIRST		(FRAME_ACTIVATE_LAST + 1)
-#define FRAME_IDLE_FIRST		(FRAME_RELOAD_LAST + 1)
+#define FRAME_IDLE_FIRST		(FRAME_RELOAD_LAST + 1) // HYPOV8 WAS (FRAME_FIRE_LAST + 1)
 #define FRAME_DEACTIVATE_FIRST	(FRAME_IDLE_LAST + 1)
 
 #define FRAME_OFFSET_FOR_SPISTOL	43
 #define FRAME_OFFSET_FOR_SPISTOL_WITH_SILENCER 70
 
 
-
-//Weapon_Generic(ent, 3, 29, 40, 46, pause_frames, fire_frames, Tommygun_Fire);
+// add hypov8
+// pistol animation frames
 
 void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_RELOAD_LAST, int FRAME_IDLE_LAST, int FRAME_DEACTIVATE_LAST, int *pause_frames, int *fire_frames, void (*fire)(edict_t *ent))
 {
@@ -943,7 +948,7 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_RELOAD_LAS
 
 	if (ent->client->weaponstate ==	WEAPON_RELOADING)
 	{
-		if (ent->client->ps.gunframe == FRAME_RELOAD_LAST)
+		if (ent->client->ps.gunframe == FRAME_RELOAD_LAST)// add hypov8 was FRAME_FIRE_LAST
 		{
 			ent->client->weaponstate = WEAPON_READY;
 			ent->client->ps.gunframe = FRAME_IDLE_FIRST;
@@ -964,12 +969,14 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_RELOAD_LAS
 		}
 		else
 		*/
+// HYPOV8_ADD
 		if ((!coop->value))
 		{
-			ent->client->ps.gunframe += 2; //hypov8 add //FREDZ fast shotgun reload
+			ent->client->ps.gunframe += 2; //add hypov8 //FREDZ fast shotgun reload
 			return;
 		}
 		else
+// HYPOV8_END
 		{
 			ent->client->ps.gunframe++;
 			return;
@@ -1047,7 +1054,7 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_RELOAD_LAS
 
 		return;
 	}
-	
+
 	if ((ent->client->newweapon) /*&& (ent->client->weaponstate != WEAPON_FIRING)*/)
 	{
 		ent->client->weaponstate = WEAPON_DROPPING;
@@ -1124,7 +1131,7 @@ void Weapon_Generic (edict_t *ent, int FRAME_ACTIVATE_LAST, int FRAME_RELOAD_LAS
 				NoAmmoWeaponChange (ent);
 			}
 		}
-		else
+		else //weapon idle
 		{
 			if (ent->client->ps.gunframe == FRAME_IDLE_LAST)
 			{
@@ -2633,7 +2640,7 @@ void Weapon_Shotgun (edict_t *ent)
 		}
 		else
 		{
-			if (ent->client->ps.gunframe == 27) //hypov8 was 29. Weapon_Generic controls faster animation
+			if (ent->client->ps.gunframe == 27) //add hypov8 was 29. Weapon_Generic controls faster animation
 			{
 				if (ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
 				{
@@ -2641,20 +2648,7 @@ void Weapon_Shotgun (edict_t *ent)
 					{
 						ent->client->pers.inventory[ent->client->ammo_index]--;
 						ent->client->pers.weapon_clip[ent->client->clip_index]++;
-						/*
-						//hypov8 shotgun reload 3 bullets
-						if (ent->client->pers.inventory[ent->client->ammo_index] && ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
-						{
-							ent->client->pers.inventory[ent->client->ammo_index]--;
-							ent->client->pers.weapon_clip[ent->client->clip_index]++;
-						}
-						if (ent->client->pers.inventory[ent->client->ammo_index] && ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
-						{
-							ent->client->pers.inventory[ent->client->ammo_index]--;
-							ent->client->pers.weapon_clip[ent->client->clip_index]++;
-						}
 
-*/
 						if (ent->client->pers.weapon_clip[ent->client->clip_index] < MAX_SHOTGUN_ROUNDS)
 							ent->client->ps.gunframe = 21; 
 						else
@@ -2766,10 +2760,7 @@ void weapon_barmachinegun_fire (edict_t *ent)
 	VectorScale (forward, -3, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -3;
 	VectorSet(offset, 0, 0,  ent->viewheight-1);
-	//if (ent->acebot.is_bot)
-	//	P_ProjectSource(ent->client, ent->acebot.oldOrigin, offset, forward, right, start); //hypo use old origin b4 move
-	//else
-		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 	fire_bullet (ent, start, forward, damage, kick, 0, 0, MOD_BARMACHINEGUN);
 

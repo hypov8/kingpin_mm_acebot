@@ -15,6 +15,9 @@
     <Filter Include="Source Files\kpsdk">
       <UniqueIdentifier>{6a52f950-a946-4385-8018-5eeaed510f32}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\hitman">
+      <UniqueIdentifier>{e487ec1a-fc34-4197-9f14-70247f32bdfa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gslog.c">
@@ -209,6 +212,12 @@
     <ClCompile Include="vehicles.c">
       <Filter>Source Files\kpsdk</Filter>
     </ClCompile>
+    <ClCompile Include="g_hitmen_utils.c">
+      <Filter>Source Files\hitman</Filter>
+    </ClCompile>
+    <ClCompile Include="p_hook.c">
+      <Filter>Source Files\hitman</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ai_bitch.h">
@@ -318,6 +327,9 @@
     </ClInclude>
     <ClInclude Include="acesrc\acebot.h">
       <Filter>Source Files\acesrc</Filter>
+    </ClInclude>
+    <ClInclude Include="g_hitmen.h">
+      <Filter>Source Files\hitman</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

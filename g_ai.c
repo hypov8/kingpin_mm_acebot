@@ -2883,12 +2883,14 @@ qboolean infront (edict_t *self, edict_t *other)
 	float	dot;
 	vec3_t	forward;
 
+// ACEBOT_ADD
 	//hypov8 make safe/cash look in 360 deg
 	if (strcmp(other->classname, "item_cashroll") == 0 
 		|| strcmp(other->classname, "item_cashbagsmall") == 0
 		|| strcmp(other->classname, "dm_safebag") == 0
 		)
 		return true;
+// ACEBOT_END
 
 	AngleVectors (self->s.angles, forward, NULL, NULL);
 	VectorSubtract (other->s.origin, self->s.origin, vec);

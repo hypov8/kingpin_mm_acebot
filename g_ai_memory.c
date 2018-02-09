@@ -1339,7 +1339,7 @@ qboolean AI_FindTarget (edict_t *self)
 {
 	cast_memory_t	*cast_memory;
 	edict_t			*enemy, *best;
-	float			best_dist = 0;
+	float			best_dist = 0; // ACEBOT_ADD
 	int				i;
 
 	if (self->cast_info.aiflags & AI_IMMORTAL)

@@ -29,6 +29,13 @@
 #include "ep_all.h"
 
 #include <ctype.h>
+// BEGIN HITMEN
+typedef struct
+	{
+    int			nWeaponNumber;				// Weapons key index number 1-7
+    qboolean	nAlreadyUsed;				// Has this weapon been selected
+	} Hm_Weapon_t;
+//end
 
 
 
@@ -38,6 +45,7 @@
 
 
 // Papa 10.6.99 
+// HYPOV8_ADD
 #if 1
 #define for_each_player_inc_bot(JOE_BLOGGS,INDEX)\
 for(INDEX=1;INDEX<=(int)maxclients->value;INDEX++ )\
@@ -66,8 +74,10 @@ qboolean for_each_player_inc_bot(edict_t *JOE_BLOGGS, int INDEX)
 //#define for_each_player_inc_bot(JOE_BLOGGS,INDEX) for_each_player1(JOE_BLOGGS,INDEX)
 //qboolean for_each_player(edict_t *JOE_BLOGGS); //hypo
 #endif //hypo for_each_player
+//END
 // Theses are the various mode a server can be in
 
+//HYPOV8 RENAMED MATCH DEFINE
 #define DM_PRE_MATCH			0 //free for all DM
 #define TEAM_PRE_MATCH			1 //server command "matchstart"
 #define MATCHSETUP			2 //
@@ -82,6 +92,7 @@ qboolean for_each_player_inc_bot(edict_t *JOE_BLOGGS, int INDEX)
 #define PRE_MATCH_TIME 20
 #else
 #define PRE_MATCH_TIME 250 //hypov8 global match count down timmer 250. 5sec cache and 20 sec prematch
+//add hypov8 //prematch_time
 #endif
 
 // admin types
@@ -129,6 +140,10 @@ qboolean for_each_player_inc_bot(edict_t *JOE_BLOGGS, int INDEX)
 #define SCORE_BOT_SKILL		10
 #define SCORE_INITAL_SPEC	11
 
+// BEGIN HITMEN
+#define SCORE_STATS			12
+#define SCORE_CFG			13
+// END
 
 // spectating types
 #define LOCKED_CHASE		0
@@ -140,7 +155,7 @@ qboolean for_each_player_inc_bot(edict_t *JOE_BLOGGS, int INDEX)
 #define PLAYING				0
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Botmatch.v29" //	"MM1.52 +lagless +acebot v09" //hypov8 gamename
+#define	GAMEVERSION	"Botmatch.v30" //	"MM1.52 +lagless +acebot v09" //hypov8 gamename
 
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
@@ -412,6 +427,10 @@ typedef struct gitem_s
 // it should be initialized at dll load time, and read/written to
 // the server.ssv file for savegames
 //
+// BEGIN HITMEN
+#define	MAXHMWEAPONS	7
+// END
+
 typedef struct
 {
 	char		helpmessage1[512];
@@ -437,8 +456,19 @@ typedef struct
 
 	qboolean	autosaved;
 
-// Papa - various counts
 
+	// BEGIN HITMEN
+	int			Current_Weapon;
+	int			Last_Weapon;
+	int			Num_Weapons;
+	int			Weapon_Index;
+	float		Weapon_Timer;
+	float		Weapon_Timer_Reset;
+
+	Hm_Weapon_t	HmWeaponsAvailList[MAXHMWEAPONS];	// Which weapons are available.
+	// END
+
+// Papa - various counts
 //	int			num_rmaps;
 	int			num_cmaps;  // custom maps
 //	int			num_maps; // maps
@@ -569,6 +599,10 @@ typedef struct
 // NET_ANTILAG	//et-xreal antilag
 	int RealTimeMSec; //hypov8 trying to capture every millisec for lag compensation
 // END_LAG
+
+//hypov8 add
+	//qboolean dynamicLight; //map has juniors??
+//end
 
     // snap - team tags
 	int		manual_tagset;
@@ -824,8 +858,18 @@ extern	int	body_armor_index;
 #define MOD_BARMACHINEGUN		47
 #define MOD_SAFECAMPER			48
 #define MOD_RESTART				49
+// ACEBOT_ADD
 #define MOD_BOT_SUICIDE			50 //added hypov8
+// ACEBOT_END
+// BEGIN HOOK
+#define MOD_HOOK_DAMAGE1        49
+#define MOD_HOOK_VAMPIRE1       50
+#define MOD_HOOK_VAMPIRE2       51
+// END
 
+// Begin Hitmen REJOIN
+//#define MOD_RESTART				52
+// END REJOIN
 
 #define MOD_FRIENDLY_FIRE	0x8000000
 
@@ -849,6 +893,12 @@ extern	cast_group_t	*g_cast_groups;
 extern	cvar_t	*maxentities;
 extern	cvar_t	*deathmatch;
 
+// BEGIN HITMEN	Removed after adding ini file.
+//extern	cvar_t	*HmRandomWeapon;
+//extern	cvar_t	*HmWeaponTime;
+//extern	cvar_t	*HmSoundWarn;
+// END
+
 extern	cvar_t	*maxrate;
 
 extern	cvar_t	*coop;
@@ -860,6 +910,22 @@ extern	cvar_t	*cashlimit;
 extern	cvar_t	*password;
 extern	cvar_t	*g_select_empty;
 extern	cvar_t	*dedicated;
+
+// BEGIN HOOK
+extern  cvar_t  *hook_is_homing;
+extern  cvar_t  *hook_homing_radius;
+extern  cvar_t  *hook_homing_factor;
+extern  cvar_t  *hook_players;
+extern  cvar_t  *hook_sky;
+extern  cvar_t  *hook_min_length;
+extern  cvar_t  *hook_max_length;
+extern  cvar_t  *hook_pull_speed;
+extern  cvar_t  *hook_fire_speed;
+extern  cvar_t  *hook_messages;
+extern  cvar_t  *hook_vampirism;
+extern  cvar_t  *hook_vampire_ratio;
+extern  cvar_t  *hook_hold_time;
+// END
 
 extern	cvar_t	*filterban;
 
@@ -934,6 +1000,8 @@ extern	cvar_t	*burn_b;
 
 extern	cvar_t	*timescale;
 
+//extern	cvar_t	*prematch_time; //add hypov8
+
 extern	cvar_t	*teamplay;
 extern	cvar_t	*g_cashspawndelay;
 
@@ -944,6 +1012,10 @@ extern	cvar_t	*dm_realmode;
 
 extern	cvar_t	*g_mapcycle_file;
 // Ridah, done.
+
+// BEGIN HITMEN
+//extern    cvar_t    *stdlogfile;	// stdlog
+//END
 
 //Snap
 extern	int		uptime_days,uptime_hours,uptime_minutes,uptime_seconds;
@@ -1006,8 +1078,8 @@ extern	gitem_t	itemlist[];
 //
 // g_cmds.c
 //
-void Cmd_Help_f (edict_t *ent, int page);
-void Cmd_Score_f (edict_t *ent);
+void Cmd_Help_f(edict_t *ent, int page, int death);//HYOPOV8
+void Cmd_Score_f (edict_t *ent, int death); //HYPOV8
 void Cmd_BanDicks_f(edict_t *ent, int type);
 //void InitMaps (void);
 
@@ -1350,7 +1422,7 @@ void CheckIdleMatchSetup ();
 void CheckEndTeamMatch ();
 void CheckVote();
 void CheckEndVoteTime ();
-void CheckEndMatchTime();
+void CheckEndMatchTime(); //HYPOV8
 void MatchEnd();
 void ResetServer();
 int	CheckNameBan (char *name);
@@ -1465,6 +1537,20 @@ typedef struct
 	client_persistant_t	coop_respawn;	// what to set client->pers to on a respawn
 	int			enterframe;			// level.framenum the client entered the game
 	int			score;				// frags, etc
+
+	// BEGIN HITMEN
+	int			deaths;
+	int			suicides;
+	float		spawntime;
+	float		timealive;
+	int			maxkillstreak;
+	int			killstreak;
+	int			maxdeathstreak;
+	int			deathstreak;
+
+	int			currentstat;
+	// END
+
 	vec3_t		cmd_angles;			// angles sent over in the last command
 	int			game_helpchanged;
 	int			helpchanged;
@@ -1482,9 +1568,9 @@ typedef struct
 
 	int			accshot,acchit,fav[8];
 
-	int			checkdelta, checkpvs, checktime, checktex, checktex2, checktex3, checkfoot, checkmouse;
-
-#ifdef NOT_ZOID
+	int			checkdelta, checkpvs, checktime, checktex,  checkfoot, checkmouse;
+	INT 		checktex2, checktex3; //HYPOV8
+#ifdef NOT_ZOID // ACEBOT_ADD
 	qboolean	spectator;			// client is a spectator
 #endif
 #ifdef DOUBLECHECK
@@ -1547,6 +1633,13 @@ struct gclient_s
 	float		killer_yaw;			// when dead, look at killer
 
 	weaponstate_t	weaponstate;
+
+	// BEGIN HOOK
+	int			hookstate;
+	int			hook_vampire_time;
+	int			hook_attach_time;
+	// END
+
 	vec3_t		kick_angles;	// weapon kicks
 	vec3_t		kick_origin;
 	float		v_dmg_roll, v_dmg_pitch, v_dmg_time;	// damage kicks
@@ -1624,6 +1717,19 @@ struct gclient_s
 	// chase
 	edict_t		*chase_target;
 	qboolean	update_chase;
+
+	// BEGIN HITMEN
+	float		Hm_sectimer;	// used to wait exactly 1 second
+    int         Hm_ammotics;	// used for counting seconds for each separate weapon clip inc
+	float		Hm_display_timer; // used for timing screen scoreboard messages.
+	// END
+
+
+
+
+
+
+
 
 	// snap, for new chasecam mode(s)
 	int			chasemode;
@@ -1824,9 +1930,9 @@ struct edict_s
 // ACEBOT_ADD
 	acebot_t acebot; //hypov8 messy. move this to a seperate group
 // ACEBOT_END
-	//hypov8
+//HYPOV8
 	qboolean hasSelectedPistol;//hypo stop auto switch
-
+//END
 // JOSEPH 19-MAR-99
 	vec3_t  rotate;
     vec3_t  nodeorigin;
@@ -2125,6 +2231,7 @@ extern int keep_admin_status;
 extern int default_random_map;
 extern int disable_anon_text;
 extern int disable_curse;
+extern int enable_hitmen;
 //extern int enable_asc;
 extern int unlimited_curse;
 extern int enable_killerhealth;
@@ -2139,7 +2246,7 @@ extern MOTD_t	MOTD[20];
 typedef struct // stores player info if they disconnect
 {
 	//char player[MAX_QPATH]; //MH:
-	char netname[MAX_QPATH]; //hypo was 16
+	char netname[MAX_QPATH]; //hypov8 was 16
 	int frags;
 	int	deposits;
 	int	team;
@@ -2176,7 +2283,7 @@ extern ban_t	rconx_pass[100];
 }
 #define TIMENAME " time remaining"
 
-
+// HYPOV8_ADD intensity/intensity
 extern char lockpvs[8], scaletime[8], locktex[8], gammatex[8], intensity[8], lockfoot[8], lockmouse[8];
 
 void cprintf(edict_t *ent, int printlevel, char *fmt, ...);

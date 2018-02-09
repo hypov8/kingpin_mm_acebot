@@ -97,7 +97,7 @@ vec3_t ACE_look_out; //hypov8 global var
 #define BOTNODE_TELEPORTER 3
 #define BOTNODE_ITEM 4
 #define BOTNODE_WATER 5
-//#define BOTNODE_GRAPPLE 6
+#define BOTNODE_GRAPPLE 6 // BEGIN HITMEN
 #define BOTNODE_JUMP 7
 #define BOTNODE_DRAGON_SAFE 8 //hypov8 todo:
 #define BOTNODE_NIKKISAFE 9 //hypov8 todo:
@@ -131,7 +131,7 @@ vec3_t ACE_look_out; //hypov8 global var
 #define ITEMLIST_ARMORJACKETHEAVY	5
 #define ITEMLIST_ARMORLEGSHEAVY		6
 
-//weapon_blackjack"
+#define ITEMLIST_BLACKJACK          7 // BEGIN HITMEN
 #define ITEMLIST_CROWBAR			8
 #define ITEMLIST_PISTOL				9
 #define ITEMLIST_SPISTOL			10
@@ -260,6 +260,7 @@ typedef struct //bot->acebot->xxx
 
 	vec3_t oldOrigin; //hypov8 store last position for calculating velocity
 	vec3_t oldAngles;
+	vec3_t deathAngles; //hypov8 store angles for dead body
 
 	qboolean hunted; //bot will attack this persone with brute force:)
 
@@ -358,6 +359,7 @@ void     ACEND_ShowPath(edict_t *self, short goal_node);
 short      ACEND_AddNode(edict_t *self, short type);
 void     ACEND_UpdateNodeEdge(short from, short to, qboolean check);
 void     ACEND_RemoveNodeEdge(edict_t *self, short from, short to);
+void	ACEND_RemovePaths(edict_t *self, short from); // add hypov8
 //void     ACEND_ResolveAllPaths();
 void     ACEND_SaveNodes();
 void     ACEND_LoadNodes();

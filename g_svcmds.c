@@ -1,6 +1,12 @@
 
 #include "g_local.h"
 
+// BEGIN HITMEN
+#if 0
+#include "stdlog.h"    // StdLog
+#include "gslog.h"    // StdLog
+#endif
+// END
 
 void	Svcmd_Test_f (void)
 {
@@ -256,7 +262,7 @@ void SVCmd_BotDebug(void)
 {
 	int		i;
 	edict_t	*doot;
-	char string[10];
+	//char string[10];
 
 	if (debug_mode == false)
 	{
@@ -270,7 +276,7 @@ void SVCmd_BotDebug(void)
 			//sv botdebug on
 			//safe_cprintf(doot, PRINT_MEDIUM, "0=MOVE 1=LADDER 2=PLATFORM 3=TELEPORTER 4=ITEM 5=WATER 7=JUMP\n");
 			//=======================================================
-		/*	safe_cprintf(doot, PRINT_MEDIUM, " \n");
+			safe_cprintf(doot, PRINT_MEDIUM, " \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†††††††††††††††††††††ƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒ†===================†ƒ \n");
@@ -286,24 +292,24 @@ void SVCmd_BotDebug(void)
 			safe_cprintf(doot, PRINT_MEDIUM, "ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ \n");
 			safe_cprintf(doot, PRINT_MEDIUM, " \n");
 
-			*/
+			
 		//	string[0] = 'a' + 'z'; 
 		//	string[1] = 'b' + 'z';
 			//string[2] = 'c' + 'z';
 			//string[3] = 'd' + 'z';
 			//string[4] = 'e' + 'z';
-			string[0] = 'a' + (char)127;
-			string[1] = 'a' + (char)127;
-			string[2] = 'a' + (char)128;
-			string[3] = 'a' + (char)129;
-			string[4] = (char)122;
+			//string[0] = 'a' + (char)127;
+			//string[1] = 'a' + (char)127;
+			//string[2] = 'a' + (char)128;
+			//string[3] = 'a' + (char)129;
+			//string[4] = (char)122;
 
-			string[5] = (char)122;
-			string[6] = (char)122;
+			//string[5] = (char)122;
+			//string[6] = (char)122;
 
 
 
-			safe_cprintf(doot, PRINT_MEDIUM, "-=( %s )=- \n", string);
+			//safe_cprintf(doot, PRINT_MEDIUM, "-=( %s )=- \n", string);
 
 //#define	PRINT_LOW			0		// pickup messages
 //#define	PRINT_MEDIUM		1		// death messages
@@ -349,14 +355,15 @@ of the parameters
 */
 void	ServerCommand(void)
 {
-	char	*cmd, *cmd2, *cmd3, *cmd4;
+	char	*cmd; 
+	char	*cmd2, *cmd3, *cmd4;// ACEBOT_ADD
 
 	cmd = gi.argv(1);
-
+// ACEBOT_ADD
 	cmd2 = gi.argv(2);
 	cmd3 = gi.argv(3);
 	cmd4 = gi.argv(4);
-
+// ACEBOT_END
 	if (Q_stricmp(cmd, "test") == 0)
 		Svcmd_Test_f();
 	else if (Q_stricmp(cmd, "addip") == 0)
@@ -367,6 +374,21 @@ void	ServerCommand(void)
 		SVCmd_ListIP_f();
 	else if (Q_stricmp(cmd, "writeip") == 0)
 		SVCmd_WriteIP_f();
+
+	// BEGIN HITMEN
+#if 0
+	else if (Q_stricmp (cmd, "log") == 0)  // Start the logging (if not active).
+		{
+		gi.cvar_set("stdlogfile", "1");	// force stdlogfile cvar on	
+		//sl_GameStart( &gi, level );	// StdLog - Mark Davies
+		}
+	else if (Q_stricmp (cmd, "nolog") == 0)  // Terminates the log (if active).
+		{
+		gi.cvar_set("stdlogfile", "0");	// force stdlogfile cvar off	
+		//sl_GameEnd( &gi, level );	// StdLog - Mark Davies
+		}
+#endif
+	// END
 
 // ACEBOT_ADD
 	else if (Q_stricmp(cmd, "acedebug") == 0 || Q_stricmp(cmd, "botdebug") == 0 || Q_stricmp(cmd, "debugbot") == 0)

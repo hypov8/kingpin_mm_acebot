@@ -256,6 +256,25 @@ void sl_WriteStdLogDeath( game_import_t     *gi,
                             pWeaponName = "Telefrag";
                             break;
                         }                            
+
+						// BEGIN HITMEN
+						// Separate weapon check for the hook so it picks up the weapon name
+						// correctly
+						case MOD_HOOK_DAMAGE1:
+						case MOD_HOOK_VAMPIRE1:
+						case MOD_HOOK_VAMPIRE2:
+                        {
+                            /* Kill - weapon */
+                            pTargetName = self->client->pers.netname;
+                            pKillerName = attacker->client->pers.netname;
+                            pScoreType  = "Kill";
+                            iScore      = 1;
+
+                            // 
+                            pWeaponName = "Hook";
+                            break;
+                        }
+						// END              
                     }
                 }
             }

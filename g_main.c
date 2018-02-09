@@ -6,6 +6,12 @@
 #include "voice_bitch.h"
 #include "voice_punk.h"
 
+// BEGIN HITMEN
+#include "g_hitmen.h"
+//#include "stdlog.h"    // StdLog
+//#include "gslog.h"    // StdLog
+// END
+
 game_locals_t	game;
 level_locals_t	level;
 game_import_t	gi;
@@ -44,6 +50,22 @@ cvar_t	*g_select_empty;
 cvar_t	*dedicated;
 
 cvar_t	*maxrate;
+
+// BEGIN HOOK
+cvar_t  *hook_is_homing;
+cvar_t  *hook_homing_radius;
+cvar_t  *hook_homing_factor;
+cvar_t  *hook_players;
+cvar_t  *hook_sky;
+cvar_t  *hook_min_length;
+cvar_t  *hook_max_length;
+cvar_t  *hook_pull_speed;
+cvar_t  *hook_fire_speed;
+cvar_t  *hook_messages;
+cvar_t  *hook_vampirism;
+cvar_t  *hook_vampire_ratio;
+cvar_t  *hook_hold_time;
+// END
 
 cvar_t	*filterban;
 
@@ -128,6 +150,10 @@ cvar_t	*dm_realmode;
 cvar_t	*g_mapcycle_file;
 // Ridah, done.
 
+// BEGIN HITMEN
+//cvar_t    *stdlogfile;	//StdLog
+// END
+
 //Snap
 int		uptime_days,uptime_hours,uptime_minutes,uptime_seconds;
 cvar_t	*days;
@@ -165,7 +191,7 @@ void Killed (edict_t *targ, edict_t *inflictor, edict_t *attacker, int damage, v
 
 int gameinc=0;
 
-
+// HYPOV8_ADD
 static char *weapnames[8] = { "Pipe", "Pist", "Shot", "Tommy", " HMG", "  GL", "  RL", "Flame" }; //hypov8 duplicate p_hud.c
 
 //hypov8 dm match end results printed
@@ -202,7 +228,7 @@ void PrintScoreMatchEnd()
 	gi.dprintf(" \n");
 }
 
-
+// HYPOV8_END
 void ShutdownGame(void)
 {
 	int			i;
@@ -210,10 +236,10 @@ void ShutdownGame(void)
 	char buf[1024];
 	char buf1[16];
 
-	//add hypov8
+// hypov8_add 
 	if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 		PrintScoreMatchEnd();
-
+// END
 // ACEBOT_ADD
 
 	if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
@@ -265,7 +291,9 @@ void ShutdownGame(void)
 
 	gi.dprintf ("==== ShutdownGame ====\n");
 
+	// BEGIN HITMEN
 //	sl_GameEnd( &gi, level );	// Standard Logging
+	// END
 
 // BEGIN:	Xatrix/Ridah/Navigator/21-mar-1998
 	NAV_PurgeActiveNodes (level.node_data);	
@@ -517,13 +545,19 @@ The timelimit or fraglimit has been exceeded
 */
 void EndDMLevel (void)
 {
-	edict_t		*ent, *player;
+	edict_t		*ent;
+	edict_t		*player;//HYPOV8_ADD
 	char		*nextmap, changenext[MAX_QPATH];
 	int i;
 
 	//add hypov8
 	if (level.modeset == TEAM_MATCH_RUNNING || level.modeset == DM_MATCH_RUNNING)
 		PrintScoreMatchEnd();
+
+	// BEGIN HITMEN
+	//sl_GameEnd( &gi, level );     // StdLog
+	// END
+
 
 
 // ACEBOT_ADD
@@ -534,9 +568,10 @@ void EndDMLevel (void)
 	botsRemoved = 0;
 	num_bots = 0;
 // ACEBOT_END
-
+// HYPOV8_ADD
 	level.modeset = MATCHEND;
 	level.startframe = level.framenum;
+//END
 
 //	gi.cvar_set("password",default_password);
 
@@ -586,11 +621,11 @@ done:
 	//hack to fix bug
 	strcpy(changenext, ent->map);
 
-	for_each_player_inc_bot(player, i) //hypov8 todo: hide wep 
+	for_each_player_inc_bot(player, i) //hypov8 todo: hide wep // ACEBOT_ADD
 	{
 		HideWeapon(player);
-		player->client->newweapon = NULL;
-		ChangeWeapon(player);
+		player->client->newweapon = NULL;//hypov8
+		ChangeWeapon(player);//hypov8
 
 		if (player->client->flashlight) 
 			player->client->flashlight = false;
@@ -646,7 +681,7 @@ void CheckEndDM(void)
 		{
 			safe_bprintf(PRINT_HIGH, "Timelimit hit.\n");
 			if (!allow_map_voting)
-				EndDMLevel(); //hypo MatchEnd(); // 
+				EndDMLevel(); //hypov8 MatchEnd(); // 
 			else
 				SetupMapVote();
 			return;
@@ -659,7 +694,7 @@ void CheckEndDM(void)
 			if (team_cash[1]>=(int)fraglimit->value || team_cash[2]>=(int)fraglimit->value) {
 				safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 				if (!allow_map_voting)
-					EndDMLevel(); //hypo MatchEnd(); // 
+					EndDMLevel();
 				else
 					SetupMapVote();
 				return;
@@ -673,7 +708,7 @@ void CheckEndDM(void)
 				if (cl->resp.score >= fraglimit->value) {
 					safe_bprintf(PRINT_HIGH, "Fraglimit hit.\n");
 					if (!allow_map_voting)
-						EndDMLevel(); //hypo MatchEnd(); // 
+						EndDMLevel();
 					else
 						SetupMapVote();
 					return;
@@ -1264,6 +1299,11 @@ void G_RunFrame (void)
 			gi.cvar_set(TIMENAME,"");
 	}
 
+	// BEGIN HITMEN
+	if (enable_hitmen)
+		hm_CheckWeaponTimer();
+	// END
+
 	// build the playerstate_t structures for all players
 	ClientEndServerFrames ();
 
@@ -1298,6 +1338,3 @@ void G_RunFrame (void)
 		UPDATETEAM
 }
 
-// ACEBOT_ADD
-
-// ACEBOT_END
